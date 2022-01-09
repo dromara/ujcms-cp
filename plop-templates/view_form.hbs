@@ -1,0 +1,40 @@
+<template>
+  <dialog-form
+    :name="$t('menu.{{camelCase path}}.{{camelCase name}}')"
+    :queryBean="query{{pascalCase name}}"
+    :createBean="create{{pascalCase name}}"
+    :updateBean="update{{pascalCase name}}"
+    :deleteBean="delete{{pascalCase name}}"
+    :beanId="beanId"
+    :beanIds="beanIds"
+    :focus="focus"
+    :initValues="(bean) => ({})"
+    :toValues="(bean) => ({ ...bean })"
+    perms="{{camelCase name}}"
+    :model-value="modelValue"
+    @update:model-value="$emit('update:modelValue', $event)"
+    @finished="$emit('finished')"
+  >
+    <template #default="{values}">
+      <el-form-item prop="name" :label="$t('{{camelCase name}}.name')" :rules="{ required: true, message: () => $t('v.required') }">
+        <el-input v-model="values.name" ref="focus" maxlength="50"></el-input>
+      </el-form-item>
+    </template>
+  </dialog-form>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref } from 'vue';
+import { query{{pascalCase name}}, create{{pascalCase name}}, update{{pascalCase name}}, delete{{pascalCase name}} } from '@/api/{{kebabCase path}}';
+import DialogForm from '@/components/DialogForm.vue';
+
+export default defineComponent({
+  components: { DialogForm },
+  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { required: true } },
+  emits: { 'update:modelValue': null, finished: null },
+  setup() {
+    const focus = ref<any>(null);
+    return { query{{pascalCase name}}, create{{pascalCase name}}, update{{pascalCase name}}, delete{{pascalCase name}}, focus };
+  },
+});
+</script>

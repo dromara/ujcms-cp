@@ -1,0 +1,31 @@
+@import './transition.scss';
+@import './element-ui.scss';
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#app {
+  height: 100%;
+}
+
+// global css
+.app-block {
+  @apply shadow-sm;
+  @apply bg-white;
+}
+
+.inline-form .el-form-item {
+  margin-bottom: 0;
+}
+
+.msgbox-error {
+  width: 100%;
+}

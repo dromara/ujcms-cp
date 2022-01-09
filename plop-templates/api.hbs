@@ -1,0 +1,8 @@
+export const query{{pascalCase name}}{{pascalCase type}} = async (params?: any) => (await axios.get('/backend/core/{{kebabCase name}}', { params })).data;
+export const query{{pascalCase name}} = async (id: number) => (await axios.get(`/backend/core/{{kebabCase name}}/${id}`)).data;
+export const create{{pascalCase name}} = async (data: any) => (await axios.post('/backend/core/{{kebabCase name}}', data)).data;
+export const update{{pascalCase name}} = async (data: any) => (await axios.post('/backend/core/{{kebabCase name}}?_method=put', data)).data;
+{{#if isList}}
+export const update{{pascalCase name}}Order = async (data: number[]) => (await axios.post('/backend/core/{{kebabCase name}}/order?_method=put', data)).data;
+{{/if}}
+export const delete{{pascalCase name}} = async (data: number[]) => (await axios.post('/backend/core/{{kebabCase name}}?_method=delete', data)).data;
