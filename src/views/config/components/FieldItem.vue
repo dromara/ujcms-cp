@@ -24,7 +24,7 @@
   <el-color-picker v-else-if="field.type === 'color'" v-model="data"></el-color-picker>
   <el-slider v-else-if="field.type === 'slider'" v-model="data" :showInput="field.showInput ?? false" :min="field.min" :max="field.max"></el-slider>
   <el-switch v-else-if="field.type === 'switch'" v-model="data" :active-value="field.activeValue" :inactive-value="field.inactiveValue"></el-switch>
-  <el-radio-group v-else-if="field.type === 'radio'" v-model="data" size="small">
+  <el-radio-group v-else-if="field.type === 'radio'" v-model="data">
     <template v-if="field.checkStyle === 'button'">
       <el-radio-button v-for="item in dictList" :key="item.id" :label="item.name">{{ item.name }}</el-radio-button>
     </template>
@@ -32,7 +32,7 @@
       <el-radio v-for="item in dictList" :key="item.id" :label="item.name">{{ item.name }}</el-radio>
     </template>
   </el-radio-group>
-  <el-checkbox-group v-else-if="field.type === 'checkbox'" v-model="data" size="small">
+  <el-checkbox-group v-else-if="field.type === 'checkbox'" v-model="data">
     <template v-if="field.checkStyle === 'button'">
       <el-checkbox-button v-for="item in dictList" :key="item.id" :label="item.name">{{ item.name }}</el-checkbox-button>
     </template>
@@ -49,11 +49,11 @@
   <image-upload v-else-if="field.type === 'imageUpload'" v-model="data" :height="field.imageHeight" :width="field.imageWidth" :mode="field.imageMode"></image-upload>
   <template v-else-if="field.type === 'videoUpload'">
     <el-input v-model="data" :placeholder="field.placeholder" maxlength="255"></el-input>
-    <base-upload type="video" :on-success="(res) => (data = res.url)"></base-upload>
+    <base-upload type="video" :on-success="(res: any) => (data = res.url)"></base-upload>
   </template>
   <template v-else-if="field.type === 'fileUpload'">
     <el-input v-model="data" :placeholder="field.placeholder" maxlength="255"></el-input>
-    <base-upload type="file" :on-success="(res) => (data = res.url)"></base-upload>
+    <base-upload type="file" :on-success="(res: any) => (data = res.url)"></base-upload>
   </template>
   <tinymce
     v-else-if="field.type === 'tinyEditor'"

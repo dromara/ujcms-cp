@@ -36,12 +36,12 @@
         fetchChannelList();
       }
     "
-    labelPosition="top"
+    labelWidth="120px"
     large
   >
-    <template #default="{values,isEdit}">
+    <template #default="{ values, isEdit }">
       <el-row>
-        <el-col :span="18" class="el-form--label-right label-right">
+        <el-col :span="18">
           <el-row>
             <el-col :span="mains['name'].double ? 12 : 24">
               <el-form-item prop="name" :label="mains['name'].name ?? $t('channel.name')" :rules="{ required: true, message: () => $t('v.required') }">
@@ -50,13 +50,13 @@
             </el-col>
             <el-col :span="mains['alias'].double ? 12 : 24">
               <el-form-item prop="alias" :rules="isEdit ? { required: true, message: () => $t('v.required') } : {}">
-                <template #label><label-tip :label="mains['alias'].name ?? $t('channel.alias')" message="channel.alias"/></template>
+                <template #label><label-tip :label="mains['alias'].name ?? $t('channel.alias')" message="channel.alias" /></template>
                 <el-input v-model="values.alias" maxlength="50"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="mains['linkUrl'].double ? 12 : 24" v-if="values.type === 3">
               <el-form-item prop="linkUrl" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip :label="mains['linkUrl'].name ?? $t('channel.linkUrl')" message="channel.linkUrl"/></template>
+                <template #label><label-tip :label="mains['linkUrl'].name ?? $t('channel.linkUrl')" message="channel.linkUrl" /></template>
                 <el-input v-model="values.linkUrl" maxlength="255">
                   <template #append>
                     <el-checkbox v-model="values.targetBlank">{{ $t('channel.targetBlank') }}</el-checkbox>
@@ -102,7 +102,7 @@
                     (value) => {
                       channelModelId = value;
                       if (!isEdit) {
-                        nextTick().then(() => {
+                        $nextTick().then(() => {
                           initCustoms(values.customs);
                         });
                       }
@@ -177,7 +177,7 @@
             </el-col>
             <el-col :span="mains['nav'].double ? 12 : 24" v-if="mains['nav'].show">
               <el-form-item prop="nav" :rules="mains['nav'].required ? { required: true, message: () => $t('v.required') } : undefined">
-                <template #label><label-tip :label="mains['nav'].name ?? $t('channel.nav')" message="channel.nav"/></template>
+                <template #label><label-tip :label="mains['nav'].name ?? $t('channel.nav')" message="channel.nav" /></template>
                 <el-switch v-model="values.nav"></el-switch>
               </el-form-item>
             </el-col>
@@ -237,8 +237,8 @@
   </dialog-form>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, ref, computed, toRefs, watch } from 'vue';
+<script setup lang="ts">
+import { defineProps, defineEmits, onMounted, ref, computed, toRefs, watch } from 'vue';
 import { toTree, disableSubtree } from '@/utils/tree';
 import { queryChannel, createChannel, updateChannel, deleteChannel, queryChannelList, queryChannelTemplates, queryArticleTemplates } from '@/api/content';
 import { queryModelList } from '@/api/config';
@@ -249,117 +249,79 @@ import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 import Tinymce from '@/components/Tinymce/index.vue';
 
-export default defineComponent({
-  components: { DialogForm, LabelTip, FieldItem, Tinymce },
-  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { required: true }, parent: { type: Object, default: null } },
-  emits: { 'update:modelValue': null, finished: null },
-  setup(props, { emit }) {
-    const { modelValue: visible, parent } = toRefs(props);
-    const focus = ref<any>(null);
-    const channelList = ref<any[]>([]);
-    const channelModelList = ref<any[]>([]);
-    const articleModelList = ref<any[]>([]);
-    const groupList = ref<any[]>([]);
-    const channelTemplates = ref<any[]>([]);
-    const articleTemplates = ref<any[]>([]);
-    const channelModelId = ref<number>();
-    const channelModel = computed(() => channelModelList.value.find((item) => item.id === channelModelId.value));
-    const mains = computed(() => arr2obj(mergeModelFields(getModelData().channel.mains, channelModel.value?.mains, 'channel')));
-    const asides = computed(() => arr2obj(mergeModelFields(getModelData().channel.asides, channelModel.value?.asides, 'channel')));
-    const fields = computed(() => JSON.parse(channelModel.value?.customs || '[]'));
-    watch(visible, () => {
-      if (visible) {
-        channelModelId.value = parent.value?.articleModelId ?? channelModelList.value[0]?.id;
-      }
-    });
-    const fetchChannelList = async (bean?: any) => {
-      channelList.value = disableSubtree(toTree(await queryChannelList()), bean?.id);
-    };
-    const finished = async (bean?: any) => {
-      await fetchChannelList(bean);
-      emit('finished');
-    };
-    const fetchChannelModelList = async () => {
-      channelModelList.value = await queryModelList({ Q_EQ_type: 'channel' });
-      // 如果 channelModelId 无值，则默认赋予第一个模型的值
-      if (channelModelId.value == null && channelModelList.value.length > 0) {
-        channelModelId.value = channelModelList.value[0].id;
-      }
-    };
-    const fetchArticleModelList = async () => {
-      articleModelList.value = await queryModelList({ Q_EQ_type: 'article' });
-    };
-    const fetchGroupList = async () => {
-      groupList.value = await queryGroupList();
-    };
-    const fetchChannelTemplates = async () => {
-      channelTemplates.value = await queryChannelTemplates();
-    };
-    const fetchArticleTemplates = async () => {
-      articleTemplates.value = await queryArticleTemplates();
-    };
-    onMounted(() => {
-      fetchChannelModelList();
-      fetchArticleModelList();
-      fetchGroupList();
-      fetchChannelTemplates();
-      fetchArticleTemplates();
-      fetchChannelList();
-    });
-    const initCustoms = (customs: any) => {
-      fields.value.forEach((field: any) => {
-        // eslint-disable-next-line no-param-reassign
-        customs[field.code] = field.defaultValue;
-      });
-      return customs;
-    };
-    return {
-      queryChannel,
-      createChannel,
-      updateChannel,
-      deleteChannel,
-      mains,
-      asides,
-      fields,
-      focus,
-      finished,
-      fetchChannelList,
-      channelList,
-      channelModelList,
-      channelModelId,
-      articleModelList,
-      groupList,
-      channelTemplates,
-      articleTemplates,
-      initCustoms,
-    };
-  },
+const props = defineProps({
+  modelValue: { type: Boolean, required: true },
+  beanId: { required: true },
+  beanIds: { type: Array, required: true },
+  parent: { type: Object, default: null },
 });
+const emit = defineEmits({ 'update:modelValue': null, finished: null });
+
+const { modelValue: visible, parent } = toRefs(props);
+const focus = ref<any>();
+const channelList = ref<any[]>([]);
+const channelModelList = ref<any[]>([]);
+const articleModelList = ref<any[]>([]);
+const groupList = ref<any[]>([]);
+const channelTemplates = ref<any[]>([]);
+const articleTemplates = ref<any[]>([]);
+const channelModelId = ref<number>();
+const channelModel = computed(() => channelModelList.value.find((item) => item.id === channelModelId.value));
+const mains = computed(() => arr2obj(mergeModelFields(getModelData().channel.mains, channelModel.value?.mains, 'channel')));
+const asides = computed(() => arr2obj(mergeModelFields(getModelData().channel.asides, channelModel.value?.asides, 'channel')));
+const fields = computed(() => JSON.parse(channelModel.value?.customs || '[]'));
+watch(visible, () => {
+  if (visible) {
+    channelModelId.value = parent.value?.articleModelId ?? channelModelList.value[0]?.id;
+  }
+});
+const fetchChannelList = async (bean?: any) => {
+  channelList.value = disableSubtree(toTree(await queryChannelList()), bean?.id);
+};
+const finished = async (bean?: any) => {
+  await fetchChannelList(bean);
+  emit('finished');
+};
+const fetchChannelModelList = async () => {
+  channelModelList.value = await queryModelList({ Q_EQ_type: 'channel' });
+  // 如果 channelModelId 无值，则默认赋予第一个模型的值
+  if (channelModelId.value == null && channelModelList.value.length > 0) {
+    channelModelId.value = channelModelList.value[0].id;
+  }
+};
+const fetchArticleModelList = async () => {
+  articleModelList.value = await queryModelList({ Q_EQ_type: 'article' });
+};
+const fetchGroupList = async () => {
+  groupList.value = await queryGroupList();
+};
+const fetchChannelTemplates = async () => {
+  channelTemplates.value = await queryChannelTemplates();
+};
+const fetchArticleTemplates = async () => {
+  articleTemplates.value = await queryArticleTemplates();
+};
+onMounted(() => {
+  fetchChannelModelList();
+  fetchArticleModelList();
+  fetchGroupList();
+  fetchChannelTemplates();
+  fetchArticleTemplates();
+  fetchChannelList();
+});
+const initCustoms = (customs: any) => {
+  fields.value.forEach((field: any) => {
+    // eslint-disable-next-line no-param-reassign
+    customs[field.code] = field.defaultValue;
+  });
+  return customs;
+};
 </script>
 
 <style lang="scss" scoped>
-$marginLeft: 120px;
-.label-right {
-  :deep(.el-form-item__label) {
-    float: left;
-    width: $marginLeft;
-    padding: 0 12px 0 0;
-    text-align: right;
-  }
-  :deep(.el-form-item__content) {
-    margin-left: $marginLeft;
-  }
-}
 .label-top {
   :deep(.el-form-item) {
-    margin-bottom: 10px;
-  }
-  :deep(.el-form-item__label) {
-    padding-bottom: 0;
-    width: auto;
-  }
-  :deep(.el-form-item__content) {
-    margin-left: 0;
+    margin-bottom: 12px;
   }
 }
 </style>

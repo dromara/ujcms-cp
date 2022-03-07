@@ -1,7 +1,7 @@
 <template>
   <div class="dialog-full">
     <el-dialog :title="$t('model.fun.customFields')" :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" destroy-on-close fullscreen>
-      <el-container class="border-t" style="height:calc(100vh - 65px)">
+      <el-container class="border-t" style="height: calc(100vh - 65px)">
         <el-aside width="240px">
           <el-scrollbar class="h-full">
             <draggable :list="components" :group="{ name: 'components', pull: 'clone', put: false }" :sort="false" :clone="clone" @end="onEnd" item-key="label">
@@ -13,7 +13,7 @@
         </el-aside>
         <el-container class="border-r border-l">
           <el-header height="auto" class="px-2 py-1">
-            <el-button :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" size="small">{{ $t('save') }}</el-button>
+            <el-button :loading="buttonLoading" @click.prevent="handleSubmit" type="primary">{{ $t('save') }}</el-button>
           </el-header>
           <el-main class="border-t p-0">
             <el-scrollbar class="drawing-board h-full p-2">
@@ -29,7 +29,7 @@
                     group="components"
                     item-key="code"
                   >
-                    <template #item="{ element:field }">
+                    <template #item="{ element: field }">
                       <el-col :span="field.double ? 12 : 24" class="relative">
                         <el-form-item :prop="field.code" :label="field.name" :required="field.required" class="mb-0 py-3">
                           <field-item :field="field" v-model="field.defaultValue"></field-item>
@@ -39,7 +39,7 @@
                           @click="changeSelected(field)"
                         ></div>
                         <div :class="['drag-close', selected !== field ? 'hidden' : null]" @click="deleteElement(field)">
-                          <i class="el-icon-circle-close text-danger"></i>
+                          <el-icon class="text-danger"><circle-close /></el-icon>
                         </div>
                       </el-col>
                     </template>
@@ -65,131 +65,113 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, toRefs, watch } from 'vue';
+<script setup lang="ts">
+import { defineProps, defineEmits, ref, toRefs, watch } from 'vue';
 import { ElMessage } from 'element-plus';
+import { CircleClose } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import draggable from 'vuedraggable';
 import { queryModel, updateModel } from '@/api/config';
 import FieldItem from './components/FieldItem.vue';
 import FieldAttribute from './components/FieldAttribute.vue';
 
-export default defineComponent({
-  name: 'ModelCustomFields',
-  components: { draggable, FieldItem, FieldAttribute },
-  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true } },
-  emits: { 'update:modelValue': null },
-  setup(props, { emit }) {
-    const { beanId, modelValue: visible } = toRefs(props);
-    const { t } = useI18n();
-    const bean = ref<any>({});
-    const drawingFormData = ref<any>({});
-    const selectedForm = ref<any>(null);
-    const drag = ref<boolean>(false);
-    const selected = ref<any | null>(null);
-    const cloned = ref<any | null>(null);
-    const currentTab = ref<string>('attribute');
-    const buttonLoading = ref<boolean>(false);
-    const components = ref<any[]>([
-      { label: t('model.fieldType.text'), type: 'text' },
-      { label: t('model.fieldType.textarea'), type: 'textarea' },
-      { label: t('model.fieldType.number'), type: 'number' },
-      { label: t('model.fieldType.slider'), type: 'slider' },
-      { label: t('model.fieldType.date'), type: 'date' },
-      { label: t('model.fieldType.color'), type: 'color' },
-      { label: t('model.fieldType.radio'), type: 'radio' },
-      { label: t('model.fieldType.checkbox'), type: 'checkbox' },
-      { label: t('model.fieldType.select'), type: 'select' },
-      { label: t('model.fieldType.multipleSelect'), type: 'multipleSelect' },
-      // { label: t('model.fieldType.cascader'), type: 'cascader' },
-      { label: t('model.fieldType.switch'), type: 'switch' },
-      { label: t('model.fieldType.imageUpload'), type: 'imageUpload' },
-      { label: t('model.fieldType.videoUpload'), type: 'videoUpload' },
-      { label: t('model.fieldType.fileUpload'), type: 'fileUpload' },
-      { label: t('model.fieldType.tinyEditor'), type: 'tinyEditor' },
-    ]);
-    const customs = ref<any[]>([]);
-    watch(visible, async () => {
-      if (visible.value && beanId.value) {
-        bean.value = await queryModel(beanId.value as number);
-        customs.value = JSON.parse(bean.value.customs || '[]');
-        if (customs.value.length > 0) {
-          [selected.value] = customs.value;
-        } else {
-          selected.value = null;
-        }
-      }
-    });
-    const changeSelected = async (element: any) => {
-      if (!selected.value) {
-        selected.value = element;
-        return;
-      }
-      selectedForm.value.validate((valid: boolean) => {
+const props = defineProps({
+  modelValue: { type: Boolean, required: true },
+  beanId: { required: true },
+});
+const emit = defineEmits({ 'update:modelValue': null });
+
+const { beanId, modelValue: visible } = toRefs(props);
+const { t } = useI18n();
+const bean = ref<any>({});
+const drawingFormData = ref<any>({});
+const selectedForm = ref<any>();
+const drag = ref<boolean>(false);
+const selected = ref<any>();
+const cloned = ref<any>();
+const currentTab = ref<string>('attribute');
+const buttonLoading = ref<boolean>(false);
+const components = ref<any[]>([
+  { label: t('model.fieldType.text'), type: 'text' },
+  { label: t('model.fieldType.textarea'), type: 'textarea' },
+  { label: t('model.fieldType.number'), type: 'number' },
+  { label: t('model.fieldType.slider'), type: 'slider' },
+  { label: t('model.fieldType.date'), type: 'date' },
+  { label: t('model.fieldType.color'), type: 'color' },
+  { label: t('model.fieldType.radio'), type: 'radio' },
+  { label: t('model.fieldType.checkbox'), type: 'checkbox' },
+  { label: t('model.fieldType.select'), type: 'select' },
+  { label: t('model.fieldType.multipleSelect'), type: 'multipleSelect' },
+  // { label: t('model.fieldType.cascader'), type: 'cascader' },
+  { label: t('model.fieldType.switch'), type: 'switch' },
+  { label: t('model.fieldType.imageUpload'), type: 'imageUpload' },
+  { label: t('model.fieldType.videoUpload'), type: 'videoUpload' },
+  { label: t('model.fieldType.fileUpload'), type: 'fileUpload' },
+  { label: t('model.fieldType.tinyEditor'), type: 'tinyEditor' },
+]);
+const customs = ref<any[]>([]);
+watch(visible, async () => {
+  if (visible.value && beanId.value) {
+    bean.value = await queryModel(beanId.value as number);
+    customs.value = JSON.parse(bean.value.customs || '[]');
+    if (customs.value.length > 0) {
+      [selected.value] = customs.value;
+    } else {
+      selected.value = undefined;
+    }
+  }
+});
+const changeSelected = async (element: any) => {
+  if (!selected.value) {
+    selected.value = element;
+    return;
+  }
+  selectedForm.value.validate((valid: boolean) => {
+    if (valid) {
+      selected.value = element;
+    }
+  });
+};
+const clone = (element: any) => {
+  const cloneElement = { code: `field${new Date().getTime()}`, type: element.type, name: element.label, double: false };
+  cloned.value = cloneElement;
+  return cloneElement;
+};
+const onEnd = (evt: any) => {
+  if (evt.from !== evt.to) {
+    selected.value = cloned.value;
+  }
+};
+const deleteElement = (element: any) => {
+  const index = customs.value.indexOf(element);
+  customs.value.splice(index, 1);
+  const { length } = customs.value;
+  if (length <= 0) {
+    selected.value = undefined;
+  } else if (index < length) {
+    selected.value = customs.value[index];
+  } else {
+    selected.value = customs.value[length - 1];
+  }
+};
+const handleSubmit = async () => {
+  buttonLoading.value = true;
+  try {
+    if (customs.value.length > 0) {
+      selectedForm.value.validate(async (valid: boolean) => {
         if (valid) {
-          selected.value = element;
-        }
-      });
-    };
-    const clone = (element: any) => {
-      const cloneElement = { code: `field${new Date().getTime()}`, type: element.type, name: element.label, double: false };
-      cloned.value = cloneElement;
-      return cloneElement;
-    };
-    const onEnd = (evt: any) => {
-      if (evt.from !== evt.to) {
-        selected.value = cloned.value;
-      }
-    };
-    const deleteElement = (element: any) => {
-      const index = customs.value.indexOf(element);
-      customs.value.splice(index, 1);
-      const { length } = customs.value;
-      if (length <= 0) {
-        selected.value = null;
-      } else if (index < length) {
-        selected.value = customs.value[index];
-      } else {
-        selected.value = customs.value[length - 1];
-      }
-    };
-    const handleSubmit = async () => {
-      buttonLoading.value = true;
-      try {
-        if (customs.value.length > 0) {
-          selectedForm.value.validate(async (valid: boolean) => {
-            if (valid) {
-              await updateModel({ ...bean.value, customs: JSON.stringify(customs.value) });
-            }
-          });
-        } else {
           await updateModel({ ...bean.value, customs: JSON.stringify(customs.value) });
         }
-        ElMessage.success(t('success'));
-      } finally {
-        buttonLoading.value = false;
-        emit('update:modelValue', false);
-      }
-    };
-    return {
-      queryModel,
-      buttonLoading,
-      handleSubmit,
-      drawingFormData,
-      selectedForm,
-      drag,
-      selected,
-      cloned,
-      changeSelected,
-      currentTab,
-      components,
-      customs,
-      clone,
-      onEnd,
-      deleteElement,
-    };
-  },
-});
+      });
+    } else {
+      await updateModel({ ...bean.value, customs: JSON.stringify(customs.value) });
+    }
+    ElMessage.success(t('success'));
+  } finally {
+    buttonLoading.value = false;
+    emit('update:modelValue', false);
+  }
+};
 </script>
 
 <style lang="scss" scoped>

@@ -9,32 +9,33 @@
     :top="large ? '16px' : undefined"
   >
     <div>
-      <el-button v-if="isEdit" :disabled="perm(`${perms}:create`)" type="primary" icon="el-icon-plus" size="small" @click="handleAdd">{{ $t('add') }}</el-button>
+      <el-button v-if="isEdit && addable" :disabled="perm(`${perms}:create`)" type="primary" :icon="Plus" @click="handleAdd">{{ $t('add') }}</el-button>
       <el-popconfirm v-if="isEdit" :title="$t('confirmDelete')" @confirm="handleDelete">
         <template #reference>
-          <el-button :loading="buttonLoading" :disabled="disableDelete?.(bean) || perm(`${perms}:delete`)" icon="el-icon-delete" size="small">{{ $t('delete') }}</el-button>
+          <el-button :loading="buttonLoading" :disabled="disableDelete?.(bean) || perm(`${perms}:delete`)" :icon="Delete">{{ $t('delete') }}</el-button>
         </template>
       </el-popconfirm>
-      <el-button v-if="isEdit" @click="handlePrev" :disabled="!hasPrev" size="small">{{ $t('form.prev') }}</el-button>
-      <el-button v-if="isEdit" @click="handleNext" :disabled="!hasNext" size="small">{{ $t('form.next') }}</el-button>
-      <el-button @click="handleCancel" type="primary" size="small">{{ $t('back') }}</el-button>
+      <el-button v-if="isEdit" @click="handlePrev" :disabled="!hasPrev">{{ $t('form.prev') }}</el-button>
+      <el-button v-if="isEdit" @click="handleNext" :disabled="!hasNext">{{ $t('form.next') }}</el-button>
+      <el-button @click="handleCancel" type="primary">{{ $t('back') }}</el-button>
       <el-tooltip :content="$t('form.continuous')" placement="top">
         <el-switch v-model="continuous" size="small" class="ml-2"></el-switch>
       </el-tooltip>
       <el-tag v-if="unsaved" type="danger" class="ml-2">{{ $t('form.unsaved') }}</el-tag>
       <slot name="header" :values="values" :bean="bean" :isEdit="isEdit"></slot>
     </div>
-    <el-form :class="['mt-5', 'pr-5']" ref="form" v-loading="loading" :model="values" :label-width="labelWidth ?? '150px'" :label-position="labelPosition ?? 'right'">
+    <el-form
+      :class="['mt-5', 'pr-5']"
+      ref="form"
+      v-loading="loading"
+      :model="values"
+      :disabled="!editable"
+      :label-width="labelWidth ?? '150px'"
+      :label-position="labelPosition ?? 'right'"
+    >
       <slot :values="values" :bean="bean" :isEdit="isEdit"></slot>
-      <div>
-        <el-button
-          :disabled="perm(isEdit ? `${perms}:update` : `${perms}:create`)"
-          :loading="buttonLoading"
-          @click.prevent="handleSubmit"
-          type="primary"
-          native-type="submit"
-          size="small"
-        >
+      <div v-if="editable">
+        <el-button :disabled="perm(isEdit ? `${perms}:update` : `${perms}:create`)" :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" native-type="submit">
           {{ $t('submit') }}
         </el-button>
       </div>
@@ -45,6 +46,7 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, ref, toRefs, watch } from 'vue';
 import { ElMessage } from 'element-plus';
+import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import _ from 'lodash';
 import { perm } from '@/store/useCurrentUser';
@@ -79,8 +81,10 @@ export default defineComponent({
     queryBean: { type: Function as PropType<(id: any) => Promise<any>>, required: true },
     createBean: { type: Function as PropType<(bean: any) => Promise<any>>, required: true },
     updateBean: { type: Function as PropType<(bean: any) => Promise<any>>, required: true },
-    deleteBean: { type: Function as PropType<(ids: number[] | string[]) => Promise<any>>, required: true },
+    deleteBean: { type: Function as PropType<(ids: any[]) => Promise<any>>, required: true },
     disableDelete: { type: Function as PropType<(bean: any) => boolean> },
+    addable: { type: Boolean, default: true },
+    editable: { type: Boolean, default: true },
     perms: String,
     focus: Object,
     large: Boolean,
@@ -101,12 +105,12 @@ export default defineComponent({
     const continuous = ref<boolean>(getContinuous(name.value));
     const reseted = ref<boolean>(false);
     const unsaved = ref<boolean>(false);
-    const form = ref<any>(null);
+    const form = ref<any>();
     const values = ref<any>(props.initValues());
     const bean = ref<any>({});
-    const id = ref<any>(null);
+    const id = ref<any>();
     const ids = ref<Array<any>>([]);
-    const isEdit = computed(() => id.value !== null);
+    const isEdit = computed(() => id.value != null);
     const title = computed(() => `${name.value} - ${isEdit.value ? `${t('edit')} (ID: ${id.value})` : `${t('add')}`}`);
     const idChanged = async () => {
       loading.value = true;
@@ -129,7 +133,7 @@ export default defineComponent({
         } else if (id.value != null) {
           idChanged();
         }
-        if (id.value === null) {
+        if (id.value == null) {
           reseted.value = true;
           values.value = props.initValues();
         }
@@ -171,7 +175,7 @@ export default defineComponent({
     const handleAdd = () => {
       // eslint-disable-next-line no-unused-expressions
       focus?.value?.focus?.();
-      id.value = null;
+      id.value = undefined;
     };
     const handleCancel = () => {
       emit('update:modelValue', false);
@@ -246,6 +250,8 @@ export default defineComponent({
       id,
       title,
       setUnsaved,
+      Plus,
+      Delete,
     };
   },
 });

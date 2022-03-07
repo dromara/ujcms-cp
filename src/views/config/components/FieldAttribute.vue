@@ -99,7 +99,7 @@
   </template>
   <template v-if="['radio', 'checkbox'].includes(field.type)">
     <el-form-item prop="checkStyle" :label="$t('model.field.checkStyle')">
-      <el-radio-group v-model="field.checkStyle" size="small">
+      <el-radio-group v-model="field.checkStyle">
         <el-radio-button v-for="n in ['default', 'button']" :key="n" :label="n">{{ $t(`model.field.checkStyle.${n}`) }}</el-radio-button>
       </el-radio-group>
     </el-form-item>

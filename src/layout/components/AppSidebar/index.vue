@@ -21,44 +21,35 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, computed } from 'vue';
+<script setup lang="ts">
+import { computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { isShowMenu } from '@/store/useCurrentUser';
 import { appState } from '@/store/useAppState';
 import MenuItem from './MenuItem.vue';
 import Logo from './Logo.vue';
 
-export default defineComponent({
-  components: { MenuItem, Logo },
-  setup() {
-    const router = useRouter();
-    const route = useRoute();
+const router = useRouter();
+const route = useRoute();
 
-    // const routes = computed(() => router.options.routes);
+// const routes = computed(() => router.options.routes);
 
-    const activeMenu = computed(() => {
-      const { meta, path } = route;
-      // if set path, the sidebar will highlight the path you set
-      if (meta.activeMenu) {
-        return meta.activeMenu;
-      }
-      return path;
-    });
-
-    return {
-      // Cool Gray 700
-      sidebarBg: '#374151',
-      // Cool Gray 400
-      textColor: '#9CA3AF',
-      activeTextColor: '#FFF',
-      routes: router.options.routes,
-      collapse: computed(() => !appState.sidebar),
-      activeMenu,
-      isShowMenu,
-    };
-  },
+const activeMenu = computed(() => {
+  const { meta, path } = route;
+  // if set path, the sidebar will highlight the path you set
+  if (meta.activeMenu) {
+    return meta.activeMenu as string;
+  }
+  return path;
 });
+
+// Cool Gray 700
+const sidebarBg = '#374151';
+// Cool Gray 400
+const textColor = '#9CA3AF';
+const activeTextColor = '#FFF';
+const { routes } = router.options;
+const collapse = computed(() => !appState.sidebar);
 </script>
 
 <style lang="scss" scoped></style>

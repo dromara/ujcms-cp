@@ -2,13 +2,15 @@
   <div class="h-12 flex justify-between items-center overflow-hidden shadow bg-white">
     <div class="h-full flex items-center">
       <div class="h-full flex items-center align-middle px-4 cursor-pointer hover:bg-gray-100" @click="toggleSidebar">
-        <i class="text-xl" :class="appState.sidebar ? 'el-icon-s-fold' : 'el-icon-s-unfold'"></i>
+        <el-icon :size="18"><component :is="appState.sidebar ? Fold : Expand"></component></el-icon>
       </div>
       <breadcrumb class="inline-block" />
     </div>
     <div class="h-full">
       <div class="h-full inline-block" v-if="site">
-        <el-link class="h-full px-3 hover:bg-gray-100" :href="site?.url" :underline="false" :title="$t('siteHome')" target="_blank"><i class="el-icon-s-home text-lg"></i></el-link>
+        <el-link class="h-full px-3 hover:bg-gray-100" :href="site?.url" :underline="false" :title="$t('siteHome')" target="_blank">
+          <el-icon :size="16" class="align-text-top"><HomeFilled /></el-icon>
+        </el-link>
       </div>
       <el-dropdown class="h-full" v-if="site">
         <div class="h-full flex items-center px-3 hover:bg-gray-100">
@@ -23,20 +25,18 @@
         </template>
       </el-dropdown>
       <el-dropdown class="h-full">
-        <!-- <span class="el-dropdown-link"> Dropdown List<i class="el-icon-arrow-down el-icon--right"></i> </span> -->
         <div class="h-full flex items-center px-3 hover:bg-gray-100">
-          {{ getLangage(locale) }}
+          {{ languages[locale as string || 'zh-cn'] }}
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item :disabled="locale === 'zh-cn'" @click="changeLocale('zh-cn')">{{ getLangage('zh-cn') }}</el-dropdown-item>
-            <el-dropdown-item :disabled="locale === 'en'" @click="changeLocale('en')">{{ getLangage('en') }}</el-dropdown-item>
+            <el-dropdown-item v-for="(name, lang) in languages" :key="lang" :disabled="locale === lang" @click="changeLocale(lang)">{{ name }}</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
       <el-dropdown class="h-full">
         <div class="h-full flex items-center px-3 hover:bg-gray-100">
-          <i class="el-icon-user"></i>
+          <el-icon><User /></el-icon>
           <span class="ml-1">{{ currentUser.username }}</span>
         </div>
         <template #dropdown>
@@ -47,7 +47,7 @@
             </router-link>
              -->
             <el-dropdown-item @click="passwordFormVisible = true" :disabled="perm('password:update')">{{ $t('changePassword') }}</el-dropdown-item>
-            <el-dropdown-item divided @click="handleLogout()" icon="el-icon-switch-button">{{ $t('logout') }}</el-dropdown-item>
+            <el-dropdown-item divided @click="handleLogout()" :icon="SwitchButton">{{ $t('logout') }}</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -56,10 +56,12 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted, computed } from 'vue';
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Fold, Expand, HomeFilled, User, SwitchButton } from '@element-plus/icons-vue';
 import { setCookieLocale, getSessionSiteId, setSessionSiteId } from '@/utils/common';
+import { languages } from '@/i18n';
 import { toTree, flatTree } from '@/utils/tree';
 import { querySiteList } from '@/api/system';
 import { currentUser, perm, logout } from '@/store/useCurrentUser';
@@ -67,65 +69,35 @@ import { appState, toggleSidebar } from '@/store/useAppState';
 import Breadcrumb from '@/components/Breadcrumb/index.vue';
 import PasswordForm from '@/views/personal/PasswordForm.vue';
 
-export default defineComponent({
-  name: 'AppHeader',
-  components: {
-    Breadcrumb,
-    PasswordForm,
-  },
-  setup() {
-    const { locale } = useI18n({ useScope: 'global' });
+const { locale } = useI18n({ useScope: 'global' });
 
-    const siteId = ref<number | null>(getSessionSiteId());
-    const siteList = ref<any[]>([]);
-    const site = computed(() => siteList.value.find((item) => item.id === siteId.value));
-    const fetchSiteList = async () => {
-      siteList.value = flatTree(toTree(await querySiteList()));
-      if (siteId.value == null) {
-        siteId.value = siteList.value[0]?.id;
-      }
-    };
-    const changeSiteId = (id: number) => {
-      setSessionSiteId(id);
-      siteId.value = id;
-      window.location.reload();
-    };
-    onMounted(() => {
-      fetchSiteList();
-    });
-
-    const getLangage = (lang: string) => {
-      if (lang === 'zh-cn') return '中文';
-      if (lang === 'en') return 'English';
-      return lang;
-    };
-    const changeLocale = (lang: string) => {
-      locale.value = lang;
-      setCookieLocale(lang);
-    };
-    const handleLogout = () => {
-      logout();
-      // router.push(`/login?redirect=${route.fullPath}`);
-      window.location.reload();
-    };
-
-    const passwordFormVisible = ref<boolean>(false);
-
-    return {
-      appState,
-      currentUser,
-      perm,
-      toggleSidebar,
-      handleLogout,
-      getLangage,
-      changeLocale,
-      changeSiteId,
-      locale,
-      siteList,
-      siteId,
-      site,
-      passwordFormVisible,
-    };
-  },
+const siteId = ref<number | null>(getSessionSiteId());
+const siteList = ref<any[]>([]);
+const site = computed(() => siteList.value.find((item) => item.id === siteId.value));
+const fetchSiteList = async () => {
+  siteList.value = flatTree(toTree(await querySiteList()));
+  if (siteId.value == null) {
+    siteId.value = siteList.value[0]?.id;
+  }
+};
+const changeSiteId = (id: number) => {
+  setSessionSiteId(id);
+  siteId.value = id;
+  window.location.reload();
+};
+onMounted(() => {
+  fetchSiteList();
 });
+
+const changeLocale = (lang: string) => {
+  locale.value = lang;
+  setCookieLocale(lang);
+};
+const handleLogout = () => {
+  logout();
+  // router.push(`/login?redirect=${route.fullPath}`);
+  window.location.reload();
+};
+
+const passwordFormVisible = ref<boolean>(false);
 </script>

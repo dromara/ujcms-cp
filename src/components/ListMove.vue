@@ -1,22 +1,20 @@
 <template>
   <el-button-group>
-    <el-button :disabled="disabled" icon="el-icon-top" size="small" @click="$emit('move', 'top')">{{ $t('moveTop') }}</el-button>
-    <el-button :disabled="disabled" icon="el-icon-arrow-up" size="small" @click="$emit('move', 'up')">{{ $t('moveUp') }}</el-button>
-    <el-button :disabled="disabled" icon="el-icon-arrow-down" size="small" @click="$emit('move', 'down')">{{ $t('moveDown') }}</el-button>
-    <el-button :disabled="disabled" icon="el-icon-bottom" size="small" @click="$emit('move', 'bottom')">{{ $t('moveBottom') }}</el-button>
+    <el-button :disabled="disabled" :icon="Top" @click="$emit('move', 'top')">{{ $t('moveTop') }}</el-button>
+    <el-button :disabled="disabled" :icon="ArrowUp" @click="$emit('move', 'up')">{{ $t('moveUp') }}</el-button>
+    <el-button :disabled="disabled" :icon="ArrowDown" @click="$emit('move', 'down')">{{ $t('moveDown') }}</el-button>
+    <el-button :disabled="disabled" :icon="Bottom" @click="$emit('move', 'bottom')">{{ $t('moveBottom') }}</el-button>
   </el-button-group>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { defineProps, defineEmits } from 'vue';
+import { Top, Bottom, ArrowUp, ArrowDown } from '@element-plus/icons-vue';
 
-export default defineComponent({
-  name: 'ListMove',
-  props: {
-    disabled: { type: Boolean, required: true },
-  },
-  emits: {
-    move: null,
-  },
+defineProps({
+  disabled: { type: Boolean, required: true },
+});
+defineEmits({
+  move: null,
 });
 </script>

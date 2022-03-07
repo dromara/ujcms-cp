@@ -1,8 +1,8 @@
 <template>
   <el-container>
     <el-aside width="180px" class="pr-3">
-      <el-tabs v-model="type" tab-position="left" stretch class="bg-white">
-        <el-tab-pane v-for="type in ['base', 'watermark', 'customs']" :key="type" :name="type" :label="$t(`site.settings.${type}`)"></el-tab-pane>
+      <el-tabs v-model="type" @tab-click="({ paneName }) => tabClick(paneName)" tab-position="left" stretch class="bg-white">
+        <el-tab-pane v-for="tp in types" :key="tp" :name="tp" :label="$t(`site.settings.${tp}`)"></el-tab-pane>
       </el-tabs>
     </el-aside>
     <el-main class="p-3 app-block">
@@ -10,23 +10,19 @@
         <template v-if="type === 'watermark'">
           <el-row>
             <el-col :span="24">
-              <el-form-item prop="watermark.enabled" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.watermark.enabled"/></template>
-                <el-switch v-model="values.watermark.enabled"></el-switch>
+              <el-form-item prop="enabled" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.watermark.enabled" /></template>
+                <el-switch v-model="values.enabled"></el-switch>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item
-                prop="watermark.overlay"
-                :label="$t('site.watermark.overlay')"
-                :rules="values.watermark.enabled ? { required: true, message: () => $t('v.required') } : {}"
-              >
-                <image-upload v-model="values.watermark.overlay"></image-upload>
+              <el-form-item prop="overlay" :label="$t('site.watermark.overlay')" :rules="values.enabled ? { required: true, message: () => $t('v.required') } : {}">
+                <image-upload v-model="values.overlay"></image-upload>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="watermark.position" :label="$t('site.watermark.position')" :rules="{ required: true, message: () => $t('v.required') }">
-                <el-radio-group v-model="values.watermark.position">
+              <el-form-item prop="position" :label="$t('site.watermark.position')" :rules="{ required: true, message: () => $t('v.required') }">
+                <el-radio-group v-model="values.position">
                   <div class="watermark-position">
                     <el-radio v-for="n in 9" :key="n" :label="n" :title="$t(`site.watermark.position.${n}`)"><span></span></el-radio>
                   </div>
@@ -34,21 +30,21 @@
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item prop="watermark.dissolve" :label="$t('site.watermark.dissolve')" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.watermark.dissolve"/></template>
-                <el-slider v-model="values.watermark.dissolve" :min="0" :max="100" show-input></el-slider>
+              <el-form-item prop="dissolve" :label="$t('site.watermark.dissolve')" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.watermark.dissolve" /></template>
+                <el-slider v-model="values.dissolve" :min="0" :max="100" show-input></el-slider>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="watermark.minWidth" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.watermark.minWidth"/></template>
-                <el-input v-model.number="values.watermark.minWidth" :min="1" :max="65535"></el-input>
+              <el-form-item prop="minWidth" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.watermark.minWidth" /></template>
+                <el-input v-model.number="values.minWidth" :min="1" :max="65535"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="watermark.minHeight" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.watermark.minHeight"/></template>
-                <el-input v-model.number="values.watermark.minHeight" :min="1" :max="65535"></el-input>
+              <el-form-item prop="minHeight" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.watermark.minHeight" /></template>
+                <el-input v-model.number="values.minHeight" :min="1" :max="65535"></el-input>
               </el-form-item>
             </el-col>
           </el-row>
@@ -56,8 +52,8 @@
         <template v-else-if="type === 'customs'">
           <el-row>
             <el-col v-for="field in fields" :key="field.code" :span="field.double ? 12 : 24">
-              <el-form-item :prop="`customs.${field.code}`" :label="field.name" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
-                <field-item :field="field" v-model="values.customs[field.code]"></field-item>
+              <el-form-item :prop="field.code" :label="field.name" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
+                <field-item :field="field" v-model="values[field.code]"></field-item>
               </el-form-item>
             </el-col>
           </el-row>
@@ -71,7 +67,7 @@
             </el-col>
             <el-col :span="12">
               <el-form-item prop="protocol" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.protocol"/></template>
+                <template #label><label-tip message="site.protocol" /></template>
                 <el-select v-model="values.protocol" class="w-full">
                   <el-option v-for="item in ['http', 'https']" :key="item" :label="item" :value="item"></el-option>
                 </el-select>
@@ -84,7 +80,7 @@
             </el-col>
             <el-col :span="12">
               <el-form-item prop="subDir">
-                <template #label><label-tip message="site.subDir"/></template>
+                <template #label><label-tip message="site.subDir" /></template>
                 <el-input v-model="values.subDir" maxlength="50"></el-input>
               </el-form-item>
             </el-col>
@@ -176,7 +172,7 @@
           </el-row>
         </template>
         <div>
-          <el-button :disabled="perm('siteSettings:update')" :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" native-type="submit" size="small">
+          <el-button :disabled="perm(`siteSettings:${type}:update`)" :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" native-type="submit">
             {{ $t('submit') }}
           </el-button>
         </div>
@@ -185,90 +181,107 @@
   </el-container>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, ref, computed } from 'vue';
+<script setup lang="ts">
+import { defineEmits, onMounted, ref, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-// import _ from 'lodash';
 import { toTree } from '@/utils/tree';
-import { querySiteSettings, updateSiteSettings, queryCurrentSiteThemeList, queryModelList } from '@/api/config';
+import { querySiteSettings, updateSiteBaseSettings, updateSiteWatermarkSettings, updateSiteCustomsSettings, queryCurrentSiteThemeList, queryModelList } from '@/api/config';
 import { queryStorageList } from '@/api/system';
 import { queryOrgList } from '@/api/user';
-import { perm } from '@/store/useCurrentUser';
+import { perm, hasPermission } from '@/store/useCurrentUser';
 import LabelTip from '@/components/LabelTip.vue';
 import { ImageUpload } from '@/components/Upload';
 import FieldItem from '@/views/config/components/FieldItem.vue';
 
-export default defineComponent({
-  components: { LabelTip, ImageUpload, FieldItem },
-  emits: { 'update:modelValue': null, finished: null },
-  setup() {
-    const { t } = useI18n();
-    const type = ref<string>('base');
-    const form = ref<any>(null);
-    const values = ref<any>({});
-    const loading = ref<boolean>(false);
-    const buttonLoading = ref<boolean>(false);
-    const orgList = ref<any[]>([]);
-    const storageList = ref<any[]>([]);
-    const htmlStorageList = ref<any[]>([]);
-    const themeList = ref<string[]>([]);
-    const modelList = ref<any[]>([]);
-    const modelId = ref<number>();
-    const model = computed(() => modelList.value.find((item) => item.id === modelId.value));
-    const fields = computed(() => JSON.parse(model.value?.customs || '[]'));
+defineEmits({ 'update:modelValue': null, finished: null });
 
-    const fetchStorageList = async () => {
-      storageList.value = await queryStorageList({ Q_EQ_type_Int: 2 });
-    };
-    const fetchHtmlStorageList = async () => {
-      htmlStorageList.value = await queryStorageList({ Q_EQ_type_Int: 1 });
-    };
-    const fetchThemeList = async () => {
-      themeList.value = await queryCurrentSiteThemeList();
-    };
-    const fetchOrgList = async () => {
-      orgList.value = toTree(await queryOrgList());
-    };
-    const fetchModelList = async () => {
-      modelList.value = await queryModelList({ Q_EQ_type: 'site' });
-    };
-    const fetchSiteSetting = async () => {
-      values.value = await querySiteSettings();
-      modelId.value = values.value.modelId;
-    };
-    onMounted(async () => {
-      loading.value = true;
-      try {
-        await Promise.all([fetchStorageList(), fetchHtmlStorageList(), fetchThemeList(), fetchOrgList(), fetchModelList(), fetchSiteSetting()]);
-      } finally {
-        loading.value = false;
-      }
-    });
-    const load = async () => {
-      loading.value = true;
-      try {
-        await fetchSiteSetting();
-      } finally {
-        loading.value = false;
-      }
-    };
-    const handleSubmit = () => {
-      form.value.validate(async (valid: boolean) => {
-        if (!valid) return;
-        buttonLoading.value = true;
-        try {
-          await updateSiteSettings(values.value);
-          ElMessage.success(t('success'));
-        } finally {
-          buttonLoading.value = false;
-        }
-        load();
-      });
-    };
-    return { form, loading, buttonLoading, perm, type, values, fields, orgList, modelList, storageList, htmlStorageList, themeList, handleSubmit };
-  },
+const { t } = useI18n();
+const form = ref<any>();
+const site = ref<any>();
+const values = ref<any>({});
+const loading = ref<boolean>(false);
+const buttonLoading = ref<boolean>(false);
+const orgList = ref<any[]>([]);
+const storageList = ref<any[]>([]);
+const htmlStorageList = ref<any[]>([]);
+const themeList = ref<string[]>([]);
+const modelList = ref<any[]>([]);
+const modelId = ref<number>();
+const model = computed(() => modelList.value.find((item) => item.id === modelId.value));
+const fields = computed(() => JSON.parse(model.value?.customs || '[]'));
+
+const types: string[] = [];
+if (hasPermission('siteSettings:base:update')) types.push('base');
+if (hasPermission('siteSettings:watermark:update')) types.push('watermark');
+if (hasPermission('siteSettings:customs:update')) types.push('customs');
+const type = ref<string>(types[0]);
+
+const tabClick = (paneName: string | number | undefined) => {
+  if (paneName === 'watermark') {
+    values.value = site.value.watermark;
+  } else if (paneName === 'customs') {
+    values.value = site.value.customs;
+  } else {
+    values.value = site.value;
+  }
+};
+
+const fetchStorageList = async () => {
+  storageList.value = await queryStorageList({ Q_EQ_type_Int: 2 });
+};
+const fetchHtmlStorageList = async () => {
+  htmlStorageList.value = await queryStorageList({ Q_EQ_type_Int: 1 });
+};
+const fetchThemeList = async () => {
+  themeList.value = await queryCurrentSiteThemeList();
+};
+const fetchOrgList = async () => {
+  orgList.value = toTree(await queryOrgList());
+};
+const fetchModelList = async () => {
+  modelList.value = await queryModelList({ Q_EQ_type: 'site' });
+};
+const fetchSiteSetting = async () => {
+  site.value = await querySiteSettings();
+  modelId.value = site.value.modelId;
+  tabClick(type.value);
+};
+onMounted(async () => {
+  loading.value = true;
+  try {
+    await Promise.all([fetchStorageList(), fetchHtmlStorageList(), fetchThemeList(), fetchOrgList(), fetchModelList(), fetchSiteSetting()]);
+  } finally {
+    loading.value = false;
+  }
 });
+const load = async () => {
+  loading.value = true;
+  try {
+    await fetchSiteSetting();
+  } finally {
+    loading.value = false;
+  }
+};
+const handleSubmit = () => {
+  form.value.validate(async (valid: boolean) => {
+    if (!valid) return;
+    buttonLoading.value = true;
+    try {
+      if (type.value === 'watermark') {
+        await updateSiteWatermarkSettings(values.value);
+      } else if (type.value === 'customs') {
+        await updateSiteCustomsSettings(values.value);
+      } else {
+        await updateSiteBaseSettings(values.value);
+      }
+      ElMessage.success(t('success'));
+    } finally {
+      buttonLoading.value = false;
+    }
+    load();
+  });
+};
 </script>
 
 <style lang="scss" scoped>

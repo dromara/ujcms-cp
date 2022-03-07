@@ -64,10 +64,10 @@ import DialogForm from '@/components/DialogForm.vue';
 
 export default defineComponent({
   components: { DialogForm },
-  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { required: true } },
+  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true } },
   emits: { 'update:modelValue': null, finished: null },
   setup() {
-    const focus = ref<any>(null);
+    const focus = ref<any>();
     return { queryBlock, createBlock, updateBlock, deleteBlock, focus };
   },
 });

@@ -34,7 +34,7 @@ const setCurrentUser = (user: CurrentUser): void => {
 
 export const currentUser = readonly(state);
 
-export const login = async (params: LoginParam) => {
+export const login = async (params: LoginParam): Promise<any> => {
   const data = await accountLogin(params);
   if (data.status === 0) {
     const { result } = data;
@@ -48,7 +48,7 @@ export const login = async (params: LoginParam) => {
   return data;
 };
 
-export const logout = () => {
+export const logout = (): void => {
   removeAccessAt();
   removeRefreshAt();
   removeAccessToken();
@@ -59,7 +59,7 @@ export const logout = () => {
 
 // 刷新间隔时间。默认 5 分钟。
 const interval = 5 * 60 * 1000;
-let refreshInterval: any = null;
+let refreshInterval: any;
 
 /**
  * RefreshToken 刷新机制。
@@ -87,7 +87,7 @@ const runRefreshToken = async () => {
   setRefreshToken(result.refreshToken);
 };
 
-export const initRefreshInterval = () => {
+export const initRefreshInterval = (): void => {
   let afterTime = getRefreshAt() + interval - new Date().getTime();
   if (afterTime < 0) afterTime = 0;
   setTimeout(() => {
@@ -96,7 +96,7 @@ export const initRefreshInterval = () => {
   }, afterTime);
 };
 
-export const fetchCurrentUser = async () => {
+export const fetchCurrentUser = async (): Promise<any> => {
   const user = await queryCurrentUser();
   if (user) {
     setCurrentUser({ username: user.username, avatar: user.avatar, permissions: user.permissions, loginDate: user.loginDate, loginIp: user.loginIp });
@@ -106,7 +106,7 @@ export const fetchCurrentUser = async () => {
   return user;
 };
 
-export const hasCurrentUser = () => state.username !== undefined;
-export const hasPermission = (requiresPermission: string | undefined) => !requiresPermission || state.permissions?.includes(requiresPermission);
-export const perm = (requiresPermission: string | undefined) => requiresPermission && !hasPermission(requiresPermission);
-export const isShowMenu = (route: RouteRecordRaw) => !route.meta?.hidden && hasPermission(route.meta?.requiresPermission);
+export const hasCurrentUser = (): boolean => state.username !== undefined;
+export const hasPermission = (requiresPermission: string | undefined): boolean => !requiresPermission || (state.permissions?.includes(requiresPermission) ?? false);
+export const perm = (requiresPermission: string | undefined): boolean => !hasPermission(requiresPermission);
+export const isShowMenu = (route: RouteRecordRaw): boolean => !route.meta?.hidden && hasPermission(route.meta?.requiresPermission);

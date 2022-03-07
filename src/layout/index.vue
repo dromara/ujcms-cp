@@ -33,7 +33,7 @@ export default defineComponent({
 });
 </script>
 
-<style lang="postcss" scoped>
+<style lang="scss" scoped>
 .expand .sidebar {
   @apply w-sidebar;
 }

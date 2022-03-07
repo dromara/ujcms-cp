@@ -1,45 +1,43 @@
 import { createI18n } from 'vue-i18n';
-import elEn from 'element-plus/lib/locale/lang/en';
-import elZhCn from 'element-plus/lib/locale/lang/zh-cn';
+import { Language } from 'element-plus/es/locale/index';
+import ElZhCn from 'element-plus/es/locale/lang/zh-cn';
+import ElEn from 'element-plus/es/locale/lang/en';
 import { getCookieLocale } from '@/utils/common';
 import en from './locales/en';
 import zhCn from './locales/zh-cn';
 
 const messages = {
-  [elEn.name]: {
-    el: elEn.el,
-    ...en,
-  },
-  [elZhCn.name]: {
-    el: elZhCn.el,
+  'zh-cn': {
     ...zhCn,
+  },
+  en: {
+    ...en,
   },
 };
 
-export function getLanguage() {
-  const chooseLanguage = getCookieLocale();
-  if (chooseLanguage) return chooseLanguage;
-  return process.env.VUE_APP_I18N_LOCALE || 'zh-cn';
+const elMessages: Record<string, Language> = {
+  'zh-cn': ElZhCn,
+  en: ElEn,
+};
+
+export const languages: Record<string, string> = { 'zh-cn': '中文', en: 'English' };
+
+const i18nFallbackLocale = import.meta.env.VITE_I18N_FALLBACK_LOCALE || 'zh-cn';
+
+export function getElementPlusLocale(lang: string): Language {
+  return elMessages[lang] ?? elMessages[i18nFallbackLocale] ?? ElZhCn;
 }
 
-// vue-cli-plugin-i18n 生成的代码，可以自动读取 ./locales 目录下的json文件。
-// function loadLocaleMessages(): LocaleMessages<VueMessageType> {
-//   const locales = require.context('./locales', true, /[A-Za-z0-9-_,\s]+\.json$/i);
-//   const messages: LocaleMessages<VueMessageType> = {};
-//   locales.keys().forEach((key) => {
-//     const matched = key.match(/([A-Za-z0-9-_]+)\./i);
-//     if (matched && matched.length > 1) {
-//       const locale = matched[1];
-//       messages[locale] = locales(key).default;
-//     }
-//   });
-//   return messages;
-// }
+export function getLanguage(): string {
+  const chooseLanguage = getCookieLocale();
+  if (chooseLanguage) return chooseLanguage;
+  return import.meta.env.VITE_I18N_LOCALE || 'zh-cn';
+}
 
 export default createI18n({
   legacy: false,
   locale: getLanguage(),
-  fallbackLocale: process.env.VUE_APP_I18N_FALLBACK_LOCALE || 'zh-cn',
+  fallbackLocale: i18nFallbackLocale,
   globalInjection: true,
   messages,
 });

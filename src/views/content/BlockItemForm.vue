@@ -8,7 +8,7 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="(bean) => ({ blockId, articleId, title, description })"
+    :initValues="() => ({ blockId, articleId, title, description })"
     :toValues="(bean) => ({ ...bean, articleTitle: bean.article.title, articleId: bean.article.id })"
     perms="blockItem"
     :model-value="modelValue"
@@ -16,7 +16,7 @@
     @finished="$emit('finished')"
     @beanChange="(bean) => (currentBlockId = bean.blockId)"
   >
-    <template #default="{values,isEdit}">
+    <template #default="{ values, isEdit }">
       <el-form-item prop="blockId" :label="$t('blockItem.block')" :rules="{ required: true, message: () => $t('v.required') }">
         <el-select v-model="values.blockId" class="w-full" @change="(value) => (currentBlockId = value)" disabled>
           <template v-for="item in blockList" :key="item.id">
@@ -46,35 +46,30 @@
   </dialog-form>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, onMounted, ref, toRefs } from 'vue';
+<script setup lang="ts">
+import { defineProps, defineEmits, computed, onMounted, ref, toRefs } from 'vue';
 import { queryBlockList } from '@/api/config';
 import { queryBlockItem, createBlockItem, updateBlockItem, deleteBlockItem } from '@/api/content';
 import DialogForm from '@/components/DialogForm.vue';
 import { ImageUpload } from '@/components/Upload';
 
-export default defineComponent({
-  components: { DialogForm, ImageUpload },
-  props: {
-    modelValue: { type: Boolean, required: true },
-    beanId: { required: true },
-    beanIds: { required: true },
-    blockId: { type: Number },
-    articleId: { type: Number },
-    title: { type: String },
-    description: { type: String },
-  },
-  emits: { 'update:modelValue': null, finished: null },
-  setup(props) {
-    const { blockId } = toRefs(props);
-    const currentBlockId = ref<number | null>();
-    const focus = ref<any>(null);
-    const blockList = ref<any[]>([]);
-    const block = computed(() => blockList.value.find((item) => item.id === (currentBlockId.value ?? blockId?.value)));
-    onMounted(async () => {
-      blockList.value = await queryBlockList();
-    });
-    return { queryBlockItem, createBlockItem, updateBlockItem, deleteBlockItem, focus, blockList, block, currentBlockId };
-  },
+const props = defineProps({
+  modelValue: { type: Boolean, required: true },
+  beanId: { required: true },
+  beanIds: { type: Array, required: true },
+  blockId: { type: Number },
+  articleId: { type: Number },
+  title: { type: String },
+  description: { type: String },
+});
+defineEmits({ 'update:modelValue': null, finished: null });
+
+const { blockId } = toRefs(props);
+const currentBlockId = ref<number | null>();
+const focus = ref<any>();
+const blockList = ref<any[]>([]);
+const block = computed(() => blockList.value.find((item) => item.id === (currentBlockId.value ?? blockId?.value)));
+onMounted(async () => {
+  blockList.value = await queryBlockList();
 });
 </script>

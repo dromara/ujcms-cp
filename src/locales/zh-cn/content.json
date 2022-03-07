@@ -97,9 +97,27 @@
   "blockItem.mobileImage" : "手机图片",
   "blockItem.enabled" : "是否启用",
 
-  "generator.op.reindexAll":"重新生成全部索引",
-  "generator.op.reindexSite":"重新生成本站索引",
+  "attachment.name": "名称",
+  "attachment.path": "路径",
+  "attachment.url": "URL",
+  "attachment.length": "长度",
+  "attachment.created": "上传日期",
+  "attachment.user": "上传人",
+  "attachment.refer": "引用",
+  "attachment.used": "是否使用",
+
+  "generator.op.fulltext.reindexAll":"更新全部索引",
+  "generator.op.fulltext.reindexSite":"更新本站索引",
+  "generator.op.html.all":"全部更新",
+  "generator.op.html.home":"更新首页",
+  "generator.op.html.channel":"更新栏目页",
+  "generator.op.html.article":"更新文章页",
   "generator.fulltext":"文章全文索引",
+  "generator.fulltext.tooltip":"全文索引用于前台文章搜索。添加、修改文章时会自动生成索引，无需手动生成。只有在手动修改过数据库文章表，或者误删了索引文件，才需要重新生成",
+  "generator.html":"页面静态化",
+  "generator.html.tooltip":"先开启静态化，才能生成静态页",
+  "generator.taskList":"任务列表",
+
 
   "": ""
 }

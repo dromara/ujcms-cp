@@ -1,16 +1,17 @@
 <template>
-  {{ label ?? $t(message) }} <el-tooltip :content="tooltip ?? $t(message + '.tooltip')" placement="top"><i class="el-icon-question"></i></el-tooltip>
+  {{ label ?? $t(message) }}
+  <el-tooltip :content="tooltip ?? $t(message + '.tooltip')" placement="top">
+    <el-icon class="text-base align-text-top"><question-filled /></el-icon>
+  </el-tooltip>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { defineProps } from 'vue';
+import { QuestionFilled } from '@element-plus/icons-vue';
 
-export default defineComponent({
-  name: 'LabelTip',
-  props: {
-    label: { type: String },
-    tooltip: { type: String },
-    message: { type: String },
-  },
+defineProps({
+  label: { type: String },
+  tooltip: { type: String },
+  message: { type: String, required: true },
 });
 </script>

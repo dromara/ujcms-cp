@@ -2,5 +2,3 @@ build/*.js
 src/assets
 public
 dist
-# mock有很多服务器端代码，无法通过eslint检查
-mock

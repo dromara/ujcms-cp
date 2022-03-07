@@ -77,7 +77,7 @@ export default defineComponent({
   setup(props, ctx) {
     const { disabled, modelValue } = toRefs(props);
     const { t } = useI18n();
-    const element = ref<any>(null);
+    const element = ref<any>();
     let vueEditor: any = null;
     const elementId: string = props.id || uuid('tiny-vue');
     const inlineEditor: boolean = (props.init && props.init.inline) || props.inline;
@@ -87,11 +87,11 @@ export default defineComponent({
     let cache = '';
     const getContent = (isMounting: boolean): (() => string) => (modelBind ? () => (modelValue?.value ? modelValue.value : '') : () => (isMounting ? initialValue : cache));
 
-    const global = ref<any>(null);
+    const global = ref<any>();
 
     const initWrapper = (): void => {
       const content = getContent(mounting);
-      const publicPath = process.env.VUE_APP_PUBLIC_PATH;
+      const publicPath = import.meta.env.VITE_PUBLIC_PATH;
       const finalInit = {
         language_url: `${publicPath}/tinymce/langs/zh_CN.js`,
         language: 'zh_CN',
@@ -117,8 +117,8 @@ export default defineComponent({
         image_advtab: true,
         image_caption: true,
         images_file_types: global.value.upload.imageTypes,
-        min_height: 500,
-        max_height: 800,
+        min_height: 300,
+        max_height: 500,
         convert_urls: false,
         autosave_ask_before_unload: false,
         ...props.init,
@@ -162,7 +162,7 @@ export default defineComponent({
           const formData = new FormData();
           formData.append('file', blobInfo.blob(), blobInfo.filename());
 
-          Object.entries(getAuthHeaders()).forEach(([key, value]) => xhr.setRequestHeader(key, value));
+          Object.entries(getAuthHeaders()).forEach(([key, value]: any) => xhr.setRequestHeader(key, value));
           xhr.send(formData);
         },
 
@@ -242,7 +242,7 @@ export default defineComponent({
             const formData = new FormData();
             formData.append('file', file, file.name);
 
-            Object.entries(getAuthHeaders()).forEach(([key, value]) => xhr.setRequestHeader(key, value));
+            Object.entries(getAuthHeaders()).forEach(([key, value]: any) => xhr.setRequestHeader(key, value));
             xhr.send(formData);
           };
 
@@ -270,7 +270,7 @@ export default defineComponent({
       mounting = false;
     };
     watch(disabled, (disable) => {
-      if (vueEditor !== null) {
+      if (vueEditor != null) {
         vueEditor.setMode(disable ? 'readonly' : 'design');
       }
     });

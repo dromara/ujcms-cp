@@ -7,7 +7,7 @@ import { getSiteHeaders } from '@/utils/common';
 import i18n from '@/i18n';
 
 const service = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API,
+  baseURL: import.meta.env.VITE_BASE_API,
   timeout: 10000,
 });
 

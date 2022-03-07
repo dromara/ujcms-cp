@@ -8,14 +8,14 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="(bean) => ({ scope: 0, type: 1, mode: 0 })"
+    :initValues="() => ({ scope: 0, type: 1, mode: 0 })"
     :toValues="(bean) => ({ ...bean })"
     perms="storage"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     @finished="$emit('finished')"
   >
-    <template #default="{values}">
+    <template #default="{ values }">
       <el-form-item prop="name" :label="$t('storage.name')" :rules="{ required: true, message: () => $t('v.required') }">
         <el-input v-model="values.name" ref="focus" maxlength="50"></el-input>
       </el-form-item>
@@ -55,10 +55,10 @@ import DialogForm from '@/components/DialogForm.vue';
 
 export default defineComponent({
   components: { DialogForm },
-  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { required: true } },
+  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true } },
   emits: { 'update:modelValue': null, finished: null },
   setup() {
-    const focus = ref<any>(null);
+    const focus = ref<any>();
     return { queryStorage, createStorage, updateStorage, deleteStorage, focus };
   },
 });

@@ -1,6 +1,5 @@
 export default {
-
-  title: 'UJCMS',
+  title: import.meta.env.VITE_APP_TITLE || 'UJCMS',
   showSettings: true,
 
   /**

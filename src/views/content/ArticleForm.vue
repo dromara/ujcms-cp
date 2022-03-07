@@ -9,7 +9,7 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="(bean) => ({ channelId: channel?.id, allowComment: true, customs: initCustoms({}), fileList: [], imageList: [] })"
+    :initValues="() => ({ channelId: channel?.id, allowComment: true, customs: initCustoms({}), fileList: [], imageList: [] })"
     :toValues="(bean) => ({ ...bean })"
     perms="article"
     :model-value="modelValue"
@@ -23,18 +23,18 @@
         articleModelId = bean.channel?.articleModelId ?? channel?.articleModelId;
       }
     "
-    labelPosition="top"
+    labelWidth="120px"
     large
   >
-    <template #header="{values,isEdit}">
+    <template #header="{ values, isEdit }">
       <template v-if="isEdit">
-        <el-tag v-if="values.status === 0" type="success" size="medium" class="ml-2">{{ values.status != null ? $t(`article.status.${values.status}`) : undefined }}</el-tag>
-        <el-tag v-else type="info" size="medium" class="ml-2">{{ values.status != null ? $t(`article.status.${values.status}`) : undefined }}</el-tag>
+        <el-tag v-if="values.status === 0" type="success" class="ml-2">{{ values.status != null ? $t(`article.status.${values.status}`) : undefined }}</el-tag>
+        <el-tag v-else type="info" class="ml-2">{{ values.status != null ? $t(`article.status.${values.status}`) : undefined }}</el-tag>
       </template>
     </template>
-    <template #default="{values,isEdit}">
+    <template #default="{ values, isEdit }">
       <el-row>
-        <el-col :span="18" class="el-form--label-right label-right">
+        <el-col :span="18">
           <el-row>
             <el-col :span="mains['title'].double ? 12 : 24">
               <el-form-item prop="title" :label="mains['title'].name ?? $t('article.title')" :rules="{ required: true, message: () => $t('v.required') }">
@@ -43,7 +43,7 @@
                     #append
                     v-if="
                       (!mains['subtitle'].required || !mains['fullTitle'].required || !mains['linkUrl'].required) &&
-                        (mains['subtitle'].show || mains['fullTitle'].show || mains['linkUrl'].show)
+                      (mains['subtitle'].show || mains['fullTitle'].show || mains['linkUrl'].show)
                     "
                   >
                     <el-button
@@ -192,7 +192,7 @@
                 <el-input v-model="values.file">
                   <template #prepend>URL</template>
                 </el-input>
-                <base-upload type="file" :on-success="(res) => ((values.file = res.url), (values.fileName = res.name), (values.fileLength = res.size))"></base-upload>
+                <base-upload type="file" :on-success="(res: any) => ((values.file = res.url), (values.fileName = res.name), (values.fileLength = res.size))"></base-upload>
               </el-form-item>
             </el-col>
             <el-col :span="mains['video'].double ? 12 : 24" v-if="mains['video'].show">
@@ -213,7 +213,7 @@
                     </el-input>
                   </el-col>
                 </el-row>
-                <base-upload type="video" :on-success="(res) => (values.video = res.url)"></base-upload>
+                <base-upload type="video" :on-success="(res: any) => (values.video = res.url)"></base-upload>
               </el-form-item>
             </el-col>
             <el-col :span="mains['doc'].double ? 12 : 24" v-if="mains['doc'].show">
@@ -238,7 +238,7 @@
                 <el-input v-model="values.doc">
                   <template #prepend>URL</template>
                 </el-input>
-                <base-upload type="doc" :on-success="(res) => ((values.doc = res.url), (values.docName = res.name), (values.docLength = res.size))"></base-upload>
+                <base-upload type="doc" :on-success="(res: any) => ((values.doc = res.url), (values.docName = res.name), (values.docLength = res.size))"></base-upload>
               </el-form-item>
             </el-col>
             <el-col :span="mains['imageList'].double ? 12 : 24" v-if="mains['imageList'].show">
@@ -341,7 +341,7 @@
                 :rules="asides['articleTemplate'].required ? { required: true, message: () => $t('v.required') } : undefined"
                 v-if="asides['articleTemplate'].show"
               >
-                <template #label><label-tip :label="asides['articleTemplate'].name ?? $t('article.articleTemplate')" message="article.articleTemplate"/></template>
+                <template #label><label-tip :label="asides['articleTemplate'].name ?? $t('article.articleTemplate')" message="article.articleTemplate" /></template>
                 <el-select v-model="values.articleTemplate" class="w-full">
                   <el-option v-for="item in articleTemplates" :key="item" :label="item + '.html'" :value="item"></el-option>
                 </el-select>
@@ -351,7 +351,7 @@
                 :rules="asides['allowComment'].required ? { required: true, message: () => $t('v.required') } : undefined"
                 v-if="asides['allowComment'].show"
               >
-                <template #label><label-tip :label="asides['allowComment'].name ?? $t('article.allowComment')" message="article.allowComment"/></template>
+                <template #label><label-tip :label="asides['allowComment'].name ?? $t('article.allowComment')" message="article.allowComment" /></template>
                 <el-switch v-model="values.allowComment"></el-switch>
               </el-form-item>
               <el-form-item :label="asides['user'].name ?? $t('article.user')" v-if="asides['user'].show">
@@ -374,8 +374,8 @@
   </dialog-form>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, onMounted, ref, toRefs, watch, nextTick } from 'vue';
+<script setup lang="ts">
+import { defineProps, defineEmits, computed, onMounted, ref, toRefs, watch, nextTick } from 'vue';
 import { queryArticle, createArticle, updateArticle, deleteArticle, queryChannelList, queryArticleTemplates } from '@/api/content';
 import { queryDictList, queryModelList } from '@/api/config';
 import { toTree } from '@/utils/tree';
@@ -386,108 +386,69 @@ import Tinymce from '@/components/Tinymce/index.vue';
 import LabelTip from '@/components/LabelTip.vue';
 import { BaseUpload, ImageUpload, ImageListUpload, FileListUpload } from '@/components/Upload';
 
-export default defineComponent({
-  components: { DialogForm, FieldItem, LabelTip, Tinymce, BaseUpload, ImageUpload, ImageListUpload, FileListUpload },
-  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { required: true }, channel: { type: Object, default: null } },
-  emits: { 'update:modelValue': null, finished: null },
-  setup(props) {
-    const { modelValue: visible, channel } = toRefs(props);
-    const showSubtitle = ref<boolean>(false);
-    const showFullTitle = ref<boolean>(false);
-    const showLinkUrl = ref<boolean>(false);
-    const focus = ref<any>(null);
-    const channelList = ref<any[]>([]);
-    const flatChannelList = ref<any[]>([]);
-    const articleModelList = ref<any[]>([]);
-    const articleTemplates = ref<any[]>([]);
-    const articleModelId = ref<number>();
-    const articleModel = computed(() => articleModelList.value.find((item) => item.id === articleModelId.value));
-    const mains = computed(() => arr2obj(mergeModelFields(getModelData().article.mains, articleModel.value?.mains, 'article')));
-    const asides = computed(() => arr2obj(mergeModelFields(getModelData().article.asides, articleModel.value?.asides, 'article')));
-    const fields = computed(() => JSON.parse(articleModel.value?.customs || '[]').filter((item: any) => item.type !== 'tinyEditor'));
-    const editorFields = computed(() => JSON.parse(articleModel.value?.customs || '[]').filter((item: any) => item.type === 'tinyEditor'));
-    watch(visible, () => {
-      if (visible) {
-        articleModelId.value = channel.value?.articleModelId;
-      }
-    });
-    const fetchSourceList = (name: string) => queryDictList({ 'Q_EQ_type@dictType-alias': 'article_source', Q_Contains_name: name, limit: 50 });
-    const fetchChannelList = async () => {
-      flatChannelList.value = await queryChannelList();
-      channelList.value = toTree(flatChannelList.value);
-    };
-    const fetchArticleModeList = async () => {
-      articleModelList.value = await queryModelList({ Q_EQ_type: 'article' });
-      // 如果 articleModelId 无值，则默认赋予第一个模型的值
-      if (articleModelId.value == null && articleModelList.value.length > 0) {
-        articleModelId.value = articleModelList.value[0].id;
-      }
-    };
-    const fetchArticleTemplates = async () => {
-      articleTemplates.value = await queryArticleTemplates();
-    };
-    onMounted(() => {
-      fetchChannelList();
-      fetchArticleModeList();
-      fetchArticleTemplates();
-    });
-    const initCustoms = (customs: any) => {
-      fields.value.forEach((field: any) => {
-        if (customs[field.code] == null) {
-          // eslint-disable-next-line no-param-reassign
-          customs[field.code] = field.defaultValue;
-        }
-      });
-      return customs;
-    };
-    return {
-      queryArticle,
-      createArticle,
-      updateArticle,
-      deleteArticle,
-      mains,
-      asides,
-      fields,
-      editorFields,
-      initCustoms,
-      focus,
-      channelList,
-      flatChannelList,
-      articleTemplates,
-      articleModelId,
-      showSubtitle,
-      showFullTitle,
-      showLinkUrl,
-      fetchSourceList,
-      nextTick,
-    };
-  },
+const props = defineProps({
+  modelValue: { type: Boolean, required: true },
+  beanId: { required: true },
+  beanIds: { type: Array, required: true },
+  channel: { type: Object, default: null },
 });
+defineEmits({ 'update:modelValue': null, finished: null });
+
+const { modelValue: visible, channel } = toRefs(props);
+const showSubtitle = ref<boolean>(false);
+const showFullTitle = ref<boolean>(false);
+const showLinkUrl = ref<boolean>(false);
+const focus = ref<any>();
+const channelList = ref<any[]>([]);
+const flatChannelList = ref<any[]>([]);
+const articleModelList = ref<any[]>([]);
+const articleTemplates = ref<any[]>([]);
+const articleModelId = ref<number>();
+const articleModel = computed(() => articleModelList.value.find((item) => item.id === articleModelId.value));
+const mains = computed(() => arr2obj(mergeModelFields(getModelData().article.mains, articleModel.value?.mains, 'article')));
+const asides = computed(() => arr2obj(mergeModelFields(getModelData().article.asides, articleModel.value?.asides, 'article')));
+const fields = computed(() => JSON.parse(articleModel.value?.customs || '[]').filter((item: any) => item.type !== 'tinyEditor'));
+const editorFields = computed(() => JSON.parse(articleModel.value?.customs || '[]').filter((item: any) => item.type === 'tinyEditor'));
+watch(visible, () => {
+  if (visible) {
+    articleModelId.value = channel.value?.articleModelId;
+  }
+});
+const fetchSourceList = (name: string) => queryDictList({ 'Q_EQ_type@dictType-alias': 'article_source', Q_Contains_name: name, limit: 50 });
+const fetchChannelList = async () => {
+  flatChannelList.value = await queryChannelList();
+  channelList.value = toTree(flatChannelList.value);
+};
+const fetchArticleModeList = async () => {
+  articleModelList.value = await queryModelList({ Q_EQ_type: 'article' });
+  // 如果 articleModelId 无值，则默认赋予第一个模型的值
+  if (articleModelId.value == null && articleModelList.value.length > 0) {
+    articleModelId.value = articleModelList.value[0].id;
+  }
+};
+const fetchArticleTemplates = async () => {
+  articleTemplates.value = await queryArticleTemplates();
+};
+onMounted(() => {
+  fetchChannelList();
+  fetchArticleModeList();
+  fetchArticleTemplates();
+});
+const initCustoms = (customs: any) => {
+  fields.value.forEach((field: any) => {
+    if (customs[field.code] == null) {
+      // eslint-disable-next-line no-param-reassign
+      customs[field.code] = field.defaultValue;
+    }
+  });
+  return customs;
+};
 </script>
 
 <style lang="scss" scoped>
-$marginLeft: 120px;
-.label-right {
-  :deep(.el-form-item__label) {
-    float: left;
-    width: $marginLeft;
-    padding: 0 12px 0 0;
-    text-align: right;
-  }
-  :deep(.el-form-item__content) {
-    margin-left: $marginLeft;
-  }
-}
 .label-top {
   :deep(.el-form-item) {
-    margin-bottom: 10px;
-  }
-  :deep(.el-form-item__label) {
-    padding-bottom: 0;
-    width: auto;
-  }
-  :deep(.el-form-item__content) {
-    margin-left: 0;
+    margin-bottom: 12px;
   }
 }
 </style>

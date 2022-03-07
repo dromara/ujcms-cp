@@ -1,8 +1,8 @@
 <template>
   <slot>
     <div v-if="type === 'number'" class="inline-block">
-      <el-input-number v-model="params[first]" :placeholder="$t('begin.number')" size="small" class="w-48"></el-input-number>
-      <el-input-number v-model="params[second]" :placeholder="$t('end.number')" size="small" class="w-48"></el-input-number>
+      <el-input-number v-model="params[first]" :placeholder="$t('begin.number')" class="w-48"></el-input-number>
+      <el-input-number v-model="params[second]" :placeholder="$t('end.number')" class="w-48"></el-input-number>
     </div>
     <el-date-picker
       v-else-if="type === 'date'"
@@ -10,7 +10,6 @@
       type="daterange"
       :start-placeholder="$t('begin.date')"
       :end-placeholder="$t('end.date')"
-      size="small"
       class="w-96"
     ></el-date-picker>
     <el-date-picker
@@ -19,39 +18,38 @@
       type="datetimerange"
       :start-placeholder="$t('begin.date')"
       :end-placeholder="$t('end.date')"
-      size="small"
       class="w-96"
     >
     </el-date-picker>
     <!--
     <div v-else-if="type === 'date'" class="inline-block">
-      <el-date-picker v-model="params[first]" type="date" :placeholder="$t('begin.date')" size="small" class="w-48"></el-date-picker>
-      <el-date-picker v-model="params[second]" type="date" :placeholder="$t('end.date')" size="small" class="w-48"></el-date-picker>
+      <el-date-picker v-model="params[first]" type="date" :placeholder="$t('begin.date')" class="w-48"></el-date-picker>
+      <el-date-picker v-model="params[second]" type="date" :placeholder="$t('end.date')" class="w-48"></el-date-picker>
     </div>
     <div v-else-if="type === 'datetime'" class="inline-block">
-      <el-date-picker v-model="params[first]" type="datetime" size="small" class="w-48"></el-date-picker>
-      <el-date-picker v-model="params[second]" type="datetime" size="small" class="w-48"></el-date-picker>
+      <el-date-picker v-model="params[first]" type="datetime" class="w-48"></el-date-picker>
+      <el-date-picker v-model="params[second]" type="datetime" class="w-48"></el-date-picker>
     </div>
     -->
-    <el-select v-else-if="options" v-model="params[name]" multiple size="small" class="w-96">
+    <el-select v-else-if="options" v-model="params[name]" multiple class="w-96">
       <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
     </el-select>
-    <el-input v-else v-model="params[name]" size="small" class="w-96"></el-input>
+    <el-input v-else v-model="params[name]" class="w-96"></el-input>
   </slot>
 </template>
-<script lang="ts">
-import { defineComponent, ref, toRefs } from 'vue';
+<script setup lang="ts">
+import { inject, defineProps, PropType, ref, toRefs } from 'vue';
 
-export default defineComponent({
-  name: 'QueryItem',
-  props: { label: { type: String, required: true }, name: { type: String, required: true }, type: { type: String }, options: { type: Array } },
-  inject: ['params'],
-  setup(props) {
-    const { name } = toRefs(props);
-    const first = ref<string | null>(null);
-    const second = ref<string | null>(null);
-    [first.value, second.value] = name.value.split(',');
-    return { first, second };
-  },
+const props = defineProps({
+  label: { type: String, required: true },
+  name: { type: String, required: true },
+  // 'string' | 'date' | 'datetime' | 'number'
+  type: { type: String },
+  options: { type: Object as PropType<Array<{ label: string; value: string | number }>> },
 });
+const params = inject<any>('params');
+const { name } = toRefs(props);
+const [firstName, secondName] = name.value.split(',');
+const first = ref<string>(firstName);
+const second = ref<string>(secondName);
 </script>

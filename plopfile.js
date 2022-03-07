@@ -1,7 +1,6 @@
 // npm run plop user user page
-/* eslint-disable space-before-function-paren */
 /* eslint-disable func-names */
-module.exports = function(plop) {
+module.exports = function (plop) {
   // controller generator
   plop.setGenerator('view', {
     description: 'application views',

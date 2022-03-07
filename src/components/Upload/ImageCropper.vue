@@ -4,7 +4,7 @@
       <img ref="imgRef" @load="initCropper()" :src="src" alt="" class="inline" style="max-height:410px" />
     </div>
     <div class="text-right">
-      <el-button @click.prevent="handleSubmit()" type="primary" native-type="submit" size="small" class="mt-4">{{ $t('submit') }}</el-button>
+      <el-button @click.prevent="handleSubmit()" type="primary" native-type="submit" class="mt-4">{{ $t('submit') }}</el-button>
     </div>
   </el-dialog>
 </template>

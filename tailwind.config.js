@@ -3,11 +3,7 @@ const colors = require('tailwindcss/colors');
 
 module.exports = {
   important: true,
-  purge: {
-    // enabled: true,
-    content: ['./src/**/*.vue'],
-  },
-  darkMode: false, // or 'media' or 'class'
+  content: ['./src/**/*.{vue,ts}'],
   theme: {
     fontFamily: {
       sans: [
@@ -43,7 +39,7 @@ module.exports = {
       black: colors.black,
       white: colors.white,
       gray: {
-        ...colors.coolGray,
+        ...colors.gray,
         primary: '#303133',
         regular: '#606266',
         secondary: '#909399',

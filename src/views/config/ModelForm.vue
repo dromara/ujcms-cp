@@ -8,7 +8,7 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="(bean) => ({ type: modelType, scope: 0 })"
+    :initValues="() => ({ type: modelType, scope: 0 })"
     :toValues="(bean) => ({ ...bean })"
     :disableDelete="(bean) => bean.id <= 10"
     perms="model"
@@ -16,7 +16,7 @@
     @update:model-value="$emit('update:modelValue', $event)"
     @finished="$emit('finished')"
   >
-    <template #default="{values}">
+    <template #default="{ values }">
       <el-form-item prop="name" :label="$t('model.name')" :rules="{ required: true, message: () => $t('v.required') }">
         <el-input v-model="values.name" ref="focus" maxlength="50"></el-input>
       </el-form-item>
@@ -42,10 +42,10 @@ import DialogForm from '@/components/DialogForm.vue';
 export default defineComponent({
   name: 'ModelForm',
   components: { DialogForm },
-  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { required: true }, modelType: { type: String, required: true } },
+  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true }, modelType: { type: String, required: true } },
   emits: { 'update:modelValue': null, finished: null },
   setup() {
-    const focus = ref<any>(null);
+    const focus = ref<any>();
     return { queryModel, createModel, updateModel, deleteModel, focus };
   },
 });

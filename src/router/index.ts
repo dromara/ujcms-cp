@@ -1,12 +1,13 @@
+import { Component } from 'vue';
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
-
+import { Document, Tools, UserFilled, Operation } from '@element-plus/icons-vue';
 import Layout from '@/layout/index.vue';
 
 declare module 'vue-router' {
   interface RouteMeta {
     hidden?: boolean;
     title?: string;
-    icon?: string;
+    icon?: Component;
     requiresPermission?: string;
   }
 }
@@ -18,12 +19,12 @@ export const routes: Array<RouteRecordRaw> = [
     path: '',
     component: Layout,
     meta: { hidden: true },
-    children: [{ path: '', component: () => import('@/views/Home.vue'), meta: { title: 'menu.home', icon: 'dashboard', requiresPermission: 'auth' } }],
+    children: [{ path: '', component: () => import('@/views/Home.vue'), meta: { title: 'menu.home', requiresPermission: 'auth' } }],
   },
   {
     path: '/content',
     component: Layout,
-    meta: { title: 'menu.content', icon: 'el-icon-document' },
+    meta: { title: 'menu.content', icon: Document },
     children: [
       { path: 'article', component: () => import('@/views/content/ArticleList.vue'), meta: { title: 'menu.content.article', requiresPermission: 'article:list' } },
       { path: 'channel', component: () => import('@/views/content/ChannelList.vue'), meta: { title: 'menu.content.channel', requiresPermission: 'channel:list' } },
@@ -35,7 +36,7 @@ export const routes: Array<RouteRecordRaw> = [
   {
     path: '/config',
     component: Layout,
-    meta: { title: 'menu.config', icon: 'el-icon-s-tools' },
+    meta: { title: 'menu.config', icon: Tools },
     children: [
       {
         path: 'global-settings',
@@ -56,7 +57,7 @@ export const routes: Array<RouteRecordRaw> = [
   {
     path: '/user',
     component: Layout,
-    meta: { title: 'menu.user', icon: 'el-icon-user-solid' },
+    meta: { title: 'menu.user', icon: UserFilled },
     children: [
       { path: 'user', component: () => import('@/views/user/UserList.vue'), meta: { title: 'menu.user.user', requiresPermission: 'user:list' } },
       { path: 'role', component: () => import('@/views/user/RoleList.vue'), meta: { title: 'menu.user.role', requiresPermission: 'role:list' } },
@@ -67,10 +68,11 @@ export const routes: Array<RouteRecordRaw> = [
   {
     path: '/system',
     component: Layout,
-    meta: { title: 'menu.system', icon: 'el-icon-s-operation' },
+    meta: { title: 'menu.system', icon: Operation },
     children: [
 //       { path: 'site', component: () => import('@/views/system/SiteList.vue'), meta: { title: 'menu.system.site', requiresPermission: 'site:list' } },
       { path: 'storage', component: () => import('@/views/system/StorageList.vue'), meta: { title: 'menu.system.storage', requiresPermission: 'storage:list' } },
+      // { path: 'task', component: () => import('@/views/system/TaskList.vue'), meta: { title: 'menu.system.task', requiresPermission: 'task:list' } },
     ],
   },
   // 404 page must be placed at the end !!!

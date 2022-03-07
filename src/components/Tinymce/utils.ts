@@ -65,7 +65,7 @@ const validEvents = [
   'onVisualAid',
 ];
 
-const isValidKey = (key: string) => validEvents.map((event) => event.toLowerCase()).indexOf(key.toLowerCase()) !== -1;
+const isValidKey = (key: string): boolean => validEvents.map((event) => event.toLowerCase()).indexOf(key.toLowerCase()) !== -1;
 
 const bindHandlers = (initEvent: Event, listeners: any, editor: any): void => {
   Object.keys(listeners)
@@ -82,7 +82,7 @@ const bindHandlers = (initEvent: Event, listeners: any, editor: any): void => {
     });
 };
 
-const bindModelHandlers = (props: any, ctx: SetupContext, editor: any, modelValue: Ref<string>) => {
+const bindModelHandlers = (props: any, ctx: SetupContext, editor: any, modelValue: Ref<string>): void => {
   const modelEvents = props.modelEvents ? props.modelEvents : null;
   const normalizedEvents = Array.isArray(modelEvents) ? modelEvents.join(' ') : modelEvents;
 
@@ -97,7 +97,7 @@ const bindModelHandlers = (props: any, ctx: SetupContext, editor: any, modelValu
   });
 };
 
-const initEditor = (initEvent: Event, props: any, ctx: SetupContext, editor: any, modelValue: Ref<string>, content: () => string) => {
+const initEditor = (initEvent: Event, props: any, ctx: SetupContext, editor: any, modelValue: Ref<string>, content: () => string): void => {
   editor.setContent(content());
   if (ctx.attrs['onUpdate:modelValue']) {
     bindModelHandlers(props, ctx, editor, modelValue);
@@ -123,6 +123,6 @@ const normalizePluginArray = (plugins?: string | string[]): string[] => {
   return Array.isArray(plugins) ? plugins : plugins.split(' ');
 };
 
-const mergePlugins = (initPlugins: string | string[], inputPlugins?: string | string[]) => normalizePluginArray(initPlugins).concat(normalizePluginArray(inputPlugins));
+const mergePlugins = (initPlugins: string | string[], inputPlugins?: string | string[]): string[] => normalizePluginArray(initPlugins).concat(normalizePluginArray(inputPlugins));
 
 export { bindHandlers, bindModelHandlers, initEditor, isValidKey, uuid, isTextarea, mergePlugins };

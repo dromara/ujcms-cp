@@ -8,8 +8,8 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="(bean) => ({ gender: 'm', roleIds: [] })"
-    :toValues="(bean) => ({ ...bean, roleIds: bean.roleList.map((item) => item.id) })"
+    :initValues="() => ({ gender: 'm', roleIds: [] })"
+    :toValues="(bean) => ({ ...bean, roleIds: bean.roleList.map((item:any) => item.id) })"
     :disableDelete="(bean) => bean.id <= 1"
     perms="user"
     :model-value="modelValue"
@@ -17,7 +17,7 @@
     @finished="$emit('finished')"
     large
   >
-    <template #default="{values,bean,isEdit}">
+    <template #default="{ values, bean, isEdit }">
       <el-row>
         <el-col :span="12">
           <el-form-item
@@ -134,7 +134,7 @@
               { type: 'integer', message: () => $t('v.integer') },
             ]"
           >
-            <template #label><label-tip message="user.rank"/></template>
+            <template #label><label-tip message="user.rank" /></template>
             <el-input v-model.number="values.rank" maxlength="4"></el-input>
           </el-form-item>
         </el-col>
@@ -187,34 +187,29 @@
   </dialog-form>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
+<script setup lang="ts">
+import { defineProps, defineEmits, onMounted, ref } from 'vue';
 import { queryUser, createUser, updateUser, deleteUser, usernameValidation, emailValidation, mobileValidation, queryGroupList, queryOrgList, queryRoleList } from '@/api/user';
 import { toTree } from '@/utils/tree';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 
-export default defineComponent({
-  components: { DialogForm, LabelTip },
-  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { required: true } },
-  emits: { 'update:modelValue': null, finished: null },
-  setup() {
-    const focus = ref<any>(null);
-    const groupList = ref<any[]>([]);
-    const orgList = ref<any[]>([]);
-    const roleList = ref<any[]>([]);
-    onMounted(() => {
-      queryGroupList({ Q_EQ_type: 2 }).then((result) => {
-        groupList.value = result;
-      });
-      queryOrgList().then((result) => {
-        orgList.value = toTree(result);
-      });
-      queryRoleList().then((result) => {
-        roleList.value = result;
-      });
-    });
-    return { queryUser, createUser, updateUser, deleteUser, focus, usernameValidation, emailValidation, mobileValidation, groupList, orgList, roleList };
-  },
+defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true } });
+defineEmits({ 'update:modelValue': null, finished: null });
+
+const focus = ref<any>();
+const groupList = ref<any[]>([]);
+const orgList = ref<any[]>([]);
+const roleList = ref<any[]>([]);
+onMounted(() => {
+  queryGroupList({ Q_EQ_type: 2 }).then((result) => {
+    groupList.value = result;
+  });
+  queryOrgList().then((result) => {
+    orgList.value = toTree(result);
+  });
+  queryRoleList().then((result) => {
+    roleList.value = result;
+  });
 });
 </script>

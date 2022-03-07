@@ -27,7 +27,7 @@ export function getPermsTreeData(): any[] {
           children: [
             {
               label: t('menu.content.article'),
-              key: 'article:page',
+              key: 'article',
               perms: ['article:page', 'article:list', 'channel:list', 'dict:list', 'model:list'],
               children: [
                 { label: t('list'), key: 'article:page' },
@@ -38,7 +38,7 @@ export function getPermsTreeData(): any[] {
             },
             {
               label: t('menu.content.channel'),
-              key: 'channel:page',
+              key: 'channel',
               perms: ['channel:page', 'channel:list'],
               children: [
                 { label: t('list'), key: 'channel:page' },
@@ -49,7 +49,7 @@ export function getPermsTreeData(): any[] {
             },
             {
               label: t('menu.content.blockItem'),
-              key: 'blockItem:page',
+              key: 'blockItem',
               perms: ['blockItem:page', 'blockItem:list', 'block:list'],
               children: [
                 { label: t('list'), key: 'blockItem:page' },
@@ -60,7 +60,7 @@ export function getPermsTreeData(): any[] {
             },
             {
               label: t('menu.content.attachment'),
-              key: 'attachment:page',
+              key: 'attachment',
               perms: ['attachment:page', 'attachment:list'],
               children: [
                 { label: t('list'), key: 'attachment:page' },
@@ -71,11 +71,13 @@ export function getPermsTreeData(): any[] {
             },
             {
               label: t('menu.content.generator'),
-              key: 'generator:show',
-              perms: ['generator:show'],
+              key: 'generator',
+              perms: ['generator:show', 'siteSettings:html:show', 'task:list', 'task:show', 'task:delete'],
               children: [
-                { label: t('generator.op.reindexAll'), key: 'generator:fulltext:reindexAll', perms: ['generator:fulltext:reindexAll'] },
-                { label: t('generator.op.reindexSite'), key: 'generator:fulltext:reindexSite', perms: ['generator:fulltext:reindexSite'] },
+                { label: t('generator.op.fulltext.reindexAll'), key: 'generator:fulltext:reindexAll', perms: ['generator:fulltext:reindexAll'] },
+                { label: t('generator.op.fulltext.reindexSite'), key: 'generator:fulltext:reindexSite', perms: ['generator:fulltext:reindexSite'] },
+                { label: t('generator.html'), key: 'generator:html', perms: ['generator:html'] },
+                { label: t('site.settings.html'), key: 'siteSettings:html:update', perms: ['siteSettings:html:update', 'generator:html'] },
               ],
             },
           ],
@@ -84,11 +86,29 @@ export function getPermsTreeData(): any[] {
           label: t('menu.config'),
           key: 'config',
           children: [
-            { label: t('menu.config.globalSettings'), key: 'globalSettings:show', perms: ['globalSettings:show', 'globalSettings:update'] },
-            { label: t('menu.config.siteSettings'), key: 'siteSettings:show', perms: ['siteSettings:show', 'siteSettings:update'] },
+            {
+              label: t('menu.config.globalSettings'),
+              key: 'globalSettings',
+              perms: ['globalSettings:show'],
+              children: [
+                { label: t('global.settings.base'), key: 'globalSettings:base:update', perms: ['globalSettings:base:update'] },
+                { label: t('global.settings.upload'), key: 'globalSettings:upload:update', perms: ['globalSettings:upload:update'] },
+                { label: t('global.settings.customs'), key: 'globalSettings:customs:update', perms: ['globalSettings:customs:update'] },
+              ],
+            },
+            {
+              label: t('menu.config.siteSettings'),
+              key: 'siteSettings',
+              perms: ['siteSettings:show'],
+              children: [
+                { label: t('site.settings.base'), key: 'siteSettings:base:update', perms: ['siteSettings:base:update'] },
+                { label: t('site.settings.watermark'), key: 'siteSettings:watermark:update', perms: ['siteSettings:watermark:update'] },
+                { label: t('site.settings.customs'), key: 'siteSettings:customs:update', perms: ['siteSettings:customs:update'] },
+              ],
+            },
             {
               label: t('menu.config.model'),
-              key: 'model:page',
+              key: 'model',
               perms: ['model:page', 'model:list'],
               children: [
                 { label: t('list'), key: 'model:page' },
@@ -99,7 +119,7 @@ export function getPermsTreeData(): any[] {
             },
             {
               label: t('menu.config.block'),
-              key: 'block:page',
+              key: 'block',
               perms: ['block:page', 'block:list'],
               children: [
                 { label: t('list'), key: 'block:page' },
@@ -110,7 +130,7 @@ export function getPermsTreeData(): any[] {
             },
             {
               label: t('menu.config.dictType'),
-              key: 'dictType:page',
+              key: 'dictType',
               perms: ['dictType:page', 'dictType:list'],
               children: [
                 { label: t('list'), key: 'dictType:page' },
@@ -121,7 +141,7 @@ export function getPermsTreeData(): any[] {
             },
             {
               label: t('menu.config.dict'),
-              key: 'dict:page',
+              key: 'dict',
               perms: ['dict:page', 'dict:list', 'dictType:list'],
               children: [
                 { label: t('list'), key: 'dict:page' },
@@ -138,7 +158,7 @@ export function getPermsTreeData(): any[] {
           children: [
             {
               label: t('menu.user.user'),
-              key: 'user:page',
+              key: 'user',
               perms: ['user:page', 'user:list', 'group:list', 'org:list'],
               children: [
                 { label: t('list'), key: 'user:page' },
@@ -149,7 +169,7 @@ export function getPermsTreeData(): any[] {
             },
             {
               label: t('menu.user.role'),
-              key: 'role:page',
+              key: 'role',
               perms: ['role:page', 'role:list'],
               children: [
                 { label: t('list'), key: 'role:page' },
@@ -160,7 +180,7 @@ export function getPermsTreeData(): any[] {
             },
             {
               label: t('menu.user.group'),
-              key: 'group:page',
+              key: 'group',
               perms: ['group:page', 'group:list'],
               children: [
                 { label: t('list'), key: 'group:page' },
@@ -171,7 +191,7 @@ export function getPermsTreeData(): any[] {
             },
             {
 //               label: t('menu.user.org'),
-              key: 'org:page',
+              key: 'org',
               perms: ['org:page', 'org:list'],
               children: [
                 { label: t('list'), key: 'org:page' },
@@ -188,7 +208,7 @@ export function getPermsTreeData(): any[] {
           children: [
             {
 //               label: t('menu.system.site'),
-              key: 'site:page',
+              key: 'site',
               perms: ['site:page', 'site:list', 'org:list', 'model:list', 'storage:list'],
               children: [
                 { label: t('list'), key: 'site:page' },
@@ -199,7 +219,7 @@ export function getPermsTreeData(): any[] {
             },
             {
               label: t('menu.system.storage'),
-              key: 'storage:page',
+              key: 'storage',
               perms: ['storage:page', 'storage:list'],
               children: [
                 { label: t('list'), key: 'storage:page' },
@@ -208,6 +228,17 @@ export function getPermsTreeData(): any[] {
                 { label: t('delete'), key: 'storage:delete', perms: ['storage:delete'] },
               ],
             },
+            // {
+            //   label: t('menu.system.task'),
+            //   key: 'task',
+            //   perms: ['task:page', 'task:list'],
+            //   children: [
+            //     { label: t('list'), key: 'task:page' },
+            //     { label: t('add'), key: 'task:create', perms: ['task:create'] },
+            //     { label: t('edit'), key: 'task:update', perms: ['task:update', 'task:show'] },
+            //     { label: t('delete'), key: 'task:delete', perms: ['task:delete'] },
+            //   ],
+            // },
           ],
         },
       ],

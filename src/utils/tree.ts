@@ -4,7 +4,7 @@
  * @param data 数组数据
  * @returns 树形数据
  */
-export const toTree = (data: any[]) => {
+export const toTree = (data: any[]): any[] => {
   data.forEach((item) => {
     // eslint-disable-next-line no-param-reassign
     item.children = data.filter((child) => {
@@ -41,7 +41,7 @@ const doFlatTree = (data: any[], tree: any[], depth: number) => {
  * @param tree 树形对象
  * @returns  数组对象
  */
-export const flatTree = (tree: any[]) => {
+export const flatTree = (tree: any[]): any[] => {
   const data = new Array<any>();
   doFlatTree(data, tree, 0);
   return data;
@@ -60,9 +60,9 @@ export const findTreeItem = (tree: any[], predicate: (value: any, index: number,
   return undefined;
 };
 
-export const sortTreeData = (data: any[]) => flatTree(toTree(data));
+export const sortTreeData = (data: any[]): any[] => flatTree(toTree(data));
 
-const doDisableSubtree = (data: any[], disabledId: any, disabled: boolean) => {
+const doDisableSubtree = (data: any[], disabledId: any, disabled: boolean): any[] => {
   data.forEach((item) => {
     if (disabled || item.id === disabledId) {
       // eslint-disable-next-line no-param-reassign
@@ -73,7 +73,7 @@ const doDisableSubtree = (data: any[], disabledId: any, disabled: boolean) => {
   return data;
 };
 
-export const disableSubtree = (data: any[], disabledId?: any) => {
+export const disableSubtree = (data: any[], disabledId?: string | number): any[] => {
   if (!disabledId) return data;
   return doDisableSubtree(data, disabledId, false);
 };

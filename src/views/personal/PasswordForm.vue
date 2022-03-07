@@ -49,7 +49,7 @@
         <el-input v-model="values.passwordAgain" maxlength="50" show-password></el-input>
       </el-form-item>
       <div>
-        <el-button :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" native-type="submit" size="small">{{ $t('submit') }}</el-button>
+        <el-button :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" native-type="submit">{{ $t('submit') }}</el-button>
       </div>
     </el-form>
   </el-dialog>
@@ -67,8 +67,8 @@ export default defineComponent({
   setup(props, { emit }) {
     const { t } = useI18n();
     const values = ref<any>({});
-    const form = ref<any>(null);
-    const focus = ref<any>(null);
+    const form = ref<any>();
+    const focus = ref<any>();
     const buttonLoading = ref<boolean>(false);
     const handleSubmit = () => {
       form.value.validate(async (valid: boolean) => {

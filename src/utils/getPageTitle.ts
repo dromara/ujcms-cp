@@ -3,7 +3,7 @@ import i18n from '@/i18n';
 
 const title = defaultSettings.title || 'UJCMS';
 
-export default function getPageTitle(pageTitle: any) {
+export default function getPageTitle(pageTitle: string | undefined): string {
   if (pageTitle) {
     const {
       global: { t },

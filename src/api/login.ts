@@ -11,6 +11,6 @@ export interface RefreshTokenParam {
   browser?: boolean;
 }
 
-export const accountLogin = async (data: LoginParam) => (await axios.post('/auth/jwt/login', data)).data;
-export const accountRefreshToken = async (data: RefreshTokenParam) => (await axios.post('/auth/jwt/refresh-token', data)).data;
-export const queryCurrentUser = async () => (await axios.get('/user/current')).data;
+export const accountLogin = async (data: LoginParam): Promise<any> => (await axios.post('/auth/jwt/login', data)).data;
+export const accountRefreshToken = async (data: RefreshTokenParam): Promise<any> => (await axios.post('/auth/jwt/refresh-token', data)).data;
+export const queryCurrentUser = async (): Promise<any> => (await axios.get('/user/current')).data;

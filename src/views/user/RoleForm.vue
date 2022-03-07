@@ -9,7 +9,7 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="(bean) => ({})"
+    :initValues="() => ({})"
     :toValues="(bean) => ({ ...bean })"
     :disableDelete="(bean) => bean.id <= 1"
     perms="role"
@@ -25,7 +25,7 @@
           .join(','))
     "
   >
-    <template #default="{values}">
+    <template #default="{ values }">
       <el-form-item prop="name" :label="$t('role.name')" :rules="{ required: true, message: () => $t('v.required') }">
         <el-input v-model="values.name" ref="focus" maxlength="50"></el-input>
       </el-form-item>
@@ -39,22 +39,17 @@
   </dialog-form>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
+<script setup lang="ts">
+import { defineProps, defineEmits, ref } from 'vue';
 import { queryRole, createRole, updateRole, deleteRole } from '@/api/user';
 import { getPermsTreeData } from '@/data';
 import DialogForm from '@/components/DialogForm.vue';
 
-export default defineComponent({
-  components: { DialogForm },
-  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { required: true } },
-  emits: { 'update:modelValue': null, finished: null },
-  setup() {
-    const focus = ref<any>(null);
-    const tree = ref<any>(null);
-    const form = ref<any>(null);
-    const perms = getPermsTreeData();
-    return { queryRole, createRole, updateRole, deleteRole, focus, form, tree, perms };
-  },
-});
+defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true } });
+defineEmits({ 'update:modelValue': null, finished: null });
+
+const focus = ref<any>();
+const tree = ref<any>();
+const form = ref<any>();
+const perms = getPermsTreeData();
 </script>

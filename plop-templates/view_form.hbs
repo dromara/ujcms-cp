@@ -8,14 +8,14 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="(bean) => ({})"
+    :initValues="() => ({})"
     :toValues="(bean) => ({ ...bean })"
     perms="{{camelCase name}}"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     @finished="$emit('finished')"
   >
-    <template #default="{values}">
+    <template #default="{ values }">
       <el-form-item prop="name" :label="$t('{{camelCase name}}.name')" :rules="{ required: true, message: () => $t('v.required') }">
         <el-input v-model="values.name" ref="focus" maxlength="50"></el-input>
       </el-form-item>
@@ -23,18 +23,12 @@
   </dialog-form>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
+<script setup lang="ts">
+import { defineProps, defineEmits, ref } from 'vue';
 import { query{{pascalCase name}}, create{{pascalCase name}}, update{{pascalCase name}}, delete{{pascalCase name}} } from '@/api/{{kebabCase path}}';
 import DialogForm from '@/components/DialogForm.vue';
 
-export default defineComponent({
-  components: { DialogForm },
-  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { required: true } },
-  emits: { 'update:modelValue': null, finished: null },
-  setup() {
-    const focus = ref<any>(null);
-    return { query{{pascalCase name}}, create{{pascalCase name}}, update{{pascalCase name}}, delete{{pascalCase name}}, focus };
-  },
-});
+defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true } });
+defineEmits({ 'update:modelValue': null, finished: null });
+const focus = ref<any>();
 </script>

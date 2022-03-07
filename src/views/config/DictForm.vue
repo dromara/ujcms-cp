@@ -8,14 +8,14 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="(bean) => ({ typeId: type?.id, enabled: true })"
+    :initValues="() => ({ typeId: type?.id, enabled: true })"
     :toValues="(bean) => ({ ...bean })"
     perms="dict"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     @finished="$emit('finished')"
   >
-    <template #default="{values}">
+    <template #default="{ values }">
       <el-form-item prop="typeId" :label="$t('dict.type')">
         <el-select v-model="values.typeId" disabled>
           <el-option :value="type.id" :label="type.name"></el-option>
@@ -44,10 +44,10 @@ import DialogForm from '@/components/DialogForm.vue';
 
 export default defineComponent({
   components: { DialogForm },
-  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { required: true }, type: null },
+  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true }, type: null },
   emits: { 'update:modelValue': null, finished: null },
   setup() {
-    const focus = ref<any>(null);
+    const focus = ref<any>();
     return { queryDict, createDict, updateDict, deleteDict, focus };
   },
 });

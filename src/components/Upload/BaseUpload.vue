@@ -4,7 +4,6 @@
     :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
     :accept="accept"
     :before-upload="beforeUpload"
-    :on-success="onSuccess"
     :on-progress="(event, file) => (progressFile = file)"
     :show-file-list="false"
     :disabled="disabled"
@@ -14,7 +13,7 @@
     // 用于测试上传进度条
     action="https://jsonplaceholder.typicode.com/posts/"
      -->
-    <el-button size="small" type="primary">{{ $t('clickToUpload') }}</el-button>
+    <el-button type="primary">{{ $t('clickToUpload') }}</el-button>
   </el-upload>
   <el-progress v-if="progressFile.status === 'uploading'" :percentage="parseInt(progressFile.percentage, 10)"></el-progress>
 </template>
@@ -46,7 +45,7 @@ export default defineComponent({
     const { type, uploadAction, fileAccept, fileMaxSize } = toRefs(props);
     const { t } = useI18n();
     const progressFile = ref<any>({});
-    const global = ref<any>(null);
+    const global = ref<any>();
     const fetchGlobalSettings = async () => {
       global.value = await queryGlobalSettings();
     };
