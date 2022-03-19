@@ -15,7 +15,7 @@
         :rules="[
           { required: true, message: () => $t('v.required') },
           {
-            asyncValidator: async (rule, value, callback) => {
+            asyncValidator: async (rule:any, value:any, callback:any) => {
               if (!(await passwordValidation(value))) {
                 callback($t('user.error.passwordWrong'));
               }
@@ -35,7 +35,7 @@
         :rules="[
           { required: true, message: () => $t('v.required') },
           {
-            validator: (rule, value, callback) => {
+            validator: (rule:any, value:any, callback:any) => {
               if (value !== values.plainPassword) {
                 callback($t('user.error.passwordNotMatch'));
               } else {
@@ -55,36 +55,31 @@
   </el-dialog>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
+<script setup lang="ts">
+import { defineProps, defineEmits, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { updatePassword, passwordValidation } from '@/api/personal';
 
-export default defineComponent({
-  props: { modelValue: { type: Boolean, required: true } },
-  emits: { 'update:modelValue': null },
-  setup(props, { emit }) {
-    const { t } = useI18n();
-    const values = ref<any>({});
-    const form = ref<any>();
-    const focus = ref<any>();
-    const buttonLoading = ref<boolean>(false);
-    const handleSubmit = () => {
-      form.value.validate(async (valid: boolean) => {
-        if (!valid) return;
-        buttonLoading.value = true;
-        try {
-          await updatePassword(values.value);
-          form.value.resetFields();
-          ElMessage.success(t('success'));
-          emit('update:modelValue', false);
-        } finally {
-          buttonLoading.value = false;
-        }
-      });
-    };
-    return { form, values, buttonLoading, focus, handleSubmit, passwordValidation };
-  },
-});
+defineProps({ modelValue: { type: Boolean, required: true } });
+const emit = defineEmits({ 'update:modelValue': null });
+const { t } = useI18n();
+const values = ref<any>({});
+const form = ref<any>();
+const focus = ref<any>();
+const buttonLoading = ref<boolean>(false);
+const handleSubmit = () => {
+  form.value.validate(async (valid: boolean) => {
+    if (!valid) return;
+    buttonLoading.value = true;
+    try {
+      await updatePassword(values.value);
+      form.value.resetFields();
+      ElMessage.success(t('success'));
+      emit('update:modelValue', false);
+    } finally {
+      buttonLoading.value = false;
+    }
+  });
+};
 </script>

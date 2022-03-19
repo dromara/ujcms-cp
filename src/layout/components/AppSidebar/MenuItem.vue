@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import { computed, defineProps, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { isShowMenu } from '@/store/useCurrentUser';
 
 function isExternal(path: string): boolean {
@@ -28,6 +29,7 @@ function isExternal(path: string): boolean {
 const props = defineProps({ route: { type: Object, required: true }, basePath: { type: String, default: '' } });
 const { route, basePath } = toRefs(props);
 const router = useRouter();
+const { t } = useI18n();
 
 // 是否显示。非隐藏路由即显示
 const isShow = computed(() => !route.value.meta?.hidden);

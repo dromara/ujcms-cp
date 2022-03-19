@@ -9,8 +9,8 @@
     :beanIds="beanIds"
     :focus="focus"
     :initValues="() => ({ gender: 'm', roleIds: [] })"
-    :toValues="(bean) => ({ ...bean, roleIds: bean.roleList.map((item:any) => item.id) })"
-    :disableDelete="(bean) => bean.id <= 1"
+    :toValues="(bean: any) => ({ ...bean, roleIds: bean.roleList.map((item:any) => item.id) })"
+    :disableDelete="(bean: any) => bean.id <= 1"
     perms="user"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
@@ -26,7 +26,7 @@
             :rules="[
               { required: true, message: () => $t('v.required') },
               {
-                asyncValidator: async (rule, value, callback) => {
+                asyncValidator: async (rule:any, value:any, callback:any) => {
                   if (value !== bean.username && !(await usernameValidation(value))) {
                     callback($t('user.error.usernameExist'));
                   }
@@ -54,7 +54,7 @@
             :rules="[
               { required: !isEdit, message: () => $t('v.required') },
               {
-                validator: (rule, value, callback) => {
+                validator: (rule:any, value:any, callback:any) => {
                   if (value != values.plainPassword) {
                     callback($t('user.error.passwordNotMatch'));
                   } else {
@@ -74,7 +74,7 @@
             :label="$t('user.mobile')"
             :rules="[
               {
-                asyncValidator: async (rule, value, callback) => {
+                asyncValidator: async (rule:any, value:any, callback:any) => {
                   if (value !== bean.mobile && !(await mobileValidation(value))) {
                     callback($t('user.error.mobileExist'));
                   }
@@ -91,7 +91,7 @@
             :label="$t('user.email')"
             :rules="[
               {
-                asyncValidator: async (rule, value, callback) => {
+                asyncValidator: async (rule:any, value:any, callback:any) => {
                   if (value !== bean.email && !(await emailValidation(value))) {
                     callback($t('user.error.emailExist'));
                   }

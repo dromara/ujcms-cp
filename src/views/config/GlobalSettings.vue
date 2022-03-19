@@ -83,9 +83,9 @@
         <template v-else>
           <el-row>
             <el-col :span="12">
-              <el-form-item prop="port">
+              <el-form-item prop="port" :rules="{ type: 'number', min: 0, max: 65535, message: () => $t('v.range', { min: 0, max: 65535 }) }">
                 <template #label><label-tip message="global.port" /></template>
-                <el-input-number v-model="values.port" :min="0" :max="65535"></el-input-number>
+                <el-input v-model.number="values.port"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -95,7 +95,7 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="channelUrl">
+              <el-form-item prop="channelUrl" :rules="{ pattern: /^\/[\w-]+$/, message: () => $t('global.error.channelUrlPattern') }">
                 <template #label><label-tip message="global.channelUrl" /></template>
                 <el-input v-model="values.channelUrl" maxlength="50"></el-input>
               </el-form-item>

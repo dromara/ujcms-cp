@@ -10,7 +10,7 @@
     :beanIds="beanIds"
     :focus="focus"
     :initValues="() => ({ channelId: channel?.id, allowComment: true, customs: initCustoms({}), fileList: [], imageList: [] })"
-    :toValues="(bean) => ({ ...bean })"
+    :toValues="(bean:any) => ({ ...bean })"
     perms="article"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
@@ -327,7 +327,7 @@
                 <el-autocomplete
                   v-model="values.source"
                   value-key="name"
-                  :fetch-suggestions="async (query, callback) => callback(await fetchSourceList(query))"
+                  :fetch-suggestions="async (query:string, callback:(data: any[]) => void) => callback(await fetchSourceList(query))"
                   class="w-full"
                   @keydown.enter.prevent
                   highlight-first-item

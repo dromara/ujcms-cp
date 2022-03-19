@@ -9,15 +9,15 @@
     :beanIds="beanIds"
     :focus="focus"
     :initValues="
-      (bean) => ({ scope: 0, withImage: false, imageWidth: 300, imageHeight: 200, mobileImageWidth: 300, mobileImageHeight: 200, withMobileImage: false, enabled: true })
+      (bean:any) => ({ scope: 0, withImage: false, imageWidth: 300, imageHeight: 200, mobileImageWidth: 300, mobileImageHeight: 200, withMobileImage: false, enabled: true })
     "
-    :toValues="(bean) => ({ ...bean })"
+    :toValues="(bean:any) => ({ ...bean })"
     perms="block"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     @finished="$emit('finished')"
   >
-    <template #default="{values}">
+    <template #default="{ values }">
       <el-form-item prop="name" :label="$t('block.name')" :rules="{ required: true, message: () => $t('v.required') }">
         <el-input v-model="values.name" ref="focus" maxlength="50"></el-input>
       </el-form-item>

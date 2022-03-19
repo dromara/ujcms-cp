@@ -4,7 +4,7 @@
       <h3 class="py-5 text-center text-3xl font-bold text-primary">UJCMS</h3>
       <el-alert v-if="error" :title="error" type="error" class="mb-3" :closable="false" show-icon />
       <el-form-item prop="username" :rules="[{ required: true, message: () => $t('v.required') }]">
-        <el-input ref="username" v-model="bean.username" type="text" name="username" :placeholder="$t('username')" :prefix-icon="User" autocomplete="on" />
+        <el-input ref="focus" v-model="bean.username" type="text" name="username" :placeholder="$t('username')" :prefix-icon="User" autocomplete="on" />
       </el-form-item>
       <el-form-item prop="password" :rules="[{ required: true, message: () => $t('v.required') }]">
         <el-input ref="password" v-model="bean.password" type="password" name="password" :placeholder="$t('password')" :prefix-icon="Lock" show-password />
@@ -15,16 +15,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
+import { onMounted, ref, watchEffect } from 'vue';
 import { LocationQueryValue, useRoute, useRouter } from 'vue-router';
 import { User, Lock } from '@element-plus/icons-vue';
 import { login } from '@/store/useCurrentUser';
 
 const form = ref<any>();
 const bean = ref<any>({});
-const error = ref<string | null>(null);
+const focus = ref<any>();
+const error = ref<string>();
 const loading = ref<boolean>(false);
-const redirect = ref<string | null>(null);
+const redirect = ref<string | null>();
 const route = useRoute();
 const router = useRouter();
 if (import.meta.env.MODE === 'development') {
@@ -32,6 +33,11 @@ if (import.meta.env.MODE === 'development') {
 } else if (import.meta.env.MODE === 'staging') {
   bean.value = { username: 'demo', password: '123' };
 }
+
+onMounted(() => {
+  focus.value.focus();
+  focus.value.select();
+});
 
 watchEffect(() => {
   redirect.value = route.query.redirect as LocationQueryValue;

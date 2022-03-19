@@ -24,6 +24,10 @@ export interface CurrentUser {
   permissions?: string[];
   loginDate?: Date;
   loginIp?: string;
+  epExcludes?: string[];
+  epDisplay?: boolean;
+  epRank?: number;
+  epActivated?: boolean;
 }
 
 const state = reactive<CurrentUser>({});
@@ -99,14 +103,30 @@ export const initRefreshInterval = (): void => {
 export const fetchCurrentUser = async (): Promise<any> => {
   const user = await queryCurrentUser();
   if (user) {
-    setCurrentUser({ username: user.username, avatar: user.avatar, permissions: user.permissions, loginDate: user.loginDate, loginIp: user.loginIp });
+    setCurrentUser({
+      username: user.username,
+      avatar: user.avatar,
+      permissions: user.permissions,
+      loginDate: user.loginDate,
+      loginIp: user.loginIp,
+      epExcludes: user.epExcludes,
+      epDisplay: user.epDisplay,
+      epRank: user.epRank,
+      epActivated: user.epActivated,
+    });
   } else {
     removeAccessToken();
   }
   return user;
 };
 
+function includes(arr: string[] | undefined, str: string): boolean {
+  return arr?.includes(str) ?? false;
+}
+
 export const hasCurrentUser = (): boolean => state.username !== undefined;
-export const hasPermission = (requiresPermission: string | undefined): boolean => !requiresPermission || (state.permissions?.includes(requiresPermission) ?? false);
-export const perm = (requiresPermission: string | undefined): boolean => !hasPermission(requiresPermission);
-export const isShowMenu = (route: RouteRecordRaw): boolean => !route.meta?.hidden && hasPermission(route.meta?.requiresPermission);
+export const isInclude = (permission: string | undefined): boolean => !permission || !includes(state.epExcludes, permission);
+export const hasPermission = (permission: string | undefined): boolean => !permission || includes(state.permissions, permission);
+export const perm = (permission: string | undefined): boolean => !hasPermission(permission);
+export const isShowPerm = (permission: string | undefined): boolean => (state.epDisplay && !permission?.startsWith('machine:')) || isInclude(permission);
+export const isShowMenu = (route: RouteRecordRaw): boolean => !route.meta?.hidden && hasPermission(route.meta?.requiresPermission) && isShowPerm(route.meta?.requiresPermission);

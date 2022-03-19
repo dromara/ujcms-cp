@@ -7,7 +7,14 @@
           <el-button :disabled="perm('generator:fulltext:reindexAll')" :loading="buttonLoading" @click.prevent="handleFulltextReindexAll" type="primary" plain>
             {{ $t('generator.op.fulltext.reindexAll') }}
           </el-button>
-          <el-button v-if="!perm('generator:fulltext:reindexSite')" :loading="buttonLoading" @click.prevent="handleFulltextReindexSite" type="primary" plain>
+          <el-button
+            v-if="isInclude('generator:fulltext:reindexSite')"
+            :disabled="perm('generator:fulltext:reindexSite')"
+            :loading="buttonLoading"
+            @click.prevent="handleFulltextReindexSite"
+            type="primary"
+            plain
+          >
             {{ $t('generator.op.fulltext.reindexSite') }}
           </el-button>
         </el-form-item>
@@ -100,7 +107,7 @@ import type { ElForm } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { querySiteHtmlSettings, updateSiteHtmlSettings } from '@/api/config';
 import { fulltextReindexAll, fulltextReindexSite, htmlAll, htmlHome, htmlChannel, htmlArticle } from '@/api/content';
-import { perm } from '@/store/useCurrentUser';
+import { perm, isInclude } from '@/store/useCurrentUser';
 import LabelTip from '@/components/LabelTip.vue';
 import TaskList from '@/views/system/TaskList.vue';
 

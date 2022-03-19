@@ -14,7 +14,7 @@
     "core-js": "^3.21.0",
     "cropperjs": "^1.5.12",
     "dayjs": "^1.10.7",
-    "element-plus": "^2.0.2",
+    "element-plus": "^2.1.2",
     "js-cookie": "^3.0.1",
     "lodash": "^4.17.21",
     "nprogress": "^0.2.0",

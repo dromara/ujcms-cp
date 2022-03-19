@@ -1,10 +1,21 @@
 import i18n from '@/i18n';
+import { isShowPerm } from '@/store/useCurrentUser';
+
+function filterExcludePerms(arr: any[]): any[] {
+  const resultes = arr.filter((item) => (item.perms?.findIndex((perm: string) => !isShowPerm(perm)) ?? -1) === -1);
+  for (let i = 0, len = resultes.length; i < len; i += 1) {
+    if (resultes[i].children) {
+      resultes[i].children = filterExcludePerms(resultes[i].children);
+    }
+  }
+  return resultes;
+}
 
 export function getPermsTreeData(): any[] {
   const {
     global: { t },
   } = i18n;
-  return [
+  const perms = [
     {
       label: t('menu.home'),
       key: 'home',
@@ -18,6 +29,16 @@ export function getPermsTreeData(): any[] {
               label: t('menu.personal.password'),
               key: 'password:update',
               perms: ['password:update'],
+            },
+            {
+              label: t('menu.personal.machine.code'),
+              key: 'machine:code',
+              perms: ['machine:code'],
+            },
+            {
+              label: t('menu.personal.machine.license'),
+              key: 'machine:license',
+              perms: ['machine:license'],
             },
           ],
         },
@@ -190,7 +211,7 @@ export function getPermsTreeData(): any[] {
               ],
             },
             {
-//               label: t('menu.user.org'),
+              label: t('menu.user.org'),
               key: 'org',
               perms: ['org:page', 'org:list'],
               children: [
@@ -207,7 +228,7 @@ export function getPermsTreeData(): any[] {
           key: 'system',
           children: [
             {
-//               label: t('menu.system.site'),
+              label: t('menu.system.site'),
               key: 'site',
               perms: ['site:page', 'site:list', 'org:list', 'model:list', 'storage:list'],
               children: [
@@ -244,6 +265,7 @@ export function getPermsTreeData(): any[] {
       ],
     },
   ];
+  return filterExcludePerms(perms);
 }
 
 export function getModelData(): any {
@@ -326,7 +348,7 @@ export function mergeModelFields(defaultFields: any[], s: string | null | undefi
   return fields;
 }
 
-export function arr2obj(arr: any[]) {
+export function arr2obj(arr: any[]): Record<string, any> {
   const obj: Record<string, any> = {};
   arr.forEach((item: any) => {
     obj[item.code] = item;

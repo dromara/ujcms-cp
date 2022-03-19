@@ -61,6 +61,7 @@
   "error.title": "错误信息",
   "error.forbidden": "对不起，您没有该页面的访问权限",
   "error.fileMaxSize": "文件大小不能超过 {size}",
+  "error.enterprise": "本功能在商业版中提供。请联系官方网站 <a href=\"https://www.ujcms.com\" target=\"_blank\" class=\"text-primary\">https://www.ujcms.com</a> 购买。支持正版，我们会做的更好！",
 
   "moveTop": "置顶",
   "moveUp": "上移",

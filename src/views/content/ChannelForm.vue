@@ -49,7 +49,10 @@
               </el-form-item>
             </el-col>
             <el-col :span="mains['alias'].double ? 12 : 24">
-              <el-form-item prop="alias" :rules="isEdit ? { required: true, message: () => $t('v.required') } : {}">
+              <el-form-item
+                prop="alias"
+                :rules="[...(isEdit ? [{ required: true, message: () => $t('v.required') }] : []), ...[{ pattern: /^[\w-]*$/, message: () => $t('channel.error.aliasPattern') }]]"
+              >
                 <template #label><label-tip :label="mains['alias'].name ?? $t('channel.alias')" message="channel.alias" /></template>
                 <el-input v-model="values.alias" maxlength="50"></el-input>
               </el-form-item>

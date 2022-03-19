@@ -33,6 +33,8 @@
   "global.upload.imageMaxWidth.tooltip": "在编辑器上传的图片，如超过此宽度，会自动压缩。为 0 则不限制。",
   "global.upload.imageMaxHeight": "图片最大高度",
   "global.upload.imageMaxHeight.tooltip": "在编辑器上传的图片，如超过此高度，会自动压缩。为 0 则不限制。",
+  "global.error.channelUrlPattern": "必须以/开头，后面字符支持字母、数字、中划线、下划线",
+  "global.error.articleUrlPattern": "必须以/开头，后面字符支持字母、数字、中划线、下划线",
 
   "site.settings.base": "基础设置",
   "site.settings.watermark": "水印设置",

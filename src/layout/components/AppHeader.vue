@@ -47,12 +47,20 @@
             </router-link>
              -->
             <el-dropdown-item @click="passwordFormVisible = true" :disabled="perm('password:update')">{{ $t('changePassword') }}</el-dropdown-item>
+            <el-dropdown-item @click="machineFormVisible = true" v-if="hasPermission('machine:code') && isInclude('machine:code')">
+              {{ $t('menu.personal.machine.code') }}
+            </el-dropdown-item>
+            <el-dropdown-item @click="machineLicenseVisible = true" v-if="hasPermission('machine:license') && isInclude('machine:license')">
+              {{ $t('menu.personal.machine.license') }}
+            </el-dropdown-item>
             <el-dropdown-item divided @click="handleLogout()" :icon="SwitchButton">{{ $t('logout') }}</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
     </div>
     <password-form v-model="passwordFormVisible"></password-form>
+    <machine-code-form v-if="hasPermission('machine:code') && isInclude('machine:code')" v-model="machineFormVisible"></machine-code-form>
+    <machine-license-form v-if="hasPermission('machine:license') && isInclude('machine:license')" v-model="machineLicenseVisible"></machine-license-form>
   </div>
 </template>
 
@@ -64,10 +72,12 @@ import { setCookieLocale, getSessionSiteId, setSessionSiteId } from '@/utils/com
 import { languages } from '@/i18n';
 import { toTree, flatTree } from '@/utils/tree';
 import { querySiteList } from '@/api/system';
-import { currentUser, perm, logout } from '@/store/useCurrentUser';
+import { currentUser, perm, hasPermission, isInclude, logout } from '@/store/useCurrentUser';
 import { appState, toggleSidebar } from '@/store/useAppState';
 import Breadcrumb from '@/components/Breadcrumb/index.vue';
 import PasswordForm from '@/views/personal/PasswordForm.vue';
+import MachineCodeForm from '@/views/personal/MachineCodeForm.vue';
+import MachineLicenseForm from '@/views/personal/MachineLicenseForm.vue';
 
 const { locale } = useI18n({ useScope: 'global' });
 
@@ -100,4 +110,6 @@ const handleLogout = () => {
 };
 
 const passwordFormVisible = ref<boolean>(false);
+const machineFormVisible = ref<boolean>(false);
+const machineLicenseVisible = ref<boolean>(false);
 </script>

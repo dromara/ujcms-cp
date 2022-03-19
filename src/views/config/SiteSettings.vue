@@ -74,12 +74,19 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="domain" :label="$t('site.domain')" :rules="{ required: true, message: () => $t('v.required') }">
+              <el-form-item
+                prop="domain"
+                :rules="[
+                  { required: true, message: () => $t('v.required') },
+                  { pattern: /^[a-z0-9-.]*$/, message: () => $t('site.error.domainPattern') },
+                ]"
+              >
+                <template #label><label-tip message="site.domain" /></template>
                 <el-input v-model="values.domain" maxlength="50"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="subDir">
+              <el-form-item prop="subDir" :rules="{ pattern: /^[\w-]*$/, message: () => $t('site.error.subDirPattern') }">
                 <template #label><label-tip message="site.subDir" /></template>
                 <el-input v-model="values.subDir" maxlength="50"></el-input>
               </el-form-item>

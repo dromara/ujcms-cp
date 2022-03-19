@@ -62,7 +62,7 @@ export const routes: Array<RouteRecordRaw> = [
       { path: 'user', component: () => import('@/views/user/UserList.vue'), meta: { title: 'menu.user.user', requiresPermission: 'user:list' } },
       { path: 'role', component: () => import('@/views/user/RoleList.vue'), meta: { title: 'menu.user.role', requiresPermission: 'role:list' } },
       { path: 'group', component: () => import('@/views/user/GroupList.vue'), meta: { title: 'menu.user.group', requiresPermission: 'group:list' } },
-//       { path: 'org', component: () => import('@/views/user/OrgList.vue'), meta: { title: 'menu.user.org', requiresPermission: 'org:list' } },
+      { path: 'org', component: () => import('@/views/user/OrgList.vue'), meta: { title: 'menu.user.org', requiresPermission: 'org:list' } },
     ],
   },
   {
@@ -70,12 +70,12 @@ export const routes: Array<RouteRecordRaw> = [
     component: Layout,
     meta: { title: 'menu.system', icon: Operation },
     children: [
-//       { path: 'site', component: () => import('@/views/system/SiteList.vue'), meta: { title: 'menu.system.site', requiresPermission: 'site:list' } },
+      { path: 'site', component: () => import('@/views/Enterprise.vue'), meta: { title: 'menu.system.site', requiresPermission: 'site:list' } },
       { path: 'storage', component: () => import('@/views/system/StorageList.vue'), meta: { title: 'menu.system.storage', requiresPermission: 'storage:list' } },
       // { path: 'task', component: () => import('@/views/system/TaskList.vue'), meta: { title: 'menu.system.task', requiresPermission: 'task:list' } },
     ],
   },
-  // 404 page must be placed at the end !!!
+  // 404 页面配置必须放在最后
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',

@@ -2,6 +2,8 @@
   "menu.home": "首页",
   "menu.personal":"个人设置",
   "menu.personal.password":"修改密码",
+  "menu.personal.machine.code":"许可请求码",
+  "menu.personal.machine.license":"许可证信息",
   "menu.content": "内容",
   "menu.content.article": "文章管理",
   "menu.content.channel": "栏目管理",
