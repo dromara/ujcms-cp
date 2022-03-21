@@ -17,6 +17,7 @@ module.exports = {
     // '@typescript-eslint/camelcase': 'off',
 
     'import/extensions': 'off',
+    endOfLine: 'auto',
   },
   settings: {
     'import/resolver': {
