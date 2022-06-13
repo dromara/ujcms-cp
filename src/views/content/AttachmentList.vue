@@ -42,7 +42,7 @@
             <template #default="{ row }">
               <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                 <template #reference>
-                  <el-button type="text" :disabled="row.used || perm('attachment:delete')" size="small">{{ $t('delete') }}</el-button>
+                  <el-button type="primary" :disabled="row.used || perm('attachment:delete')" size="small" link>{{ $t('delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -64,6 +64,10 @@
     </div>
   </div>
 </template>
+
+<script lang="ts">
+export default { name: 'AttachmentList' };
+</script>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';

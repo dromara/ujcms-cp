@@ -3,23 +3,22 @@
     <el-aside width="200px" class="pr-3">
       <el-scrollbar class="bg-white rounded-sm p-2">
         <div class="mb-1 ml-2">
-          <el-link
-            :underline="false"
+          <el-button
             :type="channel == null ? 'primary' : undefined"
             @click="
-              channelTreeRef.setCurrentKey(null);
+              channelTree.setCurrentKey(null);
               channel = undefined;
               handleSearch();
             "
-            href="javascript:"
+            link
           >
             {{ $t('article.allChannel') }}
-          </el-link>
+          </el-button>
         </div>
         <el-tree
-          ref="channelTreeRef"
-          v-loading="channelTreeloading"
-          :data="channelTree"
+          ref="channelTree"
+          v-loading="channelTreeLoading"
+          :data="channelTreeData"
           :props="{ label: 'name' }"
           :expand-on-click-node="false"
           node-key="id"
@@ -44,10 +43,15 @@
             name="Q_In_status_Int"
             :options="[0, 1, 2, 3, 4, 8, 9].map((item) => ({ label: $t(`article.status.${item}`), value: item }))"
           ></query-item>
-          <query-item :label="$t('article.org')" name="Q_GE_org-name"></query-item>
-          <query-item :label="$t('article.user')" name="Q_GE_user-username"></query-item>
+          <query-item
+            :label="$t('article.block')"
+            name="Q_In_@BlockItem-blockId_Int"
+            :options="blockList.filter((item) => item.recommendable).map((item) => ({ label: item.name, value: item.id }))"
+          ></query-item>
+          <query-item :label="$t('article.org')" name="Q_Like_org-name"></query-item>
+          <query-item :label="$t('article.user')" name="Q_Like_user-username"></query-item>
           <query-item :label="$t('article.created')" name="Q_GE_@articleExt-created_DateTime,Q_LE_@articleExt-created_DateTime" type="datetime"></query-item>
-          <query-item :label="$t('article.modifiedUser')" name="Q_GE_modifiedUser-username"></query-item>
+          <query-item :label="$t('article.modifiedUser')" name="Q_Like_modifiedUser@user-username"></query-item>
           <query-item :label="$t('article.modified')" name="Q_GE_@articleExt-modified_DateTime,Q_LE_@articleExt-modified_DateTime" type="datetime"></query-item>
           <query-item :label="$t('article.author')" name="Q_Contains_@articleExt-author"></query-item>
           <query-item :label="$t('article.editor')" name="Q_Contains_@articleExt-editor"></query-item>
@@ -81,7 +85,7 @@
             <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
             <el-table-column property="title" :label="$t('article.title')" min-width="280" sort-by="@articleExt-title" sortable="custom">
               <template #default="{ row }">
-                {{ row.title }}
+                <el-link :href="row.url" :underline="false" target="_blank">{{ row.title }}</el-link>
                 <el-tag v-for="item in row.blockItemList" :key="item.id" @close="handleBlockItemDelete(item.id)" size="small" closable>{{ item.block.name }}</el-tag>
               </template>
             </el-table-column>
@@ -150,20 +154,20 @@
             </el-table-column>
             <el-table-column :label="$t('table.action')" min-width="100">
               <template #default="{ row }">
-                <el-button type="text" :disabled="perm('article:update')" @click="handleEdit(row.id)" size="small">{{ $t('edit') }}</el-button>
+                <el-button type="primary" :disabled="perm('article:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
                 <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                   <template #reference>
-                    <el-button type="text" :disabled="perm('article:delete')" size="small">{{ $t('delete') }}</el-button>
+                    <el-button type="primary" :disabled="perm('article:delete')" size="small" link>{{ $t('delete') }}</el-button>
                   </template>
                 </el-popconfirm>
                 <el-dropdown class="ml-2">
-                  <el-button type="text" size="small">
-                    <el-icon class="text-primary"><more-filled /></el-icon>
+                  <el-button type="primary" size="small" link>
+                    <el-icon class="text-primary"><MoreFilled /></el-icon>
                   </el-button>
                   <template #dropdown>
                     <el-dropdown-menu>
                       <el-dropdown-item
-                        v-for="item in blockList"
+                        v-for="item in blockList.filter((it) => it.enabled && it.recommendable)"
                         :key="item.id"
                         @click="recommendTo(item.id, row.id, row.title, row.description)"
                         :disabled="row.blocks.findIndex((block: any) => block.id === item.id) >= 0"
@@ -206,6 +210,10 @@
   </el-container>
 </template>
 
+<script lang="ts">
+export default { name: 'ArticleList' };
+</script>
+
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -231,26 +239,28 @@ const total = ref<number>(0);
 const table = ref<any>();
 const data = ref<Array<any>>([]);
 const selection = ref<Array<any>>([]);
-const channelTreeloading = ref<boolean>(false);
 const tableLoading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
 const beanId = ref<number>();
 const beanIds = computed(() => data.value.map((row) => row.id));
-const channelTreeRef = ref<any>();
-const channelTree = ref<any[]>([]);
-const channel = ref<any>();
 const blockList = ref<any[]>([]);
 const recommendVisible = ref<boolean>(false);
 const recommendBlockId = ref<number>();
 const recommendArticleId = ref<number>();
 const recommendTitle = ref<string>();
 const recommendDescription = ref<string>();
+
+const channelTree = ref<any>();
+const channelTreeData = ref<any[]>([]);
+const channelTreeLoading = ref<boolean>(false);
+const channel = ref<any>();
+
 const fetchData = async () => {
   tableLoading.value = true;
   try {
     const { content, totalElements } = await queryArticlePage({
       ...toParams(params.value),
-      channelId: channel.value?.id,
+      subChannelId: channel.value?.id,
       Q_OrderBy: sort.value,
       page: currentPage.value,
       pageSize: pageSize.value,
@@ -262,15 +272,15 @@ const fetchData = async () => {
   }
 };
 const fetchChannel = async () => {
-  channelTreeloading.value = true;
+  channelTreeLoading.value = true;
   try {
-    channelTree.value = toTree(await queryChannelList());
+    channelTreeData.value = toTree(await queryChannelList());
   } finally {
-    channelTreeloading.value = false;
+    channelTreeLoading.value = false;
   }
 };
 const fetchBlockList = async () => {
-  blockList.value = await queryBlockList({ Q_EQ_enabled_Boolean: true });
+  blockList.value = await queryBlockList();
 };
 onMounted(() => {
   fetchData();
@@ -303,6 +313,9 @@ const handleAdd = () => {
   formVisible.value = true;
 };
 const handleEdit = (id: number) => {
+  if (perm('article:update')) {
+    return;
+  }
   beanId.value = id;
   formVisible.value = true;
 };

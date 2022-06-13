@@ -17,251 +17,261 @@ export function getPermsTreeData(): any[] {
   } = i18n;
   const perms = [
     {
-      label: t('menu.home'),
-      key: 'home',
-      perms: ['auth'],
+      label: t('menu.personal'),
+      key: 'menu.personal',
       children: [
         {
-          label: t('menu.personal'),
-          key: 'personal',
+          label: t('menu.personal.password'),
+          key: 'password:update',
+          perms: ['password:update', 'password:matches'],
+        },
+        {
+          label: t('menu.personal.homepage.environment'),
+          key: 'homepage:environment',
+          perms: ['homepage:environment'],
+        },
+        {
+          label: t('menu.personal.homepage.generatedKey'),
+          key: 'homepage:generatedKey',
+          perms: ['homepage:generatedKey'],
+        },
+        {
+          label: t('menu.personal.machine.code'),
+          key: 'machine:code',
+          perms: ['machine:code'],
+        },
+        {
+          label: t('menu.personal.machine.license'),
+          key: 'machine:license',
+          perms: ['machine:license'],
+        },
+      ],
+    },
+    {
+      label: t('menu.content'),
+      key: 'menu.content',
+      children: [
+        {
+          label: t('menu.content.article'),
+          key: 'article',
+          perms: ['article:page', 'article:list', 'channel:list', 'dict:list', 'model:list'],
           children: [
-            {
-              label: t('menu.personal.password'),
-              key: 'password:update',
-              perms: ['password:update'],
-            },
-            {
-              label: t('menu.personal.machine.code'),
-              key: 'machine:code',
-              perms: ['machine:code'],
-            },
-            {
-              label: t('menu.personal.machine.license'),
-              key: 'machine:license',
-              perms: ['machine:license'],
-            },
+            { label: t('list'), key: 'article:page' },
+            { label: t('add'), key: 'article:create', perms: ['article:create', 'jodConvert:doc', 'jodConvert:library'] },
+            { label: t('edit'), key: 'article:update', perms: ['article:update', 'article:show', 'jodConvert:doc', 'jodConvert:library'] },
+            { label: t('delete'), key: 'article:delete', perms: ['article:delete'] },
           ],
         },
         {
-          label: t('menu.content'),
-          key: 'content',
+          label: t('menu.content.channel'),
+          key: 'channel',
+          perms: ['channel:page', 'channel:list'],
           children: [
-            {
-              label: t('menu.content.article'),
-              key: 'article',
-              perms: ['article:page', 'article:list', 'channel:list', 'dict:list', 'model:list'],
-              children: [
-                { label: t('list'), key: 'article:page' },
-                { label: t('add'), key: 'article:create', perms: ['article:create'] },
-                { label: t('edit'), key: 'article:update', perms: ['article:update', 'article:show'] },
-                { label: t('delete'), key: 'article:delete', perms: ['article:delete'] },
-              ],
-            },
-            {
-              label: t('menu.content.channel'),
-              key: 'channel',
-              perms: ['channel:page', 'channel:list'],
-              children: [
-                { label: t('list'), key: 'channel:page' },
-                { label: t('add'), key: 'channel:create', perms: ['channel:create'] },
-                { label: t('edit'), key: 'channel:update', perms: ['channel:update', 'channel:show'] },
-                { label: t('delete'), key: 'channel:delete', perms: ['channel:delete'] },
-              ],
-            },
-            {
-              label: t('menu.content.blockItem'),
-              key: 'blockItem',
-              perms: ['blockItem:page', 'blockItem:list', 'block:list'],
-              children: [
-                { label: t('list'), key: 'blockItem:page' },
-                { label: t('add'), key: 'blockItem:create', perms: ['blockItem:create'] },
-                { label: t('edit'), key: 'blockItem:update', perms: ['blockItem:update', 'blockItem:show'] },
-                { label: t('delete'), key: 'blockItem:delete', perms: ['blockItem:delete'] },
-              ],
-            },
-            {
-              label: t('menu.content.attachment'),
-              key: 'attachment',
-              perms: ['attachment:page', 'attachment:list'],
-              children: [
-                { label: t('list'), key: 'attachment:page' },
-                { label: t('add'), key: 'attachment:create', perms: ['attachment:create'] },
-                { label: t('edit'), key: 'attachment:update', perms: ['attachment:update', 'attachment:show'] },
-                { label: t('delete'), key: 'attachment:delete', perms: ['attachment:delete'] },
-              ],
-            },
-            {
-              label: t('menu.content.generator'),
-              key: 'generator',
-              perms: ['generator:show', 'siteSettings:html:show', 'task:list', 'task:show', 'task:delete'],
-              children: [
-                { label: t('generator.op.fulltext.reindexAll'), key: 'generator:fulltext:reindexAll', perms: ['generator:fulltext:reindexAll'] },
-                { label: t('generator.op.fulltext.reindexSite'), key: 'generator:fulltext:reindexSite', perms: ['generator:fulltext:reindexSite'] },
-                { label: t('generator.html'), key: 'generator:html', perms: ['generator:html'] },
-                { label: t('site.settings.html'), key: 'siteSettings:html:update', perms: ['siteSettings:html:update', 'generator:html'] },
-              ],
-            },
+            { label: t('list'), key: 'channel:page' },
+            { label: t('add'), key: 'channel:create', perms: ['channel:create'] },
+            { label: t('edit'), key: 'channel:update', perms: ['channel:update', 'channel:show'] },
+            { label: t('delete'), key: 'channel:delete', perms: ['channel:delete'] },
           ],
         },
         {
-          label: t('menu.config'),
+          label: t('menu.content.blockItem'),
+          key: 'blockItem',
+          perms: ['blockItem:page', 'blockItem:list', 'block:list'],
+          children: [
+            { label: t('list'), key: 'blockItem:page' },
+            { label: t('add'), key: 'blockItem:create', perms: ['blockItem:create'] },
+            { label: t('edit'), key: 'blockItem:update', perms: ['blockItem:update', 'blockItem:show'] },
+            { label: t('delete'), key: 'blockItem:delete', perms: ['blockItem:delete'] },
+          ],
+        },
+        {
+          label: t('menu.content.dict'),
+          key: 'dict',
+          perms: ['dict:page', 'dict:list', 'dictType:list'],
+          children: [
+            { label: t('list'), key: 'dict:page' },
+            { label: t('add'), key: 'dict:create', perms: ['dict:create'] },
+            { label: t('edit'), key: 'dict:update', perms: ['dict:update', 'dict:show'] },
+            { label: t('delete'), key: 'dict:delete', perms: ['dict:delete'] },
+          ],
+        },
+        {
+          label: t('menu.content.attachment'),
+          key: 'attachment',
+          perms: ['attachment:page', 'attachment:list'],
+          children: [
+            { label: t('list'), key: 'attachment:page' },
+            { label: t('add'), key: 'attachment:create', perms: ['attachment:create'] },
+            { label: t('edit'), key: 'attachment:update', perms: ['attachment:update', 'attachment:show'] },
+            { label: t('delete'), key: 'attachment:delete', perms: ['attachment:delete'] },
+          ],
+        },
+        {
+          label: t('menu.content.generator'),
+          key: 'generator',
+          perms: ['generator:show', 'siteSettings:html:show', 'task:list', 'task:show', 'task:delete'],
+          children: [
+            { label: t('generator.op.fulltext.reindexAll'), key: 'generator:fulltext:reindexAll', perms: ['generator:fulltext:reindexAll'] },
+            { label: t('generator.op.fulltext.reindexSite'), key: 'generator:fulltext:reindexSite', perms: ['generator:fulltext:reindexSite'] },
+            { label: t('generator.html'), key: 'generator:html', perms: ['generator:html'] },
+            { label: t('site.settings.html'), key: 'siteSettings:html:update', perms: ['siteSettings:html:update', 'generator:html'] },
+          ],
+        },
+      ],
+    },
+    {
+      label: t('menu.config'),
+      key: 'menu.config',
+      children: [
+        {
+          label: t('menu.config.globalSettings'),
           key: 'config',
+          perms: ['config:show'],
           children: [
+            { label: t('config.settings.base'), key: 'config:base:update', perms: ['config:base:update'] },
+            { label: t('config.settings.upload'), key: 'config:upload:update', perms: ['config:upload:update'] },
             {
-              label: t('menu.config.globalSettings'),
-              key: 'globalSettings',
-              perms: ['globalSettings:show'],
-              children: [
-                { label: t('global.settings.base'), key: 'globalSettings:base:update', perms: ['globalSettings:base:update'] },
-                { label: t('global.settings.upload'), key: 'globalSettings:upload:update', perms: ['globalSettings:upload:update'] },
-                { label: t('global.settings.customs'), key: 'globalSettings:customs:update', perms: ['globalSettings:customs:update'] },
-              ],
+              label: t('config.settings.uploadStorage'),
+              key: 'config:uploadStorage:update',
+              perms: ['config:uploadStorage:show', 'config:uploadStorage:update'],
             },
             {
-              label: t('menu.config.siteSettings'),
-              key: 'siteSettings',
-              perms: ['siteSettings:show'],
-              children: [
-                { label: t('site.settings.base'), key: 'siteSettings:base:update', perms: ['siteSettings:base:update'] },
-                { label: t('site.settings.watermark'), key: 'siteSettings:watermark:update', perms: ['siteSettings:watermark:update'] },
-                { label: t('site.settings.customs'), key: 'siteSettings:customs:update', perms: ['siteSettings:customs:update'] },
-              ],
+              label: t('config.settings.htmlStorage'),
+              key: 'config:htmlStorage:update',
+              perms: ['config:htmlStorage:show', 'config:htmlStorage:update'],
             },
             {
-              label: t('menu.config.model'),
-              key: 'model',
-              perms: ['model:page', 'model:list'],
-              children: [
-                { label: t('list'), key: 'model:page' },
-                { label: t('add'), key: 'model:create', perms: ['model:create'] },
-                { label: t('edit'), key: 'model:update', perms: ['model:update', 'model:show'] },
-                { label: t('delete'), key: 'model:delete', perms: ['model:delete'] },
-              ],
+              label: t('config.settings.templateStorage'),
+              key: 'config:templateStorage:update',
+              perms: ['config:templateStorage:show', 'config:templateStorage:update'],
             },
-            {
-              label: t('menu.config.block'),
-              key: 'block',
-              perms: ['block:page', 'block:list'],
-              children: [
-                { label: t('list'), key: 'block:page' },
-                { label: t('add'), key: 'block:create', perms: ['block:create'] },
-                { label: t('edit'), key: 'block:update', perms: ['block:update', 'block:show'] },
-                { label: t('delete'), key: 'block:delete', perms: ['block:delete'] },
-              ],
-            },
-            {
-              label: t('menu.config.dictType'),
-              key: 'dictType',
-              perms: ['dictType:page', 'dictType:list'],
-              children: [
-                { label: t('list'), key: 'dictType:page' },
-                { label: t('add'), key: 'dictType:create', perms: ['dictType:create'] },
-                { label: t('edit'), key: 'dictType:update', perms: ['dictType:update', 'dictType:show'] },
-                { label: t('delete'), key: 'dictType:delete', perms: ['dictType:delete'] },
-              ],
-            },
-            {
-              label: t('menu.config.dict'),
-              key: 'dict',
-              perms: ['dict:page', 'dict:list', 'dictType:list'],
-              children: [
-                { label: t('list'), key: 'dict:page' },
-                { label: t('add'), key: 'dict:create', perms: ['dict:create'] },
-                { label: t('edit'), key: 'dict:update', perms: ['dict:update', 'dict:show'] },
-                { label: t('delete'), key: 'dict:delete', perms: ['dict:delete'] },
-              ],
-            },
+            { label: t('config.settings.customs'), key: 'config:customs:update', perms: ['config:customs:update'] },
           ],
         },
         {
-          label: t('menu.user'),
+          label: t('menu.config.siteSettings'),
+          key: 'siteSettings',
+          perms: ['siteSettings:show'],
+          children: [
+            { label: t('site.settings.base'), key: 'siteSettings:base:update', perms: ['siteSettings:base:update'] },
+            { label: t('site.settings.watermark'), key: 'siteSettings:watermark:update', perms: ['siteSettings:watermark:update'] },
+            { label: t('site.settings.customs'), key: 'siteSettings:customs:update', perms: ['siteSettings:customs:update'] },
+          ],
+        },
+        {
+          label: t('menu.config.model'),
+          key: 'model',
+          perms: ['model:page', 'model:list'],
+          children: [
+            { label: t('list'), key: 'model:page' },
+            { label: t('add'), key: 'model:create', perms: ['model:create'] },
+            { label: t('edit'), key: 'model:update', perms: ['model:update', 'model:show'] },
+            { label: t('delete'), key: 'model:delete', perms: ['model:delete'] },
+          ],
+        },
+        {
+          label: t('menu.config.block'),
+          key: 'block',
+          perms: ['block:page', 'block:list', 'block:validation'],
+          children: [
+            { label: t('list'), key: 'block:page' },
+            { label: t('add'), key: 'block:create', perms: ['block:create'] },
+            { label: t('edit'), key: 'block:update', perms: ['block:update', 'block:show'] },
+            { label: t('delete'), key: 'block:delete', perms: ['block:delete'] },
+          ],
+        },
+        {
+          label: t('menu.config.dictType'),
+          key: 'dictType',
+          perms: ['dictType:page', 'dictType:list', 'dictType:validation'],
+          children: [
+            { label: t('list'), key: 'dictType:page' },
+            { label: t('add'), key: 'dictType:create', perms: ['dictType:create'] },
+            { label: t('edit'), key: 'dictType:update', perms: ['dictType:update', 'dictType:show'] },
+            { label: t('delete'), key: 'dictType:delete', perms: ['dictType:delete'] },
+          ],
+        },
+      ],
+    },
+    {
+      label: t('menu.user'),
+      key: 'menu.user',
+      children: [
+        {
+          label: t('menu.user.user'),
           key: 'user',
+          perms: ['user:page', 'user:list', 'group:list', 'org:list'],
           children: [
-            {
-              label: t('menu.user.user'),
-              key: 'user',
-              perms: ['user:page', 'user:list', 'group:list', 'org:list'],
-              children: [
-                { label: t('list'), key: 'user:page' },
-                { label: t('add'), key: 'user:create', perms: ['user:create'] },
-                { label: t('edit'), key: 'user:update', perms: ['user:update', 'user:show'] },
-                { label: t('delete'), key: 'user:delete', perms: ['user:delete'] },
-              ],
-            },
-            {
-              label: t('menu.user.role'),
-              key: 'role',
-              perms: ['role:page', 'role:list'],
-              children: [
-                { label: t('list'), key: 'role:page' },
-                { label: t('add'), key: 'role:create', perms: ['role:create'] },
-                { label: t('edit'), key: 'role:update', perms: ['role:update', 'role:show'] },
-                { label: t('delete'), key: 'role:delete', perms: ['role:delete'] },
-              ],
-            },
-            {
-              label: t('menu.user.group'),
-              key: 'group',
-              perms: ['group:page', 'group:list'],
-              children: [
-                { label: t('list'), key: 'group:page' },
-                { label: t('add'), key: 'group:create', perms: ['group:create'] },
-                { label: t('edit'), key: 'group:update', perms: ['group:update', 'group:show'] },
-                { label: t('delete'), key: 'group:delete', perms: ['group:delete'] },
-              ],
-            },
-            {
-              label: t('menu.user.org'),
-              key: 'org',
-              perms: ['org:page', 'org:list'],
-              children: [
-                { label: t('list'), key: 'org:page' },
-                { label: t('add'), key: 'org:create', perms: ['org:create'] },
-                { label: t('edit'), key: 'org:update', perms: ['org:update', 'org:show'] },
-                { label: t('delete'), key: 'org:delete', perms: ['org:delete'] },
-              ],
-            },
+            { label: t('list'), key: 'user:page' },
+            { label: t('add'), key: 'user:create', perms: ['user:create'] },
+            { label: t('edit'), key: 'user:update', perms: ['user:update', 'user:show'] },
+            { label: t('permissionSettings'), key: 'user:updatePermission', perms: ['user:updatePermission', 'user:show'] },
+            { label: t('user.op.status'), key: 'user:updateStatus', perms: ['user:updateStatus', 'user:show'] },
+            { label: t('delete'), key: 'user:delete', perms: ['user:delete'] },
           ],
         },
         {
-          label: t('menu.system'),
-          key: 'system',
+          label: t('menu.user.role'),
+          key: 'role',
+          perms: ['role:page', 'role:list', 'role:validation', 'channel:list'],
           children: [
-            {
-              label: t('menu.system.site'),
-              key: 'site',
-              perms: ['site:page', 'site:list', 'org:list', 'model:list', 'storage:list'],
-              children: [
-                { label: t('list'), key: 'site:page' },
-                { label: t('add'), key: 'site:create', perms: ['site:create'] },
-                { label: t('edit'), key: 'site:update', perms: ['site:update', 'site:show'] },
-                { label: t('delete'), key: 'site:delete', perms: ['site:delete'] },
-              ],
-            },
-            {
-              label: t('menu.system.storage'),
-              key: 'storage',
-              perms: ['storage:page', 'storage:list'],
-              children: [
-                { label: t('list'), key: 'storage:page' },
-                { label: t('add'), key: 'storage:create', perms: ['storage:create'] },
-                { label: t('edit'), key: 'storage:update', perms: ['storage:update', 'storage:show'] },
-                { label: t('delete'), key: 'storage:delete', perms: ['storage:delete'] },
-              ],
-            },
-            // {
-            //   label: t('menu.system.task'),
-            //   key: 'task',
-            //   perms: ['task:page', 'task:list'],
-            //   children: [
-            //     { label: t('list'), key: 'task:page' },
-            //     { label: t('add'), key: 'task:create', perms: ['task:create'] },
-            //     { label: t('edit'), key: 'task:update', perms: ['task:update', 'task:show'] },
-            //     { label: t('delete'), key: 'task:delete', perms: ['task:delete'] },
-            //   ],
-            // },
+            { label: t('list'), key: 'role:page' },
+            { label: t('add'), key: 'role:create', perms: ['role:create'] },
+            { label: t('edit'), key: 'role:update', perms: ['role:update', 'role:show'] },
+            { label: t('permissionSettings'), key: 'role:updatePermission', perms: ['role:updatePermission', 'role:show'] },
+            { label: t('delete'), key: 'role:delete', perms: ['role:delete'] },
           ],
         },
+        {
+          label: t('menu.user.org'),
+          key: 'org',
+          perms: ['org:page', 'org:list'],
+          children: [
+            { label: t('list'), key: 'org:page' },
+            { label: t('add'), key: 'org:create', perms: ['org:create'] },
+            { label: t('edit'), key: 'org:update', perms: ['org:update', 'org:show'] },
+            { label: t('delete'), key: 'org:delete', perms: ['org:delete'] },
+          ],
+        },
+        {
+          label: t('menu.user.group'),
+          key: 'group',
+          perms: ['group:page', 'group:list'],
+          children: [
+            { label: t('list'), key: 'group:page' },
+            { label: t('add'), key: 'group:create', perms: ['group:create'] },
+            { label: t('edit'), key: 'group:update', perms: ['group:update', 'group:show'] },
+            { label: t('delete'), key: 'group:delete', perms: ['group:delete'] },
+          ],
+        },
+      ],
+    },
+    {
+      label: t('menu.system'),
+      key: 'menu.system',
+      children: [
+        {
+          label: t('menu.system.site'),
+          key: 'site',
+          perms: ['site:page', 'site:list', 'org:list', 'model:list'],
+          children: [
+            { label: t('list'), key: 'site:page' },
+            { label: t('add'), key: 'site:create', perms: ['site:create'] },
+            { label: t('edit'), key: 'site:update', perms: ['site:update', 'site:show'] },
+            { label: t('delete'), key: 'site:delete', perms: ['site:delete'] },
+          ],
+        },
+        // {
+        //   label: t('menu.system.task'),
+        //   key: 'task',
+        //   perms: ['task:page', 'task:list'],
+        //   children: [
+        //     { label: t('list'), key: 'task:page' },
+        //     { label: t('add'), key: 'task:create', perms: ['task:create'] },
+        //     { label: t('edit'), key: 'task:update', perms: ['task:update', 'task:show'] },
+        //     { label: t('delete'), key: 'task:delete', perms: ['task:delete'] },
+        //   ],
+        // },
       ],
     },
   ];
@@ -286,7 +296,7 @@ export function getModelData(): any {
         { code: 'doc', must: false, show: false, double: false, required: false },
         { code: 'imageList', must: false, show: false, double: false, required: false, type: 'imageList', imageMaxWidth: 1920, imageMaxHeight: 1920 },
         { code: 'fileList', must: false, show: false, double: false, required: false },
-        { code: 'text', must: false, show: true, double: false, required: true },
+        { code: 'text', must: false, show: true, double: false, required: true, type: 'editor', editorType: 1, editorSwitch: true },
       ],
       asides: [
         { code: 'channel', must: true, show: true, required: true },
@@ -314,7 +324,6 @@ export function getModelData(): any {
         { code: 'articleTemplate', must: false, show: true, double: true, required: true },
         { code: 'channelModel', must: true, show: true, double: true, required: true },
         { code: 'articleModel', must: true, show: true, double: true, required: true },
-        { code: 'group', must: false, show: true, double: false, required: true },
         { code: 'nav', must: false, show: true, double: true, required: true },
         { code: 'allowComment', must: false, show: true, double: true, required: true },
         { code: 'allowContribute', must: false, show: true, double: true, required: true },
@@ -322,16 +331,16 @@ export function getModelData(): any {
         { code: 'text', must: false, show: false, double: false, required: false },
       ],
       asides: [
-        { code: 'type', must: true, show: true, required: true },
         { code: 'parent', must: true, show: true, required: false },
+        { code: 'type', must: true, show: true, required: true },
         { code: 'pageSize', must: true, show: true, required: true },
       ],
     },
   };
 }
 
-export function mergeModelFields(defaultFields: any[], s: string | null | undefined, type: string): any[] {
-  const fields = JSON.parse(s || '[]');
+export function mergeModelFields(defaultFields: any[], str: string | null | undefined, type: string): any[] {
+  const fields = JSON.parse(str || '[]');
   const defaults = defaultFields.map((item: any) => ({ ...item, label: `${type}.${item.code}` }));
   // 去除默认字段中不存在的字段
   fields.filter((field: any) => defaults.findIndex((item) => item.code === field.code) !== -1);

@@ -1,12 +1,5 @@
 import axios from '@/utils/request';
 
-export const queryStorageList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/storage', { params })).data;
-export const queryStorage = async (id: number): Promise<any> => (await axios.get(`/backend/core/storage/${id}`)).data;
-export const createStorage = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/storage', data)).data;
-export const updateStorage = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/storage?_method=put', data)).data;
-export const updateStorageOrder = async (data: number[]): Promise<any> => (await axios.post('/backend/core/storage/order?_method=put', data)).data;
-export const deleteStorage = async (data: number[]): Promise<any> => (await axios.post('/backend/core/storage?_method=delete', data)).data;
-
 export const querySiteList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/site', { params })).data;
 export const querySite = async (id: number): Promise<any> => (await axios.get(`/backend/core/site/${id}`)).data;
 export const createSite = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/site', data)).data;

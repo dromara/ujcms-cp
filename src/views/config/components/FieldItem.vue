@@ -58,46 +58,40 @@
   <tinymce
     v-else-if="field.type === 'tinyEditor'"
     v-model="data"
-    :init="{ ...{ placeholder: field.placeholder }, ...(field.minHeight ? { min_height: field.minHeight } : {}), ...(field.maxHeight ? { max_height: field.maxHeight } : {}) }"
+    :init="{ placeholder: field.placeholder, ...(field.minHeight ? { min_height: field.minHeight } : {}), ...(field.maxHeight ? { max_height: field.maxHeight } : {}) }"
   />
   <div v-else>{{ `Unsupported type: ${field.type}` }}</div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, toRefs, watchEffect, computed } from 'vue';
-import { queryDictList } from '@/api/config';
-import Tinymce from '@/components/Tinymce/index.vue';
+<script setup lang="ts">
+import { ref, toRefs, watchEffect, computed } from 'vue';
+import { queryDictList } from '@/api/content';
+import Tinymce from '@/components/Tinymce';
 import { BaseUpload, ImageUpload } from '@/components/Upload';
 
-export default defineComponent({
-  name: 'FieldItem',
-  components: { Tinymce, BaseUpload, ImageUpload },
-  props: { field: { type: Object, required: true }, modelValue: null },
-  emits: { 'update:modelValue': null },
-  setup(props, { emit }) {
-    const { field, modelValue } = toRefs(props);
-    const dictList = ref<any[]>([]);
-    watchEffect(async () => {
-      const typeId = field.value.dictTypeId;
-      if (typeId) {
-        dictList.value = await queryDictList({ typeId });
-      }
-    });
-    const data = computed({
-      get: () => {
-        // 下拉多选框的 v-model 为空会报错。
-        if (modelValue.value == null && ['multipleSelect', 'checkbox'].includes(field.value.type)) {
-          return [];
-        }
-        return modelValue.value;
-      },
-      set: (val) => emit('update:modelValue', val),
-    });
+const props = defineProps({ field: { type: Object, required: true }, modelValue: null });
+const emit = defineEmits({ 'update:modelValue': null });
 
-    // watchEffect(() => {
-    //   data.value = modelValue.value;
-    // });
-    return { dictList, data };
-  },
+const { field, modelValue } = toRefs(props);
+const dictList = ref<any[]>([]);
+watchEffect(async () => {
+  const typeId = field.value.dictTypeId;
+  if (typeId) {
+    dictList.value = await queryDictList({ typeId });
+  }
 });
+const data = computed({
+  get: () => {
+    // 下拉多选框的 v-model 为空会报错。
+    if (modelValue?.value == null && ['multipleSelect', 'checkbox'].includes(field.value.type)) {
+      return [];
+    }
+    return modelValue?.value;
+  },
+  set: (val) => emit('update:modelValue', val),
+});
+
+// watchEffect(() => {
+//   data.value = modelValue.value;
+// });
 </script>

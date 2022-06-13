@@ -39,10 +39,10 @@
           </el-table-column>
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">
-              <el-button type="text" :disabled="perm('task:show')" @click="handleEdit(row.id)" size="small">{{ $t('detail') }}</el-button>
+              <el-button type="primary" :disabled="perm('task:show')" @click="handleEdit(row.id)" size="small" link>{{ $t('detail') }}</el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                 <template #reference>
-                  <el-button type="text" :disabled="perm('task:delete')" size="small">{{ $t('delete') }}</el-button>
+                  <el-button type="primary" :disabled="perm('task:delete')" size="small" link>{{ $t('delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -65,6 +65,10 @@
     <task-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" />
   </div>
 </template>
+
+<script lang="ts">
+export default { name: 'TaskList' };
+</script>
 
 <script setup lang="ts">
 import { defineExpose, computed, onMounted, ref } from 'vue';

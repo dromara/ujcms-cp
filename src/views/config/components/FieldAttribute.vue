@@ -155,7 +155,8 @@
 
 <script lang="ts">
 import { defineComponent, ref, toRefs, watchEffect } from 'vue';
-import { queryDictTypeList, queryDictList } from '@/api/config';
+import { queryDictTypeList } from '@/api/config';
+import { queryDictList } from '@/api/content';
 
 export default defineComponent({
   name: 'FieldAttribute',

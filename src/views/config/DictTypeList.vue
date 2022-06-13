@@ -22,14 +22,23 @@
           <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('dictType.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="alias" :label="$t('dictType.alias')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="scope" :label="$t('dictType.scope')" sortable="custom" :formatter="(row) => $t(`model.scope.${row.scope}`)" />
-          <el-table-column property="sys" :label="$t('dictType.sys')" sortable="custom" :formatter="(row) => $t(row.sys ? 'yes' : 'no')" />
+          <el-table-column property="scope" :label="$t('dictType.scope')" sortable="custom">
+            <template #default="{row}">
+              <el-tag v-if="row.scope===2" type="success" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
+              <el-tag v-else type="info" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column property="sys" :label="$t('dictType.sys')" sortable="custom">
+            <template #default="{ row }">
+              <el-tag :type="row.sys ? 'success' : 'info'" size="small">{{ $t(row.sys ? 'yes' : 'no') }}</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">
-              <el-button type="text" :disabled="perm('dictType:update')" @click="handleEdit(row.id)"  size="small">{{ $t('edit') }}</el-button>
+              <el-button type="primary" :disabled="perm('dictType:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                 <template #reference>
-                  <el-button type="text" :disabled="perm('dictType:delete')"  size="small">{{ $t('delete') }}</el-button>
+                  <el-button type="primary" :disabled="perm('dictType:delete')" size="small" link>{{ $t('delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -40,6 +49,10 @@
     <dict-type-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" />
   </div>
 </template>
+
+<script lang="ts">
+export default { name: 'DictTypeList' };
+</script>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';

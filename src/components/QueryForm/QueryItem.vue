@@ -38,7 +38,7 @@
   </slot>
 </template>
 <script setup lang="ts">
-import { inject, defineProps, PropType, ref, toRefs } from 'vue';
+import { inject, PropType, ref, toRefs } from 'vue';
 
 const props = defineProps({
   label: { type: String, required: true },

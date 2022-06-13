@@ -1,15 +1,15 @@
 <template>
   <div class="h-full p-3 bg-gray-100">
     <el-form ref="form" :model="bean" class="mx-auto md:max-w-xs">
-      <h3 class="py-5 text-center text-3xl font-bold text-primary">UJCMS</h3>
+      <h3 class="py-5 text-center text-3xl font-bold text-primary">{{ title }}</h3>
       <el-alert v-if="error" :title="error" type="error" class="mb-3" :closable="false" show-icon />
       <el-form-item prop="username" :rules="[{ required: true, message: () => $t('v.required') }]">
-        <el-input ref="focus" v-model="bean.username" type="text" name="username" :placeholder="$t('username')" :prefix-icon="User" autocomplete="on" />
+        <el-input ref="focus" v-model="bean.username" name="username" :placeholder="$t('username')" :prefix-icon="User" autocomplete="on" />
       </el-form-item>
       <el-form-item prop="password" :rules="[{ required: true, message: () => $t('v.required') }]">
         <el-input ref="password" v-model="bean.password" type="password" name="password" :placeholder="$t('password')" :prefix-icon="Lock" show-password />
       </el-form-item>
-      <el-button type="primary" native-type="submit" class="w-full" :loading="loading" @click.prevent="handleLogin">{{ $t('login') }}</el-button>
+      <el-button type="primary" native-type="submit" class="w-full" :loading="buttonLoading" @click.prevent="handleLogin">{{ $t('login') }}</el-button>
     </el-form>
   </div>
 </template>
@@ -18,23 +18,27 @@
 import { onMounted, ref, watchEffect } from 'vue';
 import { LocationQueryValue, useRoute, useRouter } from 'vue-router';
 import { User, Lock } from '@element-plus/icons-vue';
+import { sm2Encrypt } from '@/utils/sm';
+import { queryClientPublicKey } from '@/api/login';
 import { login } from '@/store/useCurrentUser';
 
 const form = ref<any>();
 const bean = ref<any>({});
 const focus = ref<any>();
 const error = ref<string>();
-const loading = ref<boolean>(false);
+const buttonLoading = ref<boolean>(false);
 const redirect = ref<string | null>();
 const route = useRoute();
 const router = useRouter();
+const title = import.meta.env.VITE_APP_TITLE || 'UJCMS';
+
 if (import.meta.env.MODE === 'development') {
   bean.value = { username: 'admin', password: 'password' };
 } else if (import.meta.env.MODE === 'staging') {
   bean.value = { username: 'demo', password: '123' };
 }
 
-onMounted(() => {
+onMounted(async () => {
   focus.value.focus();
   focus.value.select();
 });
@@ -46,9 +50,11 @@ watchEffect(() => {
 const handleLogin = () => {
   form.value.validate(async (valid: boolean) => {
     if (!valid) return;
-    loading.value = true;
+    buttonLoading.value = true;
     try {
-      const data = await login(bean.value);
+      const publicKey = await queryClientPublicKey();
+      const password = sm2Encrypt(bean.value.password, publicKey);
+      const data = await login({ ...bean.value, password });
       // 登录失败，显示错误信息
       if (data.status !== 0) {
         error.value = data.message;
@@ -61,7 +67,7 @@ const handleLogin = () => {
         window.location.reload();
       }
     } finally {
-      loading.value = false;
+      buttonLoading.value = false;
     }
   });
 };

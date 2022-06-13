@@ -8,25 +8,23 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="
-      (bean) => ({
-        parentId: bean?.parentId ?? parent?.id,
-        type: 1,
-        channelModelId: bean?.channelModelId ?? parent?.channelModelId ?? channelModelList[0]?.id,
-        articleModelId: bean?.articleModelId ?? parent?.articleModelId ?? articleModelList[0]?.id,
-        groupIds: bean?.groupIds ?? parent?.groupIds ?? groupList.map((item) => item.id),
-        nav: bean?.nav ?? parent?.nav ?? true,
-        channelTemplate: bean?.channelTemplate ?? parent?.channelTemplate ?? channelTemplates[0],
-        articleTemplate: bean?.articleTemplate ?? parent?.articleTemplate ?? articleTemplates[0],
-        pageSize: 20,
-        allowComment: bean?.allowComment ?? parent?.allowComment ?? true,
-        allowContribute: bean?.allowContribute ?? parent?.allowContribute ?? true,
-        allowSearch: bean?.allowSearch ?? parent?.allowSearch ?? true,
-        customs: initCustoms({}),
-      })
-    "
+    :initValues="(bean: any): any => ({
+      parentId: bean?.parentId ?? parent?.id,
+      type: 1,
+      channelModelId: bean?.channelModelId ?? parent?.channelModelId ?? channelModelList[0]?.id,
+      articleModelId: bean?.articleModelId ?? parent?.articleModelId ?? articleModelList[0]?.id,
+      nav: bean?.nav ?? parent?.nav ?? true,
+      channelTemplate: bean?.channelTemplate ?? parent?.channelTemplate ?? channelTemplates[0],
+      articleTemplate: bean?.articleTemplate ?? parent?.articleTemplate ?? articleTemplates[0],
+      pageSize: 20,
+      allowComment: bean?.allowComment ?? parent?.allowComment ?? true,
+      allowContribute: bean?.allowContribute ?? parent?.allowContribute ?? true,
+      allowSearch: bean?.allowSearch ?? parent?.allowSearch ?? true,
+      customs: initCustoms({}),
+    })"
     :toValues="(bean) => ({ ...bean })"
     perms="channel"
+    v-model:values="values"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     @finished="finished"
@@ -39,7 +37,7 @@
     labelWidth="120px"
     large
   >
-    <template #default="{ values, isEdit }">
+    <template #default="{ isEdit }">
       <el-row>
         <el-col :span="18">
           <el-row>
@@ -51,15 +49,18 @@
             <el-col :span="mains['alias'].double ? 12 : 24">
               <el-form-item
                 prop="alias"
-                :rules="[...(isEdit ? [{ required: true, message: () => $t('v.required') }] : []), ...[{ pattern: /^[\w-]*$/, message: () => $t('channel.error.aliasPattern') }]]"
+                :rules="[
+                  { required: true, message: () => $t('v.required') },
+                  { pattern: /^[\w-]*$/, message: () => $t('channel.error.aliasPattern') },
+                ]"
               >
-                <template #label><label-tip :label="mains['alias'].name ?? $t('channel.alias')" message="channel.alias" /></template>
+                <template #label><label-tip :label="mains['alias'].name ?? $t('channel.alias')" message="channel.alias" help /></template>
                 <el-input v-model="values.alias" maxlength="50"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="mains['linkUrl'].double ? 12 : 24" v-if="values.type === 3">
               <el-form-item prop="linkUrl" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip :label="mains['linkUrl'].name ?? $t('channel.linkUrl')" message="channel.linkUrl" /></template>
+                <template #label><label-tip :label="mains['linkUrl'].name ?? $t('channel.linkUrl')" message="channel.linkUrl" help /></template>
                 <el-input v-model="values.linkUrl" maxlength="255">
                   <template #append>
                     <el-checkbox v-model="values.targetBlank">{{ $t('channel.targetBlank') }}</el-checkbox>
@@ -123,7 +124,7 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <template v-if="values.type !== 3">
+            <template v-if="![3, 4, 5].includes(values.type)">
               <el-col :span="mains['channelTemplate'].double ? 12 : 24" v-if="mains['channelTemplate'].show">
                 <el-form-item
                   prop="channelTemplate"
@@ -147,19 +148,6 @@
                 </el-form-item>
               </el-col>
             </template>
-            <el-col :span="mains['group'].double ? 12 : 24" v-if="mains['group'].show">
-              <el-form-item
-                prop="groupIds"
-                :label="mains['group'].name ?? $t('channel.group')"
-                :rules="mains['group'].required ? { required: true, message: () => $t('v.required') } : undefined"
-              >
-                <el-checkbox-group v-model="values.groupIds">
-                  <el-tooltip v-for="item in groupList" :key="item.id" :content="item.description">
-                    <el-checkbox :label="item.id">{{ item.name }}</el-checkbox>
-                  </el-tooltip>
-                </el-checkbox-group>
-              </el-form-item>
-            </el-col>
             <el-col :span="mains['allowComment'].double ? 12 : 24" v-if="mains['allowComment'].show">
               <el-form-item
                 prop="allowComment"
@@ -180,7 +168,7 @@
             </el-col>
             <el-col :span="mains['nav'].double ? 12 : 24" v-if="mains['nav'].show">
               <el-form-item prop="nav" :rules="mains['nav'].required ? { required: true, message: () => $t('v.required') } : undefined">
-                <template #label><label-tip :label="mains['nav'].name ?? $t('channel.nav')" message="channel.nav" /></template>
+                <template #label><label-tip :label="mains['nav'].name ?? $t('channel.nav')" message="channel.nav" help /></template>
                 <el-switch v-model="values.nav"></el-switch>
               </el-form-item>
             </el-col>
@@ -214,20 +202,21 @@
         <el-col :span="6" class="el-form--label-top label-top">
           <el-tabs type="border-card" class="ml-5">
             <el-tab-pane :label="$t('channel.tabs.setting')">
-              <el-form-item prop="type" :label="asides['type'].name ?? $t('channel.type')" :rules="{ required: true, message: () => $t('v.required') }">
-                <el-select v-model="values.type" class="w-full">
-                  <el-option v-for="n in [1, 2, 3]" :key="n" :label="$t(`channel.type.${n}`)" :value="n"></el-option>
-                </el-select>
-              </el-form-item>
               <el-form-item prop="parentId" :label="asides['parent'].name ?? $t('channel.parent')">
-                <el-cascader
+                <el-tree-select
                   v-model="values.parentId"
-                  :options="channelList"
-                  :props="{ value: 'id', label: 'name', checkStrictly: true }"
-                  @change="(value) => (values.parentId = value?.[value.length - 1])"
+                  :data="parentChannelList"
+                  node-key="id"
+                  :props="{ label: 'name', disabled: 'disabled' }"
+                  check-strictly
                   clearable
                   class="w-full"
-                ></el-cascader>
+                />
+              </el-form-item>
+              <el-form-item prop="type" :label="asides['type'].name ?? $t('channel.type')" :rules="{ required: true, message: () => $t('v.required') }">
+                <el-select v-model="values.type" class="w-full">
+                  <el-option v-for="n in [1, 2, 3, 4, 5]" :key="n" :label="$t(`channel.type.${n}`)" :value="n"></el-option>
+                </el-select>
               </el-form-item>
               <el-form-item prop="pageSize" :label="asides['pageSize'].name ?? $t('channel.pageSize')" :rules="{ required: true, message: () => $t('v.required') }">
                 <el-input-number v-model="values.pageSize" :min="1" :max="200"></el-input-number>
@@ -240,17 +229,20 @@
   </dialog-form>
 </template>
 
+<script lang="ts">
+export default { name: 'ChannelForm' };
+</script>
+
 <script setup lang="ts">
-import { defineProps, defineEmits, onMounted, ref, computed, toRefs, watch } from 'vue';
+import { onMounted, ref, computed, toRefs, watch } from 'vue';
 import { toTree, disableSubtree } from '@/utils/tree';
 import { queryChannel, createChannel, updateChannel, deleteChannel, queryChannelList, queryChannelTemplates, queryArticleTemplates } from '@/api/content';
 import { queryModelList } from '@/api/config';
-import { queryGroupList } from '@/api/user';
 import { getModelData, mergeModelFields, arr2obj } from '@/data';
 import FieldItem from '@/views/config/components/FieldItem.vue';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
-import Tinymce from '@/components/Tinymce/index.vue';
+import Tinymce from '@/components/Tinymce';
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -262,10 +254,10 @@ const emit = defineEmits({ 'update:modelValue': null, finished: null });
 
 const { modelValue: visible, parent } = toRefs(props);
 const focus = ref<any>();
+const values = ref<any>({});
 const channelList = ref<any[]>([]);
 const channelModelList = ref<any[]>([]);
 const articleModelList = ref<any[]>([]);
-const groupList = ref<any[]>([]);
 const channelTemplates = ref<any[]>([]);
 const articleTemplates = ref<any[]>([]);
 const channelModelId = ref<number>();
@@ -273,30 +265,29 @@ const channelModel = computed(() => channelModelList.value.find((item) => item.i
 const mains = computed(() => arr2obj(mergeModelFields(getModelData().channel.mains, channelModel.value?.mains, 'channel')));
 const asides = computed(() => arr2obj(mergeModelFields(getModelData().channel.asides, channelModel.value?.asides, 'channel')));
 const fields = computed(() => JSON.parse(channelModel.value?.customs || '[]'));
+const parentChannelList = computed(() => disableSubtree(channelList.value, values.value.id));
+
 watch(visible, () => {
-  if (visible) {
+  if (visible.value) {
     channelModelId.value = parent.value?.articleModelId ?? channelModelList.value[0]?.id;
   }
 });
-const fetchChannelList = async (bean?: any) => {
-  channelList.value = disableSubtree(toTree(await queryChannelList()), bean?.id);
+const fetchChannelList = async () => {
+  channelList.value = toTree(await queryChannelList());
 };
-const finished = async (bean?: any) => {
-  await fetchChannelList(bean);
+const finished = async () => {
+  await fetchChannelList();
   emit('finished');
 };
 const fetchChannelModelList = async () => {
-  channelModelList.value = await queryModelList({ Q_EQ_type: 'channel' });
+  channelModelList.value = await queryModelList({ type: 'channel' });
   // 如果 channelModelId 无值，则默认赋予第一个模型的值
   if (channelModelId.value == null && channelModelList.value.length > 0) {
     channelModelId.value = channelModelList.value[0].id;
   }
 };
 const fetchArticleModelList = async () => {
-  articleModelList.value = await queryModelList({ Q_EQ_type: 'article' });
-};
-const fetchGroupList = async () => {
-  groupList.value = await queryGroupList();
+  articleModelList.value = await queryModelList({ type: 'article' });
 };
 const fetchChannelTemplates = async () => {
   channelTemplates.value = await queryChannelTemplates();
@@ -307,7 +298,6 @@ const fetchArticleTemplates = async () => {
 onMounted(() => {
   fetchChannelModelList();
   fetchArticleModelList();
-  fetchGroupList();
   fetchChannelTemplates();
   fetchArticleTemplates();
   fetchChannelList();
@@ -325,6 +315,9 @@ const initCustoms = (customs: any) => {
 .label-top {
   :deep(.el-form-item) {
     margin-bottom: 12px;
+  }
+  :deep(.el-form-item__label) {
+    margin-bottom: 0;
   }
 }
 </style>

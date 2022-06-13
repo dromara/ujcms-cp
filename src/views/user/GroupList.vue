@@ -23,13 +23,18 @@
           <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('group.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="description" :label="$t('group.description')" min-width="150" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="allAccessPermission" :label="$t('group.allAccessPermission')" sortable="custom">
+            <template #default="{ row }">
+              <el-tag :type="row.allAccessPermission ? 'success' : 'info'" size="small">{{ $t(row.allAccessPermission ? 'yes' : 'no') }}</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column property="type" :label="$t('group.type')" sortable="custom" show-overflow-tooltip :formatter="(row) => $t(`group.type.${row.type}`)" />
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">
-              <el-button type="text" :disabled="perm('group:update')" @click="handleEdit(row.id)" size="small">{{ $t('edit') }}</el-button>
+              <el-button type="primary" :disabled="perm('group:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                 <template #reference>
-                  <el-button type="text" :disabled="!deletable(row.id) || perm('group:delete')" size="small">{{ $t('delete') }}</el-button>
+                  <el-button type="primary" :disabled="!deletable(row.id) || perm('group:delete')" size="small" link>{{ $t('delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -40,6 +45,10 @@
     <group-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" />
   </div>
 </template>
+
+<script lang="ts">
+export default { name: 'GroupList' };
+</script>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';

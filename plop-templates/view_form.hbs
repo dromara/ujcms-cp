@@ -8,15 +8,17 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="() => ({})"
+    :initValues="(): any => ({})"
     :toValues="(bean) => ({ ...bean })"
     perms="{{camelCase name}}"
+    v-model:values="values"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     @finished="$emit('finished')"
   >
-    <template #default="{ values }">
-      <el-form-item prop="name" :label="$t('{{camelCase name}}.name')" :rules="{ required: true, message: () => $t('v.required') }">
+    <template #default="{ bean }">
+      <el-form-item prop="name" :rules="{ required: true, message: () => $t('v.required') }">
+        <template #label><label-tip message="{{camelCase name}}.name" /></template>
         <el-input v-model="values.name" ref="focus" maxlength="50"></el-input>
       </el-form-item>
     </template>
@@ -24,11 +26,13 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, ref } from 'vue';
+import { ref } from 'vue';
 import { query{{pascalCase name}}, create{{pascalCase name}}, update{{pascalCase name}}, delete{{pascalCase name}} } from '@/api/{{kebabCase path}}';
 import DialogForm from '@/components/DialogForm.vue';
+import LabelTip from '@/components/LabelTip.vue';
 
 defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true } });
 defineEmits({ 'update:modelValue': null, finished: null });
 const focus = ref<any>();
+const values = ref<any>({});
 </script>

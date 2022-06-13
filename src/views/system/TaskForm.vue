@@ -7,17 +7,18 @@
     :deleteBean="deleteTask"
     :beanId="beanId"
     :beanIds="beanIds"
-    :initValues="() => ({ user: {} })"
+    :initValues="(): any => ({ user: {} })"
     :toValues="(bean) => ({ ...bean })"
+    :disableEdit="() => true"
     :addable="false"
-    :editable="false"
-    :large="true"
     perms="task"
+    v-model:values="values"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     @finished="$emit('finished')"
+    large
   >
-    <template #default="{ values }">
+    <template #default="{}">
       <el-row>
         <el-col :span="12">
           <el-form-item prop="name" :label="$t('task.name')">
@@ -75,11 +76,16 @@
   </dialog-form>
 </template>
 
+<script lang="ts">
+export default { name: 'TaskForm' };
+</script>
+
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
+import { ref } from 'vue';
 import { queryTask, createTask, updateTask, deleteTask } from '@/api/system';
 import DialogForm from '@/components/DialogForm.vue';
 
 defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true } });
 defineEmits({ 'update:modelValue': null, finished: null });
+const values = ref<any>({});
 </script>

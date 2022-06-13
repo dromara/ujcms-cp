@@ -1,17 +1,20 @@
 <template>
   <section class="p-3">
-    <router-view v-slot="{ Component }">
+    <router-view v-slot="{ Component, route }">
       <transition name="fade-transform" mode="out-in">
-        <component :is="Component" />
+        <keep-alive :include="includes">
+          <component :key="route.fullPath" :is="Component" />
+        </keep-alive>
       </transition>
     </router-view>
   </section>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { computed } from 'vue';
+import { viewTabs } from './useViewTabs';
 
-export default defineComponent({
-  name: 'AppMain',
-});
+// 保留状态会导致一个页签的修改无法更新到另一个页签，需要刷新才能显示。
+// const includes: string[] = [];
+const includes = computed((): string[] => viewTabs.filter((it) => !it.noCache).map((it) => it.component));
 </script>

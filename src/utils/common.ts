@@ -17,6 +17,9 @@ export const getSessionSiteId = (): number | null => {
 export const setSessionSiteId = (siteId: number): void => {
   sessionStorage.setItem(UJCMS_SITE_ID, String(siteId));
 };
+export const removeSessionSiteId = (): void => {
+  sessionStorage.removeItem(UJCMS_SITE_ID);
+};
 
 export const getSiteHeaders = (): any => {
   const siteId = getSessionSiteId();
@@ -46,7 +49,6 @@ export const toParams = (params: Record<string, any>): any => {
 
 export const resetParams = (params: Record<string, any>): void => {
   Object.keys(params).forEach((key) => {
-    // eslint-disable-next-line
     delete params[key];
   });
 };
@@ -112,4 +114,8 @@ export const moveList = (selected: any[], list: any[], type: 'top' | 'up' | 'dow
     }
   }
   return list;
+};
+
+export const isExternalPath = (path: string): boolean => {
+  return /^(https?:|mailto:|tel:)/.test(path);
 };

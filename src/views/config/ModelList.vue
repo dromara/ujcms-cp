@@ -26,19 +26,24 @@
           <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('model.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="type" :label="$t('model.type')" sortable="custom" :formatter="(row) => $t(`model.type.${row.type}`)" />
-          <el-table-column property="scope" :label="$t('model.scope')" sortable="custom" :formatter="(row) => $t(`model.scope.${row.scope}`)" />
+          <el-table-column property="scope" :label="$t('model.scope')" sortable="custom">
+            <template #default="{row}">
+              <el-tag v-if="row.scope===2" type="success" size="small">{{ $t(`model.scope.${row.scope}`) }}</el-tag>
+              <el-tag v-else type="info" size="small">{{ $t(`model.scope.${row.scope}`) }}</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">
-              <el-button type="text" :disabled="perm('model:update')" @click="handleEdit(row.id)" size="small">{{ $t('edit') }}</el-button>
-              <el-button v-if="!['global', 'site'].includes(row.type)" type="text" :disabled="perm('model:update')" @click="handleSystemFields(row.id)" size="small">
+              <el-button type="primary" :disabled="perm('model:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
+              <el-button type="primary" v-if="!['global', 'site'].includes(row.type)" :disabled="perm('model:update')" @click="handleSystemFields(row.id)" size="small" link>
                 {{ $t('model.fun.systemFields') }}
               </el-button>
-              <el-button type="text" :disabled="perm('model:update')" @click="handleCustomFields(row.id)" size="small">
+              <el-button type="primary" :disabled="perm('model:update')" @click="handleCustomFields(row.id)" size="small" link>
                 {{ $t('model.fun.customFields') }}
               </el-button>
               <el-popconfirm v-if="deletable(row)" :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                 <template #reference>
-                  <el-button type="text" :disabled="perm('model:delete')" size="small">{{ $t('delete') }}</el-button>
+                  <el-button type="primary" :disabled="perm('model:delete')" size="small" link>{{ $t('delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -51,6 +56,10 @@
     <model-custom-fields v-model="customFieldsVisible" :beanId="beanId" />
   </div>
 </template>
+
+<script lang="ts">
+export default { name: 'ModelList' };
+</script>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
@@ -84,7 +93,7 @@ const filtered = ref<boolean>(false);
 const fetchData = async () => {
   loading.value = true;
   try {
-    data.value = await queryModelList({ ...toParams(params.value), Q_EQ_type: modelType.value, Q_OrderBy: sort.value });
+    data.value = await queryModelList({ ...toParams(params.value), type: modelType.value, Q_OrderBy: sort.value });
     filtered.value = Object.values(params.value).filter((v) => v !== undefined && v !== '').length > 0 || sort.value !== undefined;
   } finally {
     loading.value = false;

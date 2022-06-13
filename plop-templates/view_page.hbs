@@ -29,10 +29,10 @@
           <el-table-column property="name" :label="$t('{{camelCase name}}.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column :label="$t('table.action')">
             <template #default="{row}">
-              <el-button type="text" :disabled="perm('{{camelCase name}}:update')" @click="handleEdit(row.id)"  size="small">\{{ $t('edit') }}</el-button>
+              <el-button type="primary" :disabled="perm('{{camelCase name}}:update')" @click="handleEdit(row.id)" size="small" link>\{{ $t('edit') }}</el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                 <template #reference>
-                  <el-button type="text" :disabled="perm('{{camelCase name}}:delete')"  size="small">\{{ $t('delete') }}</el-button>
+                  <el-button type="primary" :disabled="perm('{{camelCase name}}:delete')" size="small" link>\{{ $t('delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>

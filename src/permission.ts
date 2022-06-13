@@ -1,12 +1,12 @@
-import NProgress from 'nprogress'; // progress bar
-import 'nprogress/nprogress.css'; // progress bar style
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
 import { RouteLocationNormalized } from 'vue-router';
-import getPageTitle from '@/utils/getPageTitle';
-import { getAccessToken } from '@/utils/auth'; // get token from cookie
+import i18n from '@/i18n';
+import { getAccessToken } from '@/utils/auth';
 import { hasCurrentUser, fetchCurrentUser, hasPermission } from '@/store/useCurrentUser';
 import router from './router';
 
-NProgress.configure({ showSpinner: false }); // NProgress Configuration
+NProgress.configure({ showSpinner: false });
 
 const LOGIN_PATH = '/login';
 
@@ -41,8 +41,18 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
 });
 
 router.afterEach((to: RouteLocationNormalized) => {
-  // set page title
   document.title = getPageTitle(to.meta.title);
-  // finish progress bar
   NProgress.done();
 });
+
+const title = import.meta.env.VITE_APP_TITLE || 'UJCMS';
+
+function getPageTitle(pageTitle?: string): string {
+  if (pageTitle) {
+    const {
+      global: { t },
+    } = i18n;
+    return `${t(pageTitle)} - ${title}`;
+  }
+  return `${title}`;
+}

@@ -8,7 +8,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
 import { Top, Bottom, ArrowUp, ArrowDown } from '@element-plus/icons-vue';
 
 defineProps({

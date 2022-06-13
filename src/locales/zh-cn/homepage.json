@@ -1,0 +1,26 @@
+{
+  "environment.version": "版本号",
+  "environment.os": "操作系统",
+  "environment.osName": "系统名称",
+  "environment.osArch": "系统架构",
+  "environment.osVersion": "系统版本",
+  "environment.java": "Java Runtime",
+  "environment.javaRuntimeName": "Java Runtime名称",
+  "environment.javaRuntimeVersion": "Java Runtime版本",
+  "environment.javaVersion": "Java版本",
+  "environment.javaVendor": "Java提供商",
+  "environment.javaVm": "Java虚拟机",
+  "environment.javaVmName": "虚拟机名称",
+  "environment.javaVmVersion": "虚拟机版本",
+  "environment.javaVmVendor": "虚拟机供应商",
+  "environment.userName": "系统用户",
+  "environment.userDir": "用户主目录",
+  "environment.javaIoTmpdir": "用户临时目录",
+  "environment.maxMemory": "最大内存",
+  "environment.totalMemory": "总内存",
+  "environment.freeMemory": "空闲内存",
+  "environment.usedMemory": "已用内存",
+  "environment.availableMemory": "可用内存",
+
+  "":""
+}

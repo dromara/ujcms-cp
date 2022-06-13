@@ -16,6 +16,12 @@ UJCMS-CP是UJCMS的后台前端项目。使用 TypeScript、Vite 2、Vue 3、Ele
 * 访问：http://localhost:9520
 * 用户名：admin，密码：password。
 
+# 修改后台标识
+
+* 修改`.env`文件中的`VITE_APP_TITLE=UJCMS`配置，可改变登录页、后台左侧导航等处的`UJCMS`标识。
+* 替换`/public/favicon.png`图片，可改变浏览器标签页上显示的图标。
+* 修改`/src/layout/components/AppSidebar/Logo.vue`文件中的`svg`图标，可改变后台左侧导航处LOGO图标。
+
 ## 编译及部署
 
 * 执行：npm run build

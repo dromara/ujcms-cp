@@ -13,4 +13,6 @@ export interface RefreshTokenParam {
 
 export const accountLogin = async (data: LoginParam): Promise<any> => (await axios.post('/auth/jwt/login', data)).data;
 export const accountRefreshToken = async (data: RefreshTokenParam): Promise<any> => (await axios.post('/auth/jwt/refresh-token', data)).data;
-export const queryCurrentUser = async (): Promise<any> => (await axios.get('/user/current')).data;
+export const queryCurrentUser = async (): Promise<any> => (await axios.get('/env/current-user')).data;
+export const queryCurrentSiteList = async (): Promise<any> => (await axios.get('/env/current-site-list')).data;
+export const queryClientPublicKey = async (): Promise<any> => (await axios.get('/env/client-public-key')).data;

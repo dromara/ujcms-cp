@@ -36,18 +36,17 @@
           <el-table-column property="articleModel.name" :label="$t('channel.articleModel')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="nav" :label="$t('channel.nav')">
             <template #default="{ row }">
-              <el-icon v-if="row.nav" class="text-primary"><circle-check /></el-icon>
-              <el-icon v-else class="text-secondary"><circle-close /></el-icon>
+              <el-tag :type="row.nav ? 'success' : 'info'" size="small">{{ $t(row.nav ? 'yes' : 'no') }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">
-              <el-button type="text" :disabled="perm('channel:create')" @click="handleAdd(row)" size="small">{{ $t('addChild') }}</el-button>
-              <el-button type="text" :disabled="perm('channel:update')" @click="handleEdit(row.id)" size="small">{{ $t('edit') }}</el-button>
+              <el-button type="primary" :disabled="perm('channel:create')" @click="handleAdd(row)" size="small" link>{{ $t('addChild') }}</el-button>
+              <el-button type="primary" :disabled="perm('channel:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                 <template #reference>
-                  <el-button type="text" :disabled="perm('channel:delete')" size="small">{{ $t('delete') }}</el-button>
+                  <el-button type="primary" :disabled="perm('channel:delete')" size="small" link>{{ $t('delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -58,6 +57,10 @@
     <channel-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" :parent="parent" @finished="fetchData" />
   </div>
 </template>
+
+<script lang="ts">
+export default { name: 'ChannelList' };
+</script>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';

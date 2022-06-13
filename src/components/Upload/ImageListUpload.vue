@@ -12,25 +12,25 @@
           </div>
         </div>
       </li>
+      <el-upload
+        :action="imageUploadUrl"
+        :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
+        :data="getData()"
+        :accept="accept"
+        :before-upload="beforeUpload"
+        :on-success="(res, file) => fileList.push({ name: res.name, url: res.url })"
+        :on-progress="(event, file) => (progressFile = file)"
+        :on-error="onError"
+        :show-file-list="false"
+        multiple
+      >
+        <el-progress v-if="progressFile.status === 'uploading'" type="circle" :percentage="parseInt(progressFile.percentage, 10)" />
+        <div v-else class="el-upload--picture-card">
+          <el-icon><Plus /></el-icon>
+        </div>
+      </el-upload>
     </ul>
     <!-- </transition-group> -->
-    <el-upload
-      :action="imageUploadUrl"
-      :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
-      :data="getData()"
-      :accept="accept"
-      :before-upload="beforeUpload"
-      :on-success="(res, file) => fileList.push({ name: res.name, url: res.url })"
-      :on-progress="(event, file) => (progressFile = file)"
-      :show-file-list="false"
-      multiple
-      class="inline-block"
-    >
-      <el-progress v-if="progressFile.status === 'uploading'" type="circle" :percentage="parseInt(progressFile.percentage, 10)" />
-      <div v-else class="el-upload--picture-card">
-        <el-icon><Plus /></el-icon>
-      </div>
-    </el-upload>
     <div>
       <el-dialog v-model="previewVisible" top="5vh" :width="768">
         <el-input v-model="previewFile.url" maxlength="255">
@@ -51,13 +51,15 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, onMounted, ref, toRefs, computed } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ref, toRefs, computed, watch } from 'vue';
+import { ElMessage, useFormItem } from 'element-plus';
 import { Plus, Crop, View, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
+import { handleError } from '@/utils/request';
 import { getAuthHeaders } from '@/utils/auth';
 import { getSiteHeaders } from '@/utils/common';
-import { imageUploadUrl, queryGlobalSettings } from '@/api/config';
+import { uploadSettings } from '@/store/useConfig';
+import { imageUploadUrl } from '@/api/config';
 import ImageCropper from './ImageCropper.vue';
 
 const props = defineProps({
@@ -79,9 +81,21 @@ const previewVisible = ref<boolean>(false);
 const cropperVisible = ref<boolean>(false);
 const previewFile = ref<any>({ src: 'data:;base64,=' });
 const fileList = computed({
-  get: (): any => modelValue.value,
-  set: (val) => emit('update:modelValue', val),
+  get: (): any[] => modelValue.value,
+  set: (val: any) => emit('update:modelValue', val),
 });
+const { formItem } = useFormItem();
+watch(
+  fileList,
+  () => {
+    formItem?.validate?.('change').catch((err: any) => {
+      if (import.meta.env.MODE !== 'production') {
+        console.warn(err);
+      }
+    });
+  },
+  { deep: true },
+);
 const handlePreview = (file: any) => {
   previewFile.value = file;
   previewVisible.value = true;
@@ -98,22 +112,17 @@ const getData = () => {
   }
   return data;
 };
-const global = ref<any>();
-const fetchGlobalSettings = async () => {
-  global.value = await queryGlobalSettings();
-};
-onMounted(() => {
-  fetchGlobalSettings();
-});
-const defaultAccept = 'image/jpg,image/jpeg,image/png,image/gif';
-const accept = computed(() => fileAccept?.value ?? global?.value?.upload?.imageInputAccept ?? defaultAccept);
-const maxSize = computed(() => fileMaxSize?.value ?? global?.value?.upload?.imageLimitByte ?? 0);
+const accept = computed(() => fileAccept?.value ?? uploadSettings.imageInputAccept );
+const maxSize = computed(() => fileMaxSize?.value ?? uploadSettings.imageLimitByte);
 const beforeUpload = (file: any) => {
   if (maxSize.value > 0 && file.size > maxSize.value) {
     ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024}MB` }));
     return false;
   }
   return true;
+};
+const onError = (error: Error) => {
+  handleError(JSON.parse(error.message));
 };
 </script>
 

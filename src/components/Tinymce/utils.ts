@@ -82,7 +82,7 @@ const bindHandlers = (initEvent: Event, listeners: any, editor: any): void => {
     });
 };
 
-const bindModelHandlers = (props: any, ctx: SetupContext, editor: any, modelValue: Ref<string>): void => {
+const bindModelHandlers = (props: any, ctx: SetupContext, editor: any, modelValue: Ref<string>, formItem: any): void => {
   const modelEvents = props.modelEvents ? props.modelEvents : null;
   const normalizedEvents = Array.isArray(modelEvents) ? modelEvents.join(' ') : modelEvents;
 
@@ -92,16 +92,27 @@ const bindModelHandlers = (props: any, ctx: SetupContext, editor: any, modelValu
     }
   });
 
-  editor.on(normalizedEvents ?? 'change input undo redo', () => {
-    ctx.emit('update:modelValue', editor.getContent({ format: props.outputFormat }));
+  // 要加上 paste 事件，否则首次粘贴时内容会为空。也可使用'change keyup undo redo'
+  editor.on(normalizedEvents ?? 'change input paste undo redo', () => {
+    const content = editor.getContent({ format: props.outputFormat });
+    ctx.emit('update:modelValue', content);
+    ctx.emit('input', content);
+    ctx.emit('change', content);
+    formItem?.validate?.('change').catch((err: any) => {
+      if (import.meta.env.MODE !== 'production') {
+        console.warn(err);
+      }
+    });
+  });
+
+  editor.on('blur', (e: any) => {
+    ctx.emit('blur', e);
   });
 };
 
-const initEditor = (initEvent: Event, props: any, ctx: SetupContext, editor: any, modelValue: Ref<string>, content: () => string): void => {
-  editor.setContent(content());
-  if (ctx.attrs['onUpdate:modelValue']) {
-    bindModelHandlers(props, ctx, editor, modelValue);
-  }
+const initEditor = (initEvent: Event, props: any, ctx: SetupContext<any>, editor: any, modelValue: Ref<string>, formItem: any): void => {
+  editor.setContent(modelValue.value ?? '');
+  bindModelHandlers(props, ctx, editor, modelValue, formItem);
   bindHandlers(initEvent, ctx.attrs, editor);
 };
 

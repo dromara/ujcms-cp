@@ -47,7 +47,13 @@
             </router-link>
              -->
             <el-dropdown-item @click="passwordFormVisible = true" :disabled="perm('password:update')">{{ $t('changePassword') }}</el-dropdown-item>
-            <el-dropdown-item @click="machineFormVisible = true" v-if="hasPermission('machine:code') && isInclude('machine:code')">
+            <el-dropdown-item divided @click="homepageEnvironmentVisible = true" :disabled="perm('homepage:environment')">
+              {{ $t('menu.personal.homepage.environment') }}
+            </el-dropdown-item>
+            <el-dropdown-item @click="homepageGeneratedKeyVisible = true" :disabled="perm('homepage:generatedKey')">
+              {{ $t('menu.personal.homepage.generatedKey') }}
+            </el-dropdown-item>
+            <el-dropdown-item divided @click="machineCodeVisible = true" v-if="hasPermission('machine:code') && isInclude('machine:code')">
               {{ $t('menu.personal.machine.code') }}
             </el-dropdown-item>
             <el-dropdown-item @click="machineLicenseVisible = true" v-if="hasPermission('machine:license') && isInclude('machine:license')">
@@ -59,40 +65,39 @@
       </el-dropdown>
     </div>
     <password-form v-model="passwordFormVisible"></password-form>
-    <machine-code-form v-if="hasPermission('machine:code') && isInclude('machine:code')" v-model="machineFormVisible"></machine-code-form>
-    <machine-license-form v-if="hasPermission('machine:license') && isInclude('machine:license')" v-model="machineLicenseVisible"></machine-license-form>
+    <homepage-environment v-if="hasPermission('homepage:environment')" v-model="homepageEnvironmentVisible"></homepage-environment>
+    <homepage-generated-key v-if="hasPermission('homepage:generatedKey')" v-model="homepageGeneratedKeyVisible"></homepage-generated-key>
+    <machine-code v-if="hasPermission('machine:code') && isInclude('machine:code')" v-model="machineCodeVisible"></machine-code>
+    <machine-license v-if="hasPermission('machine:license') && isInclude('machine:license')" v-model="machineLicenseVisible"></machine-license>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Fold, Expand, HomeFilled, User, SwitchButton } from '@element-plus/icons-vue';
 import { setCookieLocale, getSessionSiteId, setSessionSiteId } from '@/utils/common';
 import { languages } from '@/i18n';
-import { toTree, flatTree } from '@/utils/tree';
-import { querySiteList } from '@/api/system';
+import { queryCurrentSiteList } from '@/api/login';
 import { currentUser, perm, hasPermission, isInclude, logout } from '@/store/useCurrentUser';
 import { appState, toggleSidebar } from '@/store/useAppState';
 import Breadcrumb from '@/components/Breadcrumb/index.vue';
 import PasswordForm from '@/views/personal/PasswordForm.vue';
-import MachineCodeForm from '@/views/personal/MachineCodeForm.vue';
-import MachineLicenseForm from '@/views/personal/MachineLicenseForm.vue';
+import MachineCode from '@/views/personal/MachineCode.vue';
+import MachineLicense from '@/views/personal/MachineLicense.vue';
+import HomepageEnvironment from '@/views/personal/HomepageEnvironment.vue';
+import HomepageGeneratedKey from '@/views/personal/HomepageGeneratedKey.vue';
 
 const { locale } = useI18n({ useScope: 'global' });
 
-const siteId = ref<number | null>(getSessionSiteId());
 const siteList = ref<any[]>([]);
-const site = computed(() => siteList.value.find((item) => item.id === siteId.value));
+const site = ref<any>({});
 const fetchSiteList = async () => {
-  siteList.value = flatTree(toTree(await querySiteList()));
-  if (siteId.value == null) {
-    siteId.value = siteList.value[0]?.id;
-  }
+  siteList.value = await queryCurrentSiteList();
+  site.value = siteList.value.find((item) => item.id === getSessionSiteId()) ?? siteList.value[0];
 };
 const changeSiteId = (id: number) => {
   setSessionSiteId(id);
-  siteId.value = id;
   window.location.reload();
 };
 onMounted(() => {
@@ -110,6 +115,8 @@ const handleLogout = () => {
 };
 
 const passwordFormVisible = ref<boolean>(false);
-const machineFormVisible = ref<boolean>(false);
+const machineCodeVisible = ref<boolean>(false);
 const machineLicenseVisible = ref<boolean>(false);
+const homepageEnvironmentVisible = ref<boolean>(false);
+const homepageGeneratedKeyVisible = ref<boolean>(false);
 </script>

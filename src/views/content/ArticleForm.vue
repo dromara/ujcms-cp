@@ -1,6 +1,5 @@
 <template>
   <dialog-form
-    ref="form"
     :name="$t('menu.content.article')"
     :queryBean="queryArticle"
     :createBean="createArticle"
@@ -9,9 +8,17 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="() => ({ channelId: channel?.id, allowComment: true, customs: initCustoms({}), fileList: [], imageList: [] })"
+    :initValues="(): any => ({
+      editorType: mains['text'].editorType,
+      channelId: channel?.id,
+      allowComment: true,
+      customs: initCustoms({}),
+      fileList: [],
+      imageList: [],
+    })"
     :toValues="(bean:any) => ({ ...bean })"
     perms="article"
+    v-model:values="values"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     @finished="$emit('finished')"
@@ -26,13 +33,13 @@
     labelWidth="120px"
     large
   >
-    <template #header="{ values, isEdit }">
+    <template #header="{ isEdit }">
       <template v-if="isEdit">
         <el-tag v-if="values.status === 0" type="success" class="ml-2">{{ values.status != null ? $t(`article.status.${values.status}`) : undefined }}</el-tag>
         <el-tag v-else type="info" class="ml-2">{{ values.status != null ? $t(`article.status.${values.status}`) : undefined }}</el-tag>
       </template>
     </template>
-    <template #default="{ values, isEdit }">
+    <template #default="{ isEdit }">
       <el-row>
         <el-col :span="18">
           <el-row>
@@ -176,7 +183,7 @@
                 :label="mains['file'].name ?? $t('article.file')"
                 :rules="mains['file'].required ? { required: true, message: () => $t('v.required') } : undefined"
               >
-                <el-row>
+                <el-row class="w-full">
                   <el-col :span="12">
                     <el-input v-model="values.fileName">
                       <template #prepend>{{ $t('name') }}</template>
@@ -222,23 +229,46 @@
                 :label="mains['doc'].name ?? $t('article.doc')"
                 :rules="mains['doc'].required ? { required: true, message: () => $t('v.required') } : undefined"
               >
-                <el-row>
-                  <el-col :span="12">
-                    <el-input v-model="values.docName">
-                      <template #prepend>{{ $t('name') }}</template>
-                    </el-input>
-                  </el-col>
-                  <el-col :span="12">
-                    <el-input v-model="values.docLength">
-                      <template #prepend>{{ $t('size') }}</template>
-                      <template #append>Byte</template>
-                    </el-input>
-                  </el-col>
-                </el-row>
-                <el-input v-model="values.doc">
-                  <template #prepend>URL</template>
-                </el-input>
-                <base-upload type="doc" :on-success="(res: any) => ((values.doc = res.url), (values.docName = res.name), (values.docLength = res.size))"></base-upload>
+                <div class="w-full">
+                  <el-row>
+                    <el-col :span="12">
+                      <el-input v-model="values.docName">
+                        <template #prepend>{{ $t('name') }}</template>
+                      </el-input>
+                    </el-col>
+                    <el-col :span="12">
+                      <el-input v-model="values.docLength">
+                        <template #prepend>{{ $t('size') }}</template>
+                        <template #append>Byte</template>
+                      </el-input>
+                    </el-col>
+                  </el-row>
+                  <el-input v-model="values.doc">
+                    <template #prepend>URL</template>
+                  </el-input>
+                  <el-input v-model="values.docOrig">
+                    <template #prepend>{{ $t('article.docOrig') }}</template>
+                  </el-input>
+                  <base-upload
+                    v-if="jodconverterEnabled && currentUser.epRank > 0"
+                    type="library"
+                    :disabled="perm('jodConvert:library')"
+                    :upload-action="jodConvertLibraryUrl"
+                    :on-success="
+                      (res: any) => {
+                        values.doc = res.doc;
+                        values.docOrig = res.docOrig;
+                        values.docName = res.docName;
+                        values.docLength = res.docLength;
+                        values.image = res.docImage;
+                      }
+                    "
+                  ></base-upload>
+                  <el-alert v-if="!jodconverterEnabled && currentUser.epRank > 0" :title="$t('error.jodConverterNotEnabled')" type="error" :closable="false" />
+                  <el-button v-if="currentUser.epRank === 0" type="primary" @click="$alert($t('error.enterprise'), { dangerouslyUseHTMLString: true })">
+                    {{ $t('article.op.clickToUpload') }}
+                  </el-button>
+                </div>
               </el-form-item>
             </el-col>
             <el-col :span="mains['imageList'].double ? 12 : 24" v-if="mains['imageList'].show">
@@ -265,7 +295,26 @@
                 :label="mains['text'].name ?? $t('article.text')"
                 :rules="mains['text'].required ? { required: true, message: () => $t('v.required') } : undefined"
               >
-                <tinymce v-model="values.text" />
+                <div class="w-full">
+                  <el-radio-group v-if="mains['text'].editorSwitch" v-model="values.editorType" @change="values.markdown = ''" class="mr-6">
+                    <el-radio v-for="n in [1, 2]" :label="n">{{ $t(`model.field.editorType.${n}`) }}</el-radio>
+                  </el-radio-group>
+                  <div v-if="values.editorType === 1 && jodconverterEnabled && currentUser.epRank > 0" class="inline-flex mb-1">
+                    <base-upload
+                      type="doc"
+                      file-accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                      :disabled="perm('jodConvert:doc')"
+                      :upload-action="jodConvertDocUrl"
+                      :on-success="(res: string) => (values.text = res)"
+                      :button="$t('article.op.docImport')"
+                    ></base-upload>
+                  </div>
+                  <div v-if="currentUser.epRank === 0 && currentUser.epDisplay" class="inline-flex mb-1">
+                    <el-button type="primary" @click="$alert($t('error.enterprise'), { dangerouslyUseHTMLString: true })">{{ $t('article.op.docImport') }}</el-button>
+                  </div>
+                  <tui-editor v-if="values.editorType === 2" v-model="values.markdown" v-model:html="values.text" class="leading-6" />
+                  <tinymce v-else v-model="values.text" />
+                </div>
               </el-form-item>
             </el-col>
             <template v-for="field in editorFields" :key="field.code">
@@ -280,22 +329,22 @@
         <el-col :span="6" class="el-form--label-top label-top">
           <el-tabs type="border-card" class="ml-5">
             <el-tab-pane :label="$t('article.tabs.setting')">
-              <el-form-item prop="channelId" :label="asides['channel'].name ?? $t('article.channel')" :rules="{ required: true, message: () => $t('v.required') }">
-                <el-cascader
+              <el-form-item prop="channelId" :label="asides['channel'].name ?? $t('article.channel')" :rules="[{ required: true, message: () => $t('v.required') }]">
+                <el-tree-select
                   v-model="values.channelId"
-                  :options="channelList"
-                  :props="{ value: 'id', label: 'name', checkStrictly: true }"
+                  :data="channelList"
+                  nodeKey="id"
+                  :props="{ label: 'name' }"
+                  class="w-full"
                   @change="
-                    (value) => {
-                      values.channelId = value[value.length - 1];
-                      articleModelId = flatChannelList.find((item) => item.id === values.channelId)?.articleModelId;
+                    (value: any) => {
+                      articleModelId = flatChannelList.find((item) => item.id === value)?.articleModelId;
                       nextTick().then(() => {
                         initCustoms(values.customs);
                       });
                     }
                   "
-                  class="w-full"
-                ></el-cascader>
+                />
               </el-form-item>
               <el-form-item :label="asides['org'].name ?? $t('article.org')" v-if="isEdit && asides['org'].show" required>
                 <el-input :value="values.org?.name" disabled></el-input>
@@ -327,7 +376,7 @@
                 <el-autocomplete
                   v-model="values.source"
                   value-key="name"
-                  :fetch-suggestions="async (query:string, callback:(data: any[]) => void) => callback(await fetchSourceList(query))"
+                  :fetch-suggestions="async (query:string, callback:any) => callback(await fetchSourceList(query))"
                   class="w-full"
                   @keydown.enter.prevent
                   highlight-first-item
@@ -341,7 +390,7 @@
                 :rules="asides['articleTemplate'].required ? { required: true, message: () => $t('v.required') } : undefined"
                 v-if="asides['articleTemplate'].show"
               >
-                <template #label><label-tip :label="asides['articleTemplate'].name ?? $t('article.articleTemplate')" message="article.articleTemplate" /></template>
+                <template #label><label-tip :label="asides['articleTemplate'].name ?? $t('article.articleTemplate')" message="article.articleTemplate" help /></template>
                 <el-select v-model="values.articleTemplate" class="w-full">
                   <el-option v-for="item in articleTemplates" :key="item" :label="item + '.html'" :value="item"></el-option>
                 </el-select>
@@ -351,7 +400,7 @@
                 :rules="asides['allowComment'].required ? { required: true, message: () => $t('v.required') } : undefined"
                 v-if="asides['allowComment'].show"
               >
-                <template #label><label-tip :label="asides['allowComment'].name ?? $t('article.allowComment')" message="article.allowComment" /></template>
+                <template #label><label-tip :label="asides['allowComment'].name ?? $t('article.allowComment')" message="article.allowComment" help /></template>
                 <el-switch v-model="values.allowComment"></el-switch>
               </el-form-item>
               <el-form-item :label="asides['user'].name ?? $t('article.user')" v-if="asides['user'].show">
@@ -374,15 +423,22 @@
   </dialog-form>
 </template>
 
+<script lang="ts">
+export default { name: 'ArticleForm' };
+</script>
+
 <script setup lang="ts">
-import { defineProps, defineEmits, computed, onMounted, ref, toRefs, watch, nextTick } from 'vue';
+import { computed, onMounted, ref, toRefs, watch, nextTick } from 'vue';
+import { perm, currentUser } from '@/store/useCurrentUser';
 import { queryArticle, createArticle, updateArticle, deleteArticle, queryChannelList, queryArticleTemplates } from '@/api/content';
-import { queryDictList, queryModelList } from '@/api/config';
+import { queryModelList } from '@/api/config';
+import { jodConvertDocUrl, jodConvertLibraryUrl, queryjodConvertEnabled, queryDictListByAlias } from '@/api/content';
 import { toTree } from '@/utils/tree';
 import { getModelData, mergeModelFields, arr2obj } from '@/data';
 import FieldItem from '@/views/config/components/FieldItem.vue';
 import DialogForm from '@/components/DialogForm.vue';
-import Tinymce from '@/components/Tinymce/index.vue';
+import Tinymce from '@/components/Tinymce';
+import { TuiEditor } from '@/components/TuiEditor';
 import LabelTip from '@/components/LabelTip.vue';
 import { BaseUpload, ImageUpload, ImageListUpload, FileListUpload } from '@/components/Upload';
 
@@ -390,7 +446,7 @@ const props = defineProps({
   modelValue: { type: Boolean, required: true },
   beanId: { required: true },
   beanIds: { type: Array, required: true },
-  channel: { type: Object, default: null },
+  channel: null,
 });
 defineEmits({ 'update:modelValue': null, finished: null });
 
@@ -399,6 +455,8 @@ const showSubtitle = ref<boolean>(false);
 const showFullTitle = ref<boolean>(false);
 const showLinkUrl = ref<boolean>(false);
 const focus = ref<any>();
+const values = ref<any>({});
+const jodconverterEnabled = ref<boolean>(false);
 const channelList = ref<any[]>([]);
 const flatChannelList = ref<any[]>([]);
 const articleModelList = ref<any[]>([]);
@@ -409,18 +467,24 @@ const mains = computed(() => arr2obj(mergeModelFields(getModelData().article.mai
 const asides = computed(() => arr2obj(mergeModelFields(getModelData().article.asides, articleModel.value?.asides, 'article')));
 const fields = computed(() => JSON.parse(articleModel.value?.customs || '[]').filter((item: any) => item.type !== 'tinyEditor'));
 const editorFields = computed(() => JSON.parse(articleModel.value?.customs || '[]').filter((item: any) => item.type === 'tinyEditor'));
+
 watch(visible, () => {
   if (visible) {
-    articleModelId.value = channel.value?.articleModelId;
+    articleModelId.value = channel?.value?.articleModelId;
   }
 });
-const fetchSourceList = (name: string) => queryDictList({ 'Q_EQ_type@dictType-alias': 'article_source', Q_Contains_name: name, limit: 50 });
+const fetchJodconverterEnabled = async () => {
+  if (currentUser.epRank > 0) {
+    jodconverterEnabled.value = await queryjodConvertEnabled();
+  }
+};
+const fetchSourceList = (name: string) => queryDictListByAlias('article_source', name);
 const fetchChannelList = async () => {
   flatChannelList.value = await queryChannelList();
   channelList.value = toTree(flatChannelList.value);
 };
 const fetchArticleModeList = async () => {
-  articleModelList.value = await queryModelList({ Q_EQ_type: 'article' });
+  articleModelList.value = await queryModelList({ type: 'article' });
   // 如果 articleModelId 无值，则默认赋予第一个模型的值
   if (articleModelId.value == null && articleModelList.value.length > 0) {
     articleModelId.value = articleModelList.value[0].id;
@@ -433,6 +497,7 @@ onMounted(() => {
   fetchChannelList();
   fetchArticleModeList();
   fetchArticleTemplates();
+  fetchJodconverterEnabled();
 });
 const initCustoms = (customs: any) => {
   fields.value.forEach((field: any) => {
@@ -449,6 +514,9 @@ const initCustoms = (customs: any) => {
 .label-top {
   :deep(.el-form-item) {
     margin-bottom: 12px;
+  }
+  :deep(.el-form-item__label) {
+    margin-bottom: 0;
   }
 }
 </style>

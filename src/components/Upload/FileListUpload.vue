@@ -7,6 +7,7 @@
       :before-upload="beforeUpload"
       :on-success="(res) => fileList.push({ name: res.name, url: res.url, length: res.size })"
       :on-progress="(event, file) => (progressFile = file)"
+      :on-error="onError"
       :show-file-list="false"
       multiple
     >
@@ -47,13 +48,15 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, onMounted, ref, toRefs, computed } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ref, toRefs, computed, watch } from 'vue';
+import { ElMessage, useFormItem } from 'element-plus';
 import { Close, Document, CircleCheck } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
+import { handleError } from '@/utils/request';
 import { getAuthHeaders } from '@/utils/auth';
 import { getSiteHeaders } from '@/utils/common';
-import { fileUploadUrl, queryGlobalSettings } from '@/api/config';
+import { uploadSettings } from '@/store/useConfig';
+import { fileUploadUrl } from '@/api/config';
 
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
@@ -71,6 +74,18 @@ const fileList = computed({
   get: (): any[] => modelValue.value,
   set: (val) => emit('update:modelValue', val),
 });
+const { formItem } = useFormItem();
+watch(
+  fileList,
+  () => {
+    formItem?.validate?.('change').catch((err: any) => {
+      if (import.meta.env.MODE !== 'production') {
+        console.warn(err);
+      }
+    });
+  },
+  { deep: true },
+);
 const previewVisible = ref<boolean>(false);
 const previewFile = ref<any>({});
 const form = ref<any>();
@@ -85,22 +100,17 @@ const handleSubmit = () => {
     previewVisible.value = false;
   });
 };
-const global = ref<any>();
-const fetchGlobalSettings = async () => {
-  global.value = await queryGlobalSettings();
-};
-onMounted(() => {
-  fetchGlobalSettings();
-});
-const defaultAccept = '.zip,.7z,.gz,.bz2,.iso,.rar,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp4,.m3u8,.mp3,.ogg';
-const accept = computed(() => fileAccept?.value ?? global?.value?.upload?.fileInputAccept ?? defaultAccept);
-const maxSize = computed(() => fileMaxSize?.value ?? global?.value?.upload?.fileLimitByte ?? 0);
+const accept = computed(() => fileAccept?.value ?? uploadSettings.fileInputAccept);
+const maxSize = computed(() => fileMaxSize?.value ?? uploadSettings.fileLimitByte);
 const beforeUpload = (file: any) => {
   if (maxSize.value > 0 && file.size > maxSize.value) {
     ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024}MB` }));
     return false;
   }
   return true;
+};
+const onError = (error: Error) => {
+  handleError(JSON.parse(error.message));
 };
 </script>
 

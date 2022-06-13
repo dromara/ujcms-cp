@@ -8,7 +8,7 @@
       form.resetFields();
     "
   >
-    <el-form ref="form" :model="values" label-width="150px" label-position="right">
+    <el-form ref="form" :model="values" v-loading="loading" label-width="150px" label-position="right">
       <el-form-item
         prop="password"
         :label="$t('user.origPassword')"
@@ -16,9 +16,10 @@
           { required: true, message: () => $t('v.required') },
           {
             asyncValidator: async (rule:any, value:any, callback:any) => {
-              if (!(await passwordValidation(value))) {
+              if (!(await passwordMatches(sm2Encrypt(value, publicKey)))) {
                 callback($t('user.error.passwordWrong'));
               }
+              callback();
             },
             trigger: 'blur',
           },
@@ -38,9 +39,8 @@
             validator: (rule:any, value:any, callback:any) => {
               if (value !== values.plainPassword) {
                 callback($t('user.error.passwordNotMatch'));
-              } else {
-                callback();
               }
+              callback();
             },
             trigger: 'blur',
           },
@@ -55,11 +55,17 @@
   </el-dialog>
 </template>
 
+<script lang="ts">
+export default { name: 'PasswordForm' };
+</script>
+
 <script setup lang="ts">
-import { defineProps, defineEmits, ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { updatePassword, passwordValidation } from '@/api/personal';
+import { sm2Encrypt } from '@/utils/sm';
+import { queryClientPublicKey } from '@/api/login';
+import { updatePassword, passwordMatches } from '@/api/personal';
 
 defineProps({ modelValue: { type: Boolean, required: true } });
 const emit = defineEmits({ 'update:modelValue': null });
@@ -67,13 +73,26 @@ const { t } = useI18n();
 const values = ref<any>({});
 const form = ref<any>();
 const focus = ref<any>();
+const loading = ref<boolean>(false);
 const buttonLoading = ref<boolean>(false);
+const publicKey = ref<string>('');
+
+onMounted(async () => {
+  loading.value = true;
+  try {
+    publicKey.value = await queryClientPublicKey();
+  } finally {
+    loading.value = false;
+  }
+});
+
 const handleSubmit = () => {
   form.value.validate(async (valid: boolean) => {
     if (!valid) return;
     buttonLoading.value = true;
     try {
-      await updatePassword(values.value);
+      const password = sm2Encrypt(values.value.password, publicKey.value);
+      await updatePassword({ ...values.value, password });
       form.value.resetFields();
       ElMessage.success(t('success'));
       emit('update:modelValue', false);

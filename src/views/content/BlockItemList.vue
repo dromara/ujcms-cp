@@ -12,7 +12,7 @@
         </query-form>
       </div>
       <div>
-        <!-- <el-button type="primary" :disabled="perm('blockItem:create')" :icon="Plus" @click="handleAdd()">{{ $t('add') }}</el-button> -->
+        <el-button type="primary" :disabled="!block?.enabled || perm('blockItem:create')" :icon="Plus" @click="handleAdd()">{{ $t('add') }}</el-button>
         <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
           <template #reference>
             <el-button :disabled="selection.length <= 0 || perm('blockItem:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
@@ -52,10 +52,10 @@
             </el-table-column>
             <el-table-column :label="$t('table.action')">
               <template #default="{ row }">
-                <el-button type="text" :disabled="perm('blockItem:update')" @click="handleEdit(row.id)" size="small">{{ $t('edit') }}</el-button>
+                <el-button type="primary" :disabled="perm('blockItem:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
                 <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                   <template #reference>
-                    <el-button type="text" :disabled="perm('blockItem:delete')" size="small">{{ $t('delete') }}</el-button>
+                    <el-button type="primary" :disabled="perm('blockItem:delete')" size="small" link>{{ $t('delete') }}</el-button>
                   </template>
                 </el-popconfirm>
               </template>
@@ -68,10 +68,14 @@
   </el-container>
 </template>
 
+<script lang="ts">
+export default { name: 'BlockItemList' };
+</script>
+
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Delete } from '@element-plus/icons-vue';
+import { Delete, Plus } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import { perm } from '@/store/useCurrentUser';
 import { moveList, toParams, resetParams } from '@/utils/common';
@@ -99,14 +103,14 @@ const block = computed(() => blockList.value.find((item) => item.id === Number(b
 const fetchData = async () => {
   loading.value = true;
   try {
-    data.value = await queryBlockItemList({ ...toParams(params.value), Q_EQ_blockId: Number(blockId.value), Q_OrderBy: sort.value });
+    data.value = await queryBlockItemList({ ...toParams(params.value), blockId: Number(blockId.value), Q_OrderBy: sort.value });
     filtered.value = Object.values(params.value).filter((v) => v !== undefined && v !== '').length > 0 || sort.value !== undefined;
   } finally {
     loading.value = false;
   }
 };
 const fetchBlockList = async () => {
-  blockList.value = await queryBlockList({ Q_EQ_enabled_Boolean: true });
+  blockList.value = await queryBlockList();
   blockId.value = String(blockList.value[0].id);
 };
 onMounted(async () => {

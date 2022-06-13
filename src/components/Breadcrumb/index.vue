@@ -9,30 +9,25 @@
   </el-breadcrumb>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, watchEffect } from 'vue';
+<script setup lang="ts">
+import { ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { compile } from 'path-to-regexp';
 
-export default defineComponent({
-  setup() {
-    const router = useRouter();
-    const route = useRoute();
-    const itemList = ref<any[]>([]);
+const router = useRouter();
+const route = useRoute();
+const itemList = ref<any[]>([]);
 
-    const pathCompile = (path: string) => {
-      const { params } = route;
-      const toPath = compile(path);
-      return toPath(params);
-    };
-    const handleLink = (item: any) => {
-      const { redirect, path } = item;
-      router.push(redirect || pathCompile(path));
-    };
-    watchEffect(() => {
-      itemList.value = route.matched.filter((item) => item.meta?.title);
-    });
-    return { itemList, handleLink };
-  },
+const pathCompile = (path: string) => {
+  const { params } = route;
+  const toPath = compile(path);
+  return toPath(params);
+};
+const handleLink = (item: any) => {
+  const { redirect, path } = item;
+  router.push(redirect || pathCompile(path));
+};
+watchEffect(() => {
+  itemList.value = route.matched.filter((item) => item.meta?.title);
 });
 </script>

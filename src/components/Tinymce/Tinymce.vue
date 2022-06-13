@@ -7,8 +7,10 @@
 <script lang="ts">
 import { defineComponent, ref, toRefs, watch, onMounted, onBeforeUnmount, onActivated, onDeactivated, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useFormItem } from 'element-plus';
 import { getAuthHeaders } from '@/utils/auth';
-import { imageUploadUrl, queryGlobalSettings } from '@/api/config';
+import { uploadSettings } from '@/store/useConfig';
+import { imageUploadUrl } from '@/api/config';
 
 // 参考：https://www.tiny.cloud/docs/advanced/usage-with-module-loaders/webpack/webpack_es6_npm/
 // 参考：https://github.com/tinymce/tinymce-vue/blob/main/src/main/ts/components/Editor.ts
@@ -61,7 +63,6 @@ export default defineComponent({
   name: 'Tinymce',
   props: {
     id: String,
-    initialValue: String,
     modelValue: { type: String, default: '' },
     disabled: Boolean,
     inline: Boolean,
@@ -74,6 +75,7 @@ export default defineComponent({
       validator: (prop: string) => prop === 'html' || prop === 'text',
     },
   },
+  emits: ['update:modelValue', 'input', 'change', 'blur'],
   setup(props, ctx) {
     const { disabled, modelValue } = toRefs(props);
     const { t } = useI18n();
@@ -81,16 +83,10 @@ export default defineComponent({
     let vueEditor: any = null;
     const elementId: string = props.id || uuid('tiny-vue');
     const inlineEditor: boolean = (props.init && props.init.inline) || props.inline;
-    const modelBind = !!ctx.attrs['onUpdate:modelValue'];
     let mounting = true;
-    const initialValue: string = props.initialValue ? props.initialValue : '';
-    let cache = '';
-    const getContent = (isMounting: boolean): (() => string) => (modelBind ? () => (modelValue?.value ? modelValue.value : '') : () => (isMounting ? initialValue : cache));
-
-    const global = ref<any>();
+    const { formItem } = useFormItem();
 
     const initWrapper = (): void => {
-      const content = getContent(mounting);
       const publicPath = import.meta.env.VITE_PUBLIC_PATH;
       const finalInit = {
         language_url: `${publicPath}/tinymce/langs/zh_CN.js`,
@@ -99,6 +95,8 @@ export default defineComponent({
         skin_url: `${publicPath}/tinymce/skins/ui/oxide`,
         // 必须添加 '/tinymce/skins/content/default/content.min.css'。否则 fontselect 默认不显示“系统字体”。
         content_css: [`${publicPath}/tinymce/skins/ui/oxide/content.min.css`, `${publicPath}/tinymce/skins/content/default/content.min.css`],
+        // 设置编辑器默认字体
+        content_style: 'body { font-size: 14px; }',
         menubar: false,
         plugins:
           'advlist autoresize autosave charmap code codesample directionality fullscreen hr image imagetools lists link media pagebreak paste quickbars ' +
@@ -116,14 +114,14 @@ export default defineComponent({
         image_uploadtab: false,
         image_advtab: true,
         image_caption: true,
-        images_file_types: global.value.upload.imageTypes,
+        images_file_types: uploadSettings.imageTypes,
         min_height: 300,
         max_height: 500,
         convert_urls: false,
         autosave_ask_before_unload: false,
         ...props.init,
         images_upload_handler(blobInfo: any, success: any, failure: any, progress: any) {
-          const fileSizeLimitByte = global.value.upload.imageLimitByte;
+          const fileSizeLimitByte = uploadSettings.imageLimitByte;
           if (fileSizeLimitByte > 0 && blobInfo.blob().size > fileSizeLimitByte) {
             failure(t('error.fileMaxSize', { size: `${fileSizeLimitByte / 1024 / 1024}MB` }), { remove: true });
             return;
@@ -172,16 +170,16 @@ export default defineComponent({
 
           let fileSizeLimtByte = 0;
           if (meta.filetype === 'image') {
-            fileSizeLimtByte = global.value.upload.imageLimitByte;
-            input.setAttribute('accept', global.value.upload.imageInputAccept);
+            fileSizeLimtByte = uploadSettings.imageLimitByte;
+            input.setAttribute('accept', uploadSettings.imageInputAccept);
             // input.setAttribute('accept', 'image/*');
           } else if (meta.filetype === 'media') {
-            fileSizeLimtByte = global.value.upload.videoLimitByte;
-            input.setAttribute('accept', global.value.upload.videoInputAccept);
+            fileSizeLimtByte = uploadSettings.videoLimitByte;
+            input.setAttribute('accept', uploadSettings.videoInputAccept);
             // input.setAttribute('accept', 'video/*');
           } else {
-            fileSizeLimtByte = global.value.upload.fileLimitByte;
-            input.setAttribute('accept', global.value.upload.fileInputAccept);
+            fileSizeLimtByte = uploadSettings.fileLimitByte;
+            input.setAttribute('accept', uploadSettings.fileInputAccept);
           }
 
           /*
@@ -256,7 +254,7 @@ export default defineComponent({
         inline: inlineEditor,
         setup: (editor: any) => {
           vueEditor = editor;
-          editor.on('init', (e: Event) => initEditor(e, props, ctx, editor, modelValue, content));
+          editor.on('init', (e: Event) => initEditor(e, props, ctx, editor, modelValue, formItem));
           if (props.init && typeof props.init.setup === 'function') {
             props.init.setup(editor);
           }
@@ -275,7 +273,6 @@ export default defineComponent({
       }
     });
     onMounted(async () => {
-      global.value = await queryGlobalSettings();
       initWrapper();
     });
     onBeforeUnmount(() => {
@@ -288,9 +285,6 @@ export default defineComponent({
         }
       });
       onDeactivated(() => {
-        if (!modelBind) {
-          cache = vueEditor.getContent();
-        }
         tinymce.remove(vueEditor);
       });
     }

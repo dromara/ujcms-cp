@@ -3,7 +3,7 @@
     <div class="app-block p-3 flex">
       <div>
         <el-avatar :size="76" class="flex justify-center items-center">
-          <el-icon class="text-5xl"><avatar /></el-icon>
+          <el-icon class="text-5xl"><Avatar /></el-icon>
         </el-avatar>
       </div>
       <div class="ml-3 space-y-1 text-gray-regular text-sm">

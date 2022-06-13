@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-aside width="180px" class="pr-3">
-      <el-tabs v-model="typeId" @tab-click="fetchData()" tab-position="left" stretch class="bg-white">
+      <el-tabs v-model="typeId" @tab-change="fetchData()" tab-position="left" stretch class="bg-white">
         <el-tab-pane v-for="tp in typeList" :key="tp.id" :name="String(tp.id)" :label="tp.name"></el-tab-pane>
       </el-tabs>
     </el-aside>
@@ -35,13 +35,17 @@
             <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
             <el-table-column property="name" :label="$t('dict.name')" sortable="custom" show-overflow-tooltip></el-table-column>
             <el-table-column property="value" :label="$t('dict.value')" sortable="custom" show-overflow-tooltip></el-table-column>
-            <el-table-column property="enabled" :label="$t('dict.enabled')" sortable="custom" :formatter="(row) => $t(row.enabled ? 'yes' : 'no')" />
+            <el-table-column property="enabled" :label="$t('dict.enabled')" sortable="custom">
+              <template #default="{ row }">
+                <el-tag :type="row.enabled ? 'success' : 'info'" size="small">{{ $t(row.enabled ? 'yes' : 'no') }}</el-tag>
+              </template>
+            </el-table-column>
             <el-table-column :label="$t('table.action')">
               <template #default="{ row }">
-                <el-button type="text" :disabled="perm('dict:update')" @click="handleEdit(row.id)" size="small">{{ $t('edit') }}</el-button>
+                <el-button type="primary" :disabled="perm('dict:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
                 <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                   <template #reference>
-                    <el-button type="text" :disabled="perm('dict:delete')" size="small">{{ $t('delete') }}</el-button>
+                    <el-button type="primary" :disabled="perm('dict:delete')" size="small" link>{{ $t('delete') }}</el-button>
                   </template>
                 </el-popconfirm>
               </template>
@@ -54,6 +58,10 @@
   </el-container>
 </template>
 
+<script lang="ts">
+export default { name: 'DictList' };
+</script>
+
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -61,7 +69,8 @@ import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import { perm } from '@/store/useCurrentUser';
 import { moveList, toParams, resetParams } from '@/utils/common';
-import { deleteDict, queryDictList, updateDictOrder, queryDictTypeList } from '@/api/config';
+import { queryDictTypeList } from '@/api/config';
+import { deleteDict, queryDictList, updateDictOrder } from '@/api/content';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import ListMove from '@/components/ListMove.vue';

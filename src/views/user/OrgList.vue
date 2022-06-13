@@ -16,6 +16,7 @@
         </template>
       </el-popconfirm>
       <list-move class="ml-2" :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" />
+      <el-checkbox v-if="currentUser.globalPermission" class="ml-2 align-middle" v-model="showGlobalData" @change="fetchData()" :label="$t('globalData')" border />
       <column-setting name="org" class="ml-2" />
     </div>
     <div class="app-block mt-3">
@@ -39,11 +40,11 @@
           <el-table-column property="contacts" :label="$t('org.contacts')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">
-              <el-button type="text" :disabled="perm('org:create')" @click="handleAdd(row.id)"  size="small">{{ $t('addChild') }}</el-button>
-              <el-button type="text" :disabled="perm('org:update')" @click="handleEdit(row.id)"  size="small">{{ $t('edit') }}</el-button>
+              <el-button type="primary" :disabled="perm('org:create')" @click="handleAdd(row.id)" size="small" link>{{ $t('addChild') }}</el-button>
+              <el-button type="primary" :disabled="perm('org:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                 <template #reference>
-                  <el-button type="text" :disabled="!deletable(row) || perm('org:delete')"  size="small">{{ $t('delete') }}</el-button>
+                  <el-button type="primary" :disabled="!deletable(row) || perm('org:delete')" size="small" link>{{ $t('delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -51,17 +52,20 @@
         </column-list>
       </el-table>
     </div>
-    <org-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" :parentId="parentId" />
+    <org-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" :parentId="parentId" :showGlobalData="showGlobalData" />
   </div>
 </template>
 
+<script lang="ts">
+export default { name: 'OrgList' };
+</script>
+
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { perm } from '@/store/useCurrentUser';
+import { currentUser, perm } from '@/store/useCurrentUser';
 import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { sortTreeData } from '@/utils/tree';
 import { moveTreeList, toParams, resetParams } from '@/utils/common';
 import { deleteOrg, queryOrgList, updateOrgOrder } from '@/api/user';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -81,14 +85,14 @@ const beanId = ref<number>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
 const parentId = ref<number>(1);
+const showGlobalData = ref<boolean>(false);
+
 const fetchData = async () => {
   loading.value = true;
   try {
-    data.value = await queryOrgList({ ...toParams(params.value), Q_OrderBy: sort.value });
+    data.value = await queryOrgList({ ...toParams(params.value), current: !showGlobalData.value, Q_OrderBy: sort.value });
     filtered.value = Object.values(params.value).filter((v) => v !== undefined && v !== '').length > 0 || sort.value !== undefined;
-    if (!filtered.value) {
-      data.value = sortTreeData(data.value);
-    }
+    parentId.value = data.value[0]?.id;
   } finally {
     loading.value = false;
   }
@@ -113,7 +117,9 @@ const handleReset = () => {
 
 const handleAdd = (pid?: number) => {
   beanId.value = undefined;
-  parentId.value = pid ?? 1;
+  if (pid != null) {
+    parentId.value = pid;
+  }
   formVisible.value = true;
 };
 const handleEdit = (id: number) => {

@@ -7,6 +7,7 @@
     :data="data"
     :show-file-list="false"
     :on-success="(res) => ((src = res.url), (cropperVisible = mode === 'manual'))"
+    :on-error="onError"
     :on-progress="(event, file) => (progressFile = file)"
   >
     <!--
@@ -23,7 +24,7 @@
     </div>
     <el-progress v-else-if="progressFile.status === 'uploading'" type="circle" :percentage="parseInt(progressFile.percentage, 10)" />
     <div v-else class="el-upload--picture-card">
-      <el-icon><plus /></el-icon>
+      <el-icon><Plus /></el-icon>
     </div>
   </el-upload>
   <div>
@@ -38,13 +39,15 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, computed, onMounted, ref, toRefs } from 'vue';
-import { ElMessage } from 'element-plus';
+import { computed, ref, toRefs } from 'vue';
+import { ElMessage, useFormItem } from 'element-plus';
 import { Plus, Crop, View, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import { getAuthHeaders } from '@/utils/auth';
 import { getSiteHeaders } from '@/utils/common';
-import { imageUploadUrl, queryGlobalSettings } from '@/api/config';
+import { handleError } from '@/utils/request';
+import { uploadSettings } from '@/store/useConfig';
+import { imageUploadUrl, } from '@/api/config';
 import ImageCropper from './ImageCropper.vue';
 
 // 'image/jpg,image/jpeg,image/png,image/gif'
@@ -65,9 +68,17 @@ const { t } = useI18n();
 const progressFile = ref<any>({});
 const previewVisible = ref<boolean>(false);
 const cropperVisible = ref<boolean>(false);
+const { formItem } = useFormItem();
 const src = computed({
   get: (): string | undefined => modelValue.value,
-  set: (val: string | undefined) => emit('update:modelValue', val),
+  set: (val?: string) => {
+    emit('update:modelValue', val);
+    formItem?.validate?.('change').catch((err: any) => {
+      if (import.meta.env.MODE !== 'production') {
+        console.warn(err);
+      }
+    });
+  },
 });
 const resizable = computed(() => ['cut', 'resize'].includes(mode.value));
 const data = computed(() => {
@@ -82,21 +93,17 @@ const data = computed(() => {
   }
   return params;
 });
-const global = ref<any>();
-const fetchGlobalSettings = async () => {
-  global.value = await queryGlobalSettings();
-};
-onMounted(() => {
-  fetchGlobalSettings();
-});
-const accept = computed(() => fileAccept?.value ?? global?.value?.upload?.imageInputAccept ?? 'image/jpg,image/jpeg,image/png,image/gif');
-const maxSize = computed(() => fileMaxSize?.value ?? global?.value?.upload?.imageLimitByte ?? 0);
+const accept = computed(() => fileAccept?.value ?? uploadSettings.imageInputAccept);
+const maxSize = computed(() => fileMaxSize?.value ?? uploadSettings.imageLimitByte);
 const beforeUpload = (file: any) => {
   if (maxSize.value > 0 && file.size > maxSize.value) {
     ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024}MB` }));
     return false;
   }
   return true;
+};
+const onError = (error: Error) => {
+  handleError(JSON.parse(error.message));
 };
 </script>
 

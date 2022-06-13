@@ -1,6 +1,6 @@
 <template>
   <dialog-form
-    :name="$t('menu.config.dict')"
+    :name="$t('menu.content.dict')"
     :queryBean="queryDict"
     :createBean="createDict"
     :updateBean="updateDict"
@@ -8,14 +8,15 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="() => ({ typeId: type?.id, enabled: true })"
+    :initValues="(): any => ({ typeId: type?.value?.id, enabled: true })"
     :toValues="(bean) => ({ ...bean })"
     perms="dict"
+    v-model:values="values"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     @finished="$emit('finished')"
   >
-    <template #default="{ values }">
+    <template #default="{}">
       <el-form-item prop="typeId" :label="$t('dict.type')">
         <el-select v-model="values.typeId" disabled>
           <el-option :value="type.id" :label="type.name"></el-option>
@@ -38,17 +39,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
-import { queryDict, createDict, updateDict, deleteDict } from '@/api/config';
+export default { name: 'DictForm' };
+</script>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import { queryDict, createDict, updateDict, deleteDict } from '@/api/content';
 import DialogForm from '@/components/DialogForm.vue';
 
-export default defineComponent({
-  components: { DialogForm },
-  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true }, type: null },
-  emits: { 'update:modelValue': null, finished: null },
-  setup() {
-    const focus = ref<any>();
-    return { queryDict, createDict, updateDict, deleteDict, focus };
-  },
-});
+defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true }, type: null });
+defineEmits({ 'update:modelValue': null, finished: null });
+const focus = ref<any>();
+const values = ref<any>({});
 </script>

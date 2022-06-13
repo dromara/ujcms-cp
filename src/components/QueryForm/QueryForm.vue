@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, useSlots, provide, computed, ref, toRefs } from 'vue';
+import { useSlots, provide, computed, ref, toRefs } from 'vue';
 import { Plus, Minus, Search, Refresh } from '@element-plus/icons-vue';
 import QueryInput from './QueryInput.vue';
 
@@ -33,8 +33,7 @@ defineEmits({
 });
 
 const data = ref<any[]>([]);
-const inputs = ref<any[]>([]);
-inputs.value = slots.default?.() ?? [];
+const inputs = computed(() => slots.default?.() ?? []);
 data.value = inputs.value.map((item) => ({ label: item.props?.label, name: item.props?.name }));
 
 const [first] = data.value;

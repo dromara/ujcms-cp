@@ -1,12 +1,14 @@
 <template>
   <el-dropdown class="align-middle" trigger="click" :hide-on-click="false">
-    <el-tooltip :content="$t('table.columnsSetting')" placement="top">
-      <el-icon class="text-base"><setting /></el-icon>
-    </el-tooltip>
+    <span>
+      <el-tooltip :content="$t('table.columnsSetting')" placement="top">
+        <el-icon class="text-base"><Setting /></el-icon>
+      </el-tooltip>
+    </span>
     <template #dropdown>
       <el-dropdown-menu>
         <el-dropdown-item>
-          <el-button @click="resetColumns" type="text">{{ $t('table.columnsReset') }}</el-button>
+          <el-button type="primary" @click="resetColumns" link>{{ $t('table.columnsReset') }}</el-button>
         </el-dropdown-item>
         <el-dropdown-item v-for="(column, index) in settings" :key="column.title" :divided="index === 0">
           <el-checkbox v-model="column.display">{{ column.title }}</el-checkbox>
@@ -17,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, toRefs, watch } from 'vue';
+import { toRefs, watch } from 'vue';
 import { Setting } from '@element-plus/icons-vue';
 import { getColumnOrigins, getColumnSettings, mergeColumns, storeColumnSettings } from './useColumns';
 

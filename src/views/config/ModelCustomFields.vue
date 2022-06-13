@@ -18,33 +18,32 @@
           <el-main class="border-t p-0">
             <el-scrollbar class="drawing-board h-full p-2">
               <el-form :model="drawingFormData" label-width="150px" class="h-full">
-                <el-row :gutter="8" class="min-h-full content-start mx-0">
-                  <draggable
-                    :list="customs"
-                    tag="transition-group"
-                    :component-data="{ name: !drag ? 'flip-list' : null }"
-                    :animation="200"
-                    @start="drag = true"
-                    @end="drag = false"
-                    group="components"
-                    item-key="code"
-                  >
-                    <template #item="{ element: field }">
-                      <el-col :span="field.double ? 12 : 24" class="relative">
-                        <el-form-item :prop="field.code" :label="field.name" :required="field.required" class="mb-0 py-3">
-                          <field-item :field="field" v-model="field.defaultValue"></field-item>
-                        </el-form-item>
-                        <div
-                          :class="['drag-mask', !drag && selected !== field ? 'hover:opacity-10' : null, selected === field ? 'drag-mask-selected' : null]"
-                          @click="changeSelected(field)"
-                        ></div>
-                        <div :class="['drag-close', selected !== field ? 'hidden' : null]" @click="deleteElement(field)">
-                          <el-icon class="text-danger"><circle-close /></el-icon>
-                        </div>
-                      </el-col>
-                    </template>
-                  </draggable>
-                </el-row>
+                <draggable
+                  :list="customs"
+                  class="min-h-full content-start mx-0"
+                  tag="el-row"
+                  :component-data="{ gutter: 8 }"
+                  :animation="250"
+                  @start="drag = true"
+                  @end="drag = false"
+                  group="components"
+                  item-key="code"
+                >
+                  <template #item="{ element: field }">
+                    <el-col :span="field.double ? 12 : 24" class="relative">
+                      <el-form-item :prop="field.code" :label="field.name" :required="field.required" class="mb-0 py-3">
+                        <field-item :field="field" v-model="field.defaultValue"></field-item>
+                      </el-form-item>
+                      <div
+                        :class="['drag-mask', !drag && selected !== field ? 'hover:opacity-10' : null, selected === field ? 'drag-mask-selected' : null]"
+                        @click="changeSelected(field)"
+                      ></div>
+                      <div :class="['drag-close', selected !== field ? 'hidden' : null]" @click="deleteElement(field)">
+                        <el-icon class="text-danger"><circle-close /></el-icon>
+                      </div>
+                    </el-col>
+                  </template>
+                </draggable>
               </el-form>
             </el-scrollbar>
           </el-main>
@@ -65,8 +64,12 @@
   </div>
 </template>
 
+<script lang="ts">
+export default { name: 'ModelCustomFields' };
+</script>
+
 <script setup lang="ts">
-import { defineProps, defineEmits, ref, toRefs, watch } from 'vue';
+import { ref, toRefs, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { CircleClose } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
@@ -77,7 +80,7 @@ import FieldAttribute from './components/FieldAttribute.vue';
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { required: true },
+  beanId: { type: Number },
 });
 const emit = defineEmits({ 'update:modelValue': null });
 
@@ -111,8 +114,8 @@ const components = ref<any[]>([
 ]);
 const customs = ref<any[]>([]);
 watch(visible, async () => {
-  if (visible.value && beanId.value) {
-    bean.value = await queryModel(beanId.value as number);
+  if (visible.value && beanId?.value != null) {
+    bean.value = await queryModel(beanId.value);
     customs.value = JSON.parse(bean.value.customs || '[]');
     if (customs.value.length > 0) {
       [selected.value] = customs.value;

@@ -6,11 +6,7 @@ export default defineComponent({
   props: { inputs: { type: Array, required: true }, name: { type: String, required: true } },
   setup(props) {
     const { inputs, name } = toRefs(props);
-    const input = computed(() => inputs.value.find((item: any) => item.props.name === name.value));
-    return { input };
-  },
-  render() {
-    return this.input;
+    return () => inputs.value.find((item: any) => item.props.name === name.value);
   },
 });
 </script>

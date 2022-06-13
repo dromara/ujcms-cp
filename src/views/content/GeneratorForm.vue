@@ -3,7 +3,7 @@
     <div class="p-3 app-block">
       <el-form label-width="200px">
         <el-form-item>
-          <template #label><label-tip message="generator.fulltext" /></template>
+          <template #label><label-tip message="generator.fulltext" help /></template>
           <el-button :disabled="perm('generator:fulltext:reindexAll')" :loading="buttonLoading" @click.prevent="handleFulltextReindexAll" type="primary" plain>
             {{ $t('generator.op.fulltext.reindexAll') }}
           </el-button>
@@ -19,7 +19,7 @@
           </el-button>
         </el-form-item>
         <el-form-item>
-          <template #label><label-tip message="generator.html" /></template>
+          <template #label><label-tip message="generator.html" help /></template>
           <el-button :disabled="perm('generator:html')" :loading="buttonLoading" @click.prevent="handleHtmlAll" type="primary" plain>
             {{ $t('generator.op.html.all') }}
           </el-button>
@@ -42,31 +42,31 @@
         <el-row>
           <el-col :span="12">
             <el-form-item prop="enabled" :rules="{ required: true, message: () => $t('v.required') }">
-              <template #label><label-tip message="site.html.enabled" /></template>
+              <template #label><label-tip message="site.html.enabled" help /></template>
               <el-switch v-model="values.enabled" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item prop="auto" :rules="{ required: true, message: () => $t('v.required') }">
-              <template #label><label-tip message="site.html.auto" /></template>
+              <template #label><label-tip message="site.html.auto" help /></template>
               <el-switch v-model="values.auto" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item prop="channel" :rules="{ required: true, message: () => $t('v.required') }">
-              <template #label><label-tip message="site.html.channel" /></template>
+              <template #label><label-tip message="site.html.channel" help /></template>
               <el-input v-model="values.channel" maxlength="100"><template #append>.html</template></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item prop="article" :rules="{ required: true, message: () => $t('v.required') }">
-              <template #label><label-tip message="site.html.article" /></template>
+              <template #label><label-tip message="site.html.article" help /></template>
               <el-input v-model="values.article" maxlength="100"><template #append>.html</template></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item prop="listPages" :rules="{ required: true, message: () => $t('v.required') }">
-              <template #label><label-tip message="site.html.listPages" /></template>
+              <template #label><label-tip message="site.html.listPages" help /></template>
               <el-select v-model="values.listPages" placeholder="Select">
                 <el-option
                   v-for="item in [
@@ -99,6 +99,10 @@
     <task-list ref="taskListRef" class="mt-3" />
   </div>
 </template>
+
+<script lang="ts">
+export default { name: 'GeneratorForm' };
+</script>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';

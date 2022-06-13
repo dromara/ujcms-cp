@@ -22,7 +22,17 @@
           <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('block.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="alias" :label="$t('block.alias')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="scope" :label="$t('block.scope')" sortable="custom" :formatter="(row) => $t(`block.scope.${row.scope}`)" />
+          <el-table-column property="scope" :label="$t('block.scope')" sortable="custom" :formatter="(row) => $t(`block.scope.${row.scope}`)">
+            <template #default="{row}">
+              <el-tag v-if="row.scope===2" type="success" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
+              <el-tag v-else type="info" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column property="withSubtitle" :label="$t('block.withSubtitle')" sortable="custom" display="none">
+            <template #default="{ row }">
+              <el-tag :type="row.withSubtitle ? 'success' : 'info'" size="small">{{ $t(row.withSubtitle ? 'yes' : 'no') }}</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column property="withDescription" :label="$t('block.withDescription')" sortable="custom">
             <template #default="{ row }">
               <el-tag :type="row.withDescription ? 'success' : 'info'" size="small">{{ $t(row.withDescription ? 'yes' : 'no') }}</el-tag>
@@ -31,13 +41,13 @@
           <el-table-column property="withImage" :label="$t('block.withImage')" sortable="custom">
             <template #default="{ row }">
               <el-tag v-if="!row.withImage" :type="row.withImage ? 'success' : 'info'" size="small">{{ $t(row.withImage ? 'yes' : 'no') }}</el-tag>
-              <span v-else class="ml-2">{{ `${row.imageWidth} * ${row.imageHeight}` }}</span>
+              <span v-else>{{ `${row.imageWidth} * ${row.imageHeight}` }}</span>
             </template>
           </el-table-column>
           <el-table-column property="withMobileImage" :label="$t('block.withMobileImage')" sortable="custom" min-width="120" display="none">
             <template #default="{ row }">
               <el-tag v-if="!row.withMobileImage" :type="row.withMobileImage ? 'success' : 'info'" size="small">{{ $t(row.withMobileImage ? 'yes' : 'no') }}</el-tag>
-              <span v-else class="ml-2">{{ `${row.mobileImageWidth} * ${row.mobileImageHeight}` }}</span>
+              <span v-else>{{ `${row.mobileImageWidth} * ${row.mobileImageHeight}` }}</span>
             </template>
           </el-table-column>
           <el-table-column property="enabled" :label="$t('block.enabled')" sortable="custom">
@@ -47,10 +57,10 @@
           </el-table-column>
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">
-              <el-button type="text" :disabled="perm('block:update')" @click="handleEdit(row.id)" size="small">{{ $t('edit') }}</el-button>
+              <el-button type="primary" :disabled="perm('block:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                 <template #reference>
-                  <el-button type="text" :disabled="perm('block:delete')" size="small">{{ $t('delete') }}</el-button>
+                  <el-button type="primary" :disabled="perm('block:delete')" size="small" link>{{ $t('delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -61,6 +71,10 @@
     <block-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" />
   </div>
 </template>
+
+<script lang="ts">
+export default { name: 'BlockList' };
+</script>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';

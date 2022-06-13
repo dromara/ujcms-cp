@@ -4,19 +4,19 @@
       <el-table :data="mains">
         <el-table-column prop="code" :label="$t('model.field.code')" min-width="110"></el-table-column>
         <el-table-column prop="name" :label="$t('model.field.name')" min-width="140">
-          <template #default="{row}"><el-input v-model="row.name" :placeholder="$t(row.label)" class="w-11/12"/></template>
+          <template #default="{ row }"><el-input v-model="row.name" :placeholder="$t(row.label)" class="w-11/12" /></template>
         </el-table-column>
         <el-table-column prop="show" :label="$t('model.field.show')">
-          <template #default="{row}"><el-switch v-model="row.show" :disabled="row.must"></el-switch></template>
+          <template #default="{ row }"><el-switch v-model="row.show" :disabled="row.must"></el-switch></template>
         </el-table-column>
         <el-table-column prop="double" :label="$t('model.field.double')">
-          <template #default="{row}"><el-switch v-model="row.double"></el-switch></template>
+          <template #default="{ row }"><el-switch v-model="row.double"></el-switch></template>
         </el-table-column>
         <el-table-column prop="required" :label="$t('model.field.required')">
-          <template #default="{row}"><el-switch v-model="row.required" :disabled="row.must"></el-switch></template>
+          <template #default="{ row }"><el-switch v-model="row.required" :disabled="row.must"></el-switch></template>
         </el-table-column>
         <el-table-column :label="$t('model.field.attribute')" min-width="180">
-          <template #default="{row}">
+          <template #default="{ row }">
             <template v-if="row.type === 'image'">
               <el-input v-model.number="row.imageHeight">
                 <template #prepend>{{ $t('model.field.imageHeight') }}</template>
@@ -36,19 +36,25 @@
                 <template #prepend>{{ $t('model.field.imageMaxWidth') }}</template>
               </el-input>
             </template>
+            <template v-else-if="row.type === 'editor'">
+              <el-select v-model="row.editorType" :placeholder="$t('model.field.editorType')" class="w-full">
+                <el-option v-for="n in [1, 2]" :key="n" :value="n" :label="$t(`model.field.editorType.${n}`)"></el-option>
+              </el-select>
+              <el-checkbox v-model="row.editorSwitch"> {{ $t('model.field.editorSwitch') }}</el-checkbox>
+            </template>
           </template>
         </el-table-column>
       </el-table>
       <el-table :data="asides" v-if="asides.length > 0" class="mt-5">
         <el-table-column prop="code" :label="$t('model.field.code')" min-width="100"></el-table-column>
         <el-table-column prop="name" :label="$t('model.field.name')" min-width="120">
-          <template #default="{row}"><el-input v-model="row.name" :placeholder="$t(row.label)" class="w-11/12"/></template>
+          <template #default="{ row }"><el-input v-model="row.name" :placeholder="$t(row.label)" class="w-11/12" /></template>
         </el-table-column>
         <el-table-column prop="show" :label="$t('model.field.show')">
-          <template #default="{row}"><el-switch v-model="row.show" :disabled="row.must"></el-switch></template>
+          <template #default="{ row }"><el-switch v-model="row.show" :disabled="row.must"></el-switch></template>
         </el-table-column>
         <el-table-column prop="required" :label="$t('model.field.required')">
-          <template #default="{row}"><el-switch v-model="row.required" :disabled="row.must"></el-switch></template>
+          <template #default="{ row }"><el-switch v-model="row.required" :disabled="row.must"></el-switch></template>
         </el-table-column>
       </el-table>
       <div class="mt-3">
@@ -60,51 +66,49 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, toRefs, watch } from 'vue';
+export default { name: 'ModelSystemFields' };
+</script>
+
+<script setup lang="ts">
+import { ref, toRefs, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { getModelData, mergeModelFields } from '@/data';
 import { queryModel, updateModel } from '@/api/config';
 
-export default defineComponent({
-  name: 'ModelSystemFields',
-  props: { modelValue: { type: Boolean, required: true }, beanId: { required: true } },
-  emits: { 'update:modelValue': null },
-  setup(props, { emit }) {
-    const { beanId, modelValue: visible } = toRefs(props);
-    const { t } = useI18n();
-    const bean = ref<any>({});
-    const buttonLoading = ref<boolean>(false);
-    const mains = ref<any[]>([]);
-    const asides = ref<any[]>([]);
-    watch(visible, async () => {
-      if (visible.value && beanId.value) {
-        bean.value = await queryModel(beanId.value as number);
-        const modelData = getModelData()[bean.value.type];
-        mains.value = mergeModelFields(modelData.mains, bean.value.mains, bean.value.type);
-        if (modelData.asides?.length > 0) {
-          asides.value = mergeModelFields(modelData.asides, bean.value.asides, bean.value.type);
-        }
-      }
-    });
-    const handleSubmit = async () => {
-      buttonLoading.value = true;
-      try {
-        await updateModel({ ...bean.value, mains: JSON.stringify(mains.value), asides: JSON.stringify(asides.value) });
-        ElMessage.success(t('success'));
-      } finally {
-        buttonLoading.value = false;
-        emit('update:modelValue', false);
-      }
-    };
-    const handleReset = () => {
-      const modelData = getModelData()[bean.value.type];
-      mains.value = mergeModelFields(modelData.mains, null, bean.value.type);
-      if (modelData.asides?.length > 0) {
-        asides.value = mergeModelFields(modelData.asides, null, bean.value.type);
-      }
-    };
-    return { queryModel, buttonLoading, handleSubmit, handleReset, mains, asides };
-  },
+const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true } });
+const emit = defineEmits({ 'update:modelValue': null });
+const { beanId, modelValue: visible } = toRefs(props);
+const { t } = useI18n();
+const bean = ref<any>({});
+const buttonLoading = ref<boolean>(false);
+const mains = ref<any[]>([]);
+const asides = ref<any[]>([]);
+watch(visible, async () => {
+  if (visible.value && beanId.value) {
+    bean.value = await queryModel(beanId.value as number);
+    const modelData = getModelData()[bean.value.type];
+    mains.value = mergeModelFields(modelData.mains, bean.value.mains, bean.value.type);
+    if (modelData.asides?.length > 0) {
+      asides.value = mergeModelFields(modelData.asides, bean.value.asides, bean.value.type);
+    }
+  }
 });
+const handleSubmit = async () => {
+  buttonLoading.value = true;
+  try {
+    await updateModel({ ...bean.value, mains: JSON.stringify(mains.value), asides: JSON.stringify(asides.value) });
+    ElMessage.success(t('success'));
+  } finally {
+    buttonLoading.value = false;
+    emit('update:modelValue', false);
+  }
+};
+const handleReset = () => {
+  const modelData = getModelData()[bean.value.type];
+  mains.value = mergeModelFields(modelData.mains, null, bean.value.type);
+  if (modelData.asides?.length > 0) {
+    asides.value = mergeModelFields(modelData.asides, null, bean.value.type);
+  }
+};
 </script>

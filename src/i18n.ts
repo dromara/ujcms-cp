@@ -15,6 +15,23 @@ const messages = {
   },
 };
 
+const numberFormats = {
+  'zh-cn': {
+    decimal: {
+      style: 'decimal',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  },
+  en: {
+    decimal: {
+      style: 'decimal',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  },
+};
+
 const elMessages: Record<string, Language> = {
   'zh-cn': ElZhCn,
   en: ElEn,
@@ -39,5 +56,6 @@ export default createI18n({
   locale: getLanguage(),
   fallbackLocale: i18nFallbackLocale,
   globalInjection: true,
+  numberFormats,
   messages,
 });

@@ -7,11 +7,17 @@ export const fileUploadUrl = `${import.meta.env.VITE_BASE_API}/backend/file-uplo
 
 export const cropImage = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/image-crop', data)).data;
 
-export const queryGlobalModel = async (): Promise<any> => (await axios.get('/backend/core/global-settings/model')).data;
-export const queryGlobalSettings = async (): Promise<any> => (await axios.get('/backend/core/global-settings')).data;
-export const updateGlobalBaseSettings = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/global-settings/base?_method=put', data)).data;
-export const updateGlobalCustomsSettings = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/global-settings/customs?_method=put', data)).data;
-export const updateGlobalUploadSettings = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/global-settings/upload?_method=put', data)).data;
+export const queryConfigModel = async (): Promise<any> => (await axios.get('/backend/core/config/model')).data;
+export const queryConfig = async (): Promise<any> => (await axios.get('/backend/core/config')).data;
+export const queryUploadStorage = async (): Promise<any> => (await axios.get('/backend/core/config/upload-storage')).data;
+export const queryHtmlStorage = async (): Promise<any> => (await axios.get('/backend/core/config/html-storage')).data;
+export const queryTemplateStorage = async (): Promise<any> => (await axios.get('/backend/core/config/template-storage')).data;
+export const updateConfigBase = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/config/base?_method=put', data)).data;
+export const updateConfigCustoms = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/config/customs?_method=put', data)).data;
+export const updateConfigUpload = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/config/upload?_method=put', data)).data;
+export const updateUploadStorage = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/config/upload-storage?_method=put', data)).data;
+export const updateHtmlStorage = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/config/html-storage?_method=put', data)).data;
+export const updateTemplateStorage = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/config/template-storage?_method=put', data)).data;
 
 export const querySiteSettings = async (): Promise<any> => (await axios.get('/backend/core/site-settings')).data;
 export const updateSiteBaseSettings = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/site-settings/base?_method=put', data)).data;
@@ -34,13 +40,7 @@ export const createDictType = async (data: Record<string, any>): Promise<any> =>
 export const updateDictType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/dict-type?_method=put', data)).data;
 export const updateDictTypeOrder = async (data: number[]): Promise<any> => (await axios.post('/backend/core/dict-type/order?_method=put', data)).data;
 export const deleteDictType = async (data: number[]): Promise<any> => (await axios.post('/backend/core/dict-type?_method=delete', data)).data;
-
-export const queryDictList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/dict', { params })).data;
-export const queryDict = async (id: number): Promise<any> => (await axios.get(`/backend/core/dict/${id}`)).data;
-export const createDict = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/dict', data)).data;
-export const updateDict = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/dict?_method=put', data)).data;
-export const updateDictOrder = async (data: number[]): Promise<any> => (await axios.post('/backend/core/dict/order?_method=put', data)).data;
-export const deleteDict = async (data: number[]): Promise<any> => (await axios.post('/backend/core/dict?_method=delete', data)).data;
+export const dictTypeAliasExist = async (alias: string, scope: number): Promise<any> => (await axios.get('/backend/core/dict-type/alias-exist', { params: { alias, scope } })).data;
 
 export const queryBlockList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/block', { params })).data;
 export const queryBlock = async (id: number): Promise<any> => (await axios.get(`/backend/core/block/${id}`)).data;
@@ -48,3 +48,5 @@ export const createBlock = async (data: Record<string, any>): Promise<any> => (a
 export const updateBlock = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/block?_method=put', data)).data;
 export const updateBlockOrder = async (data: number[]): Promise<any> => (await axios.post('/backend/core/block/order?_method=put', data)).data;
 export const deleteBlock = async (data: number[]): Promise<any> => (await axios.post('/backend/core/block?_method=delete', data)).data;
+export const blockAliasExist = async (alias: string, scope: number): Promise<any> => (await axios.get('/backend/core/block/alias-exist', { params: { alias, scope } })).data;
+export const blockScopeNotAllowed = async (scope: number): Promise<any> => (await axios.get('/backend/core/block/scope-not-allowed', { params: { scope } })).data;

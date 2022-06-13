@@ -17,19 +17,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, toRefs } from 'vue';
+import { computed, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n';
+import { isExternalPath } from '@/utils/common';
 import { isShowMenu } from '@/store/useCurrentUser';
-
-function isExternal(path: string): boolean {
-  return /^(https?:|mailto:|tel:)/.test(path);
-}
 
 const props = defineProps({ route: { type: Object, required: true }, basePath: { type: String, default: '' } });
 const { route, basePath } = toRefs(props);
 const router = useRouter();
-const { t } = useI18n();
 
 // 是否显示。非隐藏路由即显示
 const isShow = computed(() => !route.value.meta?.hidden);
@@ -43,14 +38,14 @@ const title = computed(() => targetRoute.value.meta?.title);
 const path = computed(() => (route.value !== targetRoute.value ? targetRoute.value.path : ''));
 
 const resolvePath = (routePath: string) => {
-  if (isExternal(routePath)) {
+  if (isExternalPath(routePath)) {
     return routePath;
   }
   return `${basePath.value}/${routePath}`;
 };
 const handleClick = () => {
   const fullPath = resolvePath(path.value);
-  if (isExternal(fullPath)) {
+  if (isExternalPath(fullPath)) {
     window.open(fullPath, '_blank');
   } else {
     router.push(resolvePath(path.value));

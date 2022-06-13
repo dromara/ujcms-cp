@@ -26,16 +26,37 @@
       class="mt-3 shadow bg-white"
     >
       <column-list name="role">
-        <el-table-column type="selection" width="50"></el-table-column>
+        <el-table-column type="selection" :selectable="(bean) => !disabled(bean)" width="50"></el-table-column>
         <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
         <el-table-column property="name" :label="$t('role.name')" sortable="custom" show-overflow-tooltip></el-table-column>
         <el-table-column property="description" :label="$t('role.description')" sortable="custom" show-overflow-tooltip></el-table-column>
+        <el-table-column property="rank" :label="$t('role.rank')" sortable="custom" show-overflow-tooltip></el-table-column>
+        <el-table-column property="globalPermission" :label="$t('role.globalPermission')" sortable="custom">
+          <template #default="{ row }">
+            <el-tag :type="row.globalPermission ? 'success' : 'info'" size="small">{{ $t(row.globalPermission ? 'yes' : 'no') }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column property="type" :label="$t('role.type')" sortable="custom">
+          <template #default="{ row }">
+            <el-tag v-if="row.type === 1" size="small">{{ $t(`role.type.${row.type}`) }}</el-tag>
+            <el-tag v-else-if="row.type === 2" type="warning" size="small">{{ $t(`role.type.${row.type}`) }}</el-tag>
+            <el-tag v-else-if="row.type === 3" type="success" size="small">{{ $t(`role.type.${row.type}`) }}</el-tag>
+            <el-tag v-else type="info" size="small">{{ $t(`role.type.${row.type}`) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column property="scope" :label="$t('role.scope')" sortable="custom">
+          <template #default="{ row }">
+            <el-tag v-if="row.scope === 2" type="success" size="small">{{ $t(`role.scope.${row.scope}`) }}</el-tag>
+            <el-tag v-else type="info" size="small">{{ $t(`role.scope.${row.scope}`) }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column :label="$t('table.action')">
           <template #default="{ row }">
-            <el-button type="text" @click="handleEdit(row.id)" size="small">{{ $t('edit') }}</el-button>
+            <el-button type="primary" @click="handleEdit(row.id)" :disabled="perm('role:update')" size="small" link>{{ $t('edit') }}</el-button>
+            <el-button type="primary" @click="handlePermissionEdit(row.id)" :disabled="perm('role:updatePermission')" size="small" link>{{ $t('permissionSettings') }}</el-button>
             <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
               <template #reference>
-                <el-button type="text" size="small">{{ $t('delete') }}</el-button>
+                <el-button type="primary" size="small" :disabled="disabled(row)" link>{{ $t('delete') }}</el-button>
               </template>
             </el-popconfirm>
           </template>
@@ -43,21 +64,27 @@
       </column-list>
     </el-table>
     <role-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" />
+    <role-permission-form v-model="permissionFormVisible" :beanId="beanId" @finished="fetchData"></role-permission-form>
   </div>
 </template>
+
+<script lang="ts">
+export default { name: 'RoleList' };
+</script>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { perm } from '@/store/useCurrentUser';
+import { perm, currentUser } from '@/store/useCurrentUser';
 import { deleteRole, queryRoleList, updateRoleOrder } from '@/api/user';
 import { moveList, toParams, resetParams } from '@/utils/common';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import ListMove from '@/components/ListMove.vue';
 import RoleForm from './RoleForm.vue';
+import RolePermissionForm from './RolePermissionForm.vue';
 
 const { t } = useI18n();
 const params = ref<any>({});
@@ -67,6 +94,7 @@ const data = ref<Array<any>>([]);
 const selection = ref<Array<any>>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
+const permissionFormVisible = ref<boolean>(false);
 const beanId = ref<number>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
@@ -80,6 +108,8 @@ const fetchData = async () => {
   }
 };
 onMounted(fetchData);
+
+const disabled = (bean: any): boolean => (bean.global && !currentUser.globalPermission) || currentUser.rank > bean.rank;
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
   if (prop) {
@@ -104,6 +134,10 @@ const handleAdd = () => {
 const handleEdit = (id: number) => {
   beanId.value = id;
   formVisible.value = true;
+};
+const handlePermissionEdit = (id: number) => {
+  beanId.value = id;
+  permissionFormVisible.value = true;
 };
 const handleDelete = async (ids: number[]) => {
   await deleteRole(ids);
