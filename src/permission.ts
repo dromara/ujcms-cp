@@ -35,7 +35,10 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
   // 没有权限
   if (!hasPermission(to.meta?.requiresPermission)) {
     NProgress.done();
-    return '/403';
+    if (to.path === '/') {
+      return '/403';
+    }
+    return '/';
   }
   return true;
 });

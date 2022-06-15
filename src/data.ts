@@ -18,7 +18,8 @@ export function getPermsTreeData(): any[] {
   const perms = [
     {
       label: t('menu.personal'),
-      key: 'menu.personal',
+      key: 'menu.personal.key',
+      perms: ['menu.personal'],
       children: [
         {
           label: t('menu.personal.password'),
@@ -49,12 +50,13 @@ export function getPermsTreeData(): any[] {
     },
     {
       label: t('menu.content'),
-      key: 'menu.content',
+      key: 'menu.content.kay',
+      perms: ['menu.content'],
       children: [
         {
           label: t('menu.content.article'),
-          key: 'article',
-          perms: ['article:page', 'article:list', 'channel:list', 'dict:list', 'model:list'],
+          key: 'article.key',
+          perms: ['article:page', 'article:list', 'channel:list', 'dict:list', 'model:list', 'block:list'],
           children: [
             { label: t('list'), key: 'article:page' },
             { label: t('add'), key: 'article:create', perms: ['article:create', 'jodConvert:doc', 'jodConvert:library'] },
@@ -64,7 +66,7 @@ export function getPermsTreeData(): any[] {
         },
         {
           label: t('menu.content.channel'),
-          key: 'channel',
+          key: 'channel.key',
           perms: ['channel:page', 'channel:list'],
           children: [
             { label: t('list'), key: 'channel:page' },
@@ -75,7 +77,7 @@ export function getPermsTreeData(): any[] {
         },
         {
           label: t('menu.content.blockItem'),
-          key: 'blockItem',
+          key: 'blockItem.key',
           perms: ['blockItem:page', 'blockItem:list', 'block:list'],
           children: [
             { label: t('list'), key: 'blockItem:page' },
@@ -86,7 +88,7 @@ export function getPermsTreeData(): any[] {
         },
         {
           label: t('menu.content.dict'),
-          key: 'dict',
+          key: 'dict.key',
           perms: ['dict:page', 'dict:list', 'dictType:list'],
           children: [
             { label: t('list'), key: 'dict:page' },
@@ -97,7 +99,7 @@ export function getPermsTreeData(): any[] {
         },
         {
           label: t('menu.content.attachment'),
-          key: 'attachment',
+          key: 'attachment.key',
           perms: ['attachment:page', 'attachment:list'],
           children: [
             { label: t('list'), key: 'attachment:page' },
@@ -108,7 +110,7 @@ export function getPermsTreeData(): any[] {
         },
         {
           label: t('menu.content.generator'),
-          key: 'generator',
+          key: 'generator.key',
           perms: ['generator:show', 'siteSettings:html:show', 'task:list', 'task:show', 'task:delete'],
           children: [
             { label: t('generator.op.fulltext.reindexAll'), key: 'generator:fulltext:reindexAll', perms: ['generator:fulltext:reindexAll'] },
@@ -121,11 +123,12 @@ export function getPermsTreeData(): any[] {
     },
     {
       label: t('menu.config'),
-      key: 'menu.config',
+      key: 'menu.config.key',
+      perms: ['menu.config'],
       children: [
         {
           label: t('menu.config.globalSettings'),
-          key: 'config',
+          key: 'config.key',
           perms: ['config:show'],
           children: [
             { label: t('config.settings.base'), key: 'config:base:update', perms: ['config:base:update'] },
@@ -150,7 +153,7 @@ export function getPermsTreeData(): any[] {
         },
         {
           label: t('menu.config.siteSettings'),
-          key: 'siteSettings',
+          key: 'siteSettings.key',
           perms: ['siteSettings:show'],
           children: [
             { label: t('site.settings.base'), key: 'siteSettings:base:update', perms: ['siteSettings:base:update'] },
@@ -160,7 +163,7 @@ export function getPermsTreeData(): any[] {
         },
         {
           label: t('menu.config.model'),
-          key: 'model',
+          key: 'model.key',
           perms: ['model:page', 'model:list'],
           children: [
             { label: t('list'), key: 'model:page' },
@@ -171,7 +174,7 @@ export function getPermsTreeData(): any[] {
         },
         {
           label: t('menu.config.block'),
-          key: 'block',
+          key: 'block.key',
           perms: ['block:page', 'block:list', 'block:validation'],
           children: [
             { label: t('list'), key: 'block:page' },
@@ -182,7 +185,7 @@ export function getPermsTreeData(): any[] {
         },
         {
           label: t('menu.config.dictType'),
-          key: 'dictType',
+          key: 'dictType.key',
           perms: ['dictType:page', 'dictType:list', 'dictType:validation'],
           children: [
             { label: t('list'), key: 'dictType:page' },
@@ -195,11 +198,12 @@ export function getPermsTreeData(): any[] {
     },
     {
       label: t('menu.user'),
-      key: 'menu.user',
+      key: 'menu.user.key',
+      perms: ['menu.user'],
       children: [
         {
           label: t('menu.user.user'),
-          key: 'user',
+          key: 'user.key',
           perms: ['user:page', 'user:list', 'group:list', 'org:list'],
           children: [
             { label: t('list'), key: 'user:page' },
@@ -212,7 +216,7 @@ export function getPermsTreeData(): any[] {
         },
         {
           label: t('menu.user.role'),
-          key: 'role',
+          key: 'role.key',
           perms: ['role:page', 'role:list', 'role:validation', 'channel:list'],
           children: [
             { label: t('list'), key: 'role:page' },
@@ -224,7 +228,7 @@ export function getPermsTreeData(): any[] {
         },
         {
           label: t('menu.user.org'),
-          key: 'org',
+          key: 'org.key',
           perms: ['org:page', 'org:list'],
           children: [
             { label: t('list'), key: 'org:page' },
@@ -235,7 +239,7 @@ export function getPermsTreeData(): any[] {
         },
         {
           label: t('menu.user.group'),
-          key: 'group',
+          key: 'group.key',
           perms: ['group:page', 'group:list'],
           children: [
             { label: t('list'), key: 'group:page' },
@@ -248,11 +252,12 @@ export function getPermsTreeData(): any[] {
     },
     {
       label: t('menu.system'),
-      key: 'menu.system',
+      key: 'menu.system.key',
+      perms: ['menu.system'],
       children: [
         {
           label: t('menu.system.site'),
-          key: 'site',
+          key: 'site.key',
           perms: ['site:page', 'site:list', 'org:list', 'model:list'],
           children: [
             { label: t('list'), key: 'site:page' },
@@ -263,7 +268,7 @@ export function getPermsTreeData(): any[] {
         },
         // {
         //   label: t('menu.system.task'),
-        //   key: 'task',
+        //   key: 'task.key',
         //   perms: ['task:page', 'task:list'],
         //   children: [
         //     { label: t('list'), key: 'task:page' },

@@ -26,32 +26,32 @@ export const routes: Array<RouteRecordRaw> = [
   {
     path: '/content',
     component: Layout,
-    meta: { title: 'menu.content', icon: Document },
+    meta: { title: 'menu.content', icon: Document, requiresPermission: 'menu.content' },
     children: [
       {
         path: 'article',
         name: 'ArticleList',
         component: () => import('@/views/content/ArticleList.vue'),
-        meta: { title: 'menu.content.article', requiresPermission: 'article:list' },
+        meta: { title: 'menu.content.article', requiresPermission: 'article:page' },
       },
       {
         path: 'channel',
         name: 'ChannelList',
         component: () => import('@/views/content/ChannelList.vue'),
-        meta: { title: 'menu.content.channel', requiresPermission: 'channel:list' },
+        meta: { title: 'menu.content.channel', requiresPermission: 'channel:page' },
       },
       {
         path: 'block-item',
         name: 'BlockItemList',
         component: () => import('@/views/content/BlockItemList.vue'),
-        meta: { title: 'menu.content.blockItem', requiresPermission: 'blockItem:list' },
+        meta: { title: 'menu.content.blockItem', requiresPermission: 'blockItem:page' },
       },
-      { path: 'dict', name: 'DictList', component: () => import('@/views/content/DictList.vue'), meta: { title: 'menu.content.dict', requiresPermission: 'dict:list' } },
+      { path: 'dict', name: 'DictList', component: () => import('@/views/content/DictList.vue'), meta: { title: 'menu.content.dict', requiresPermission: 'dict:page' } },
       {
         path: 'attachment',
         name: 'AttachmentList',
         component: () => import('@/views/content/AttachmentList.vue'),
-        meta: { title: 'menu.content.attachment', requiresPermission: 'attachment:list' },
+        meta: { title: 'menu.content.attachment', requiresPermission: 'attachment:page' },
       },
       {
         path: 'generator',
@@ -64,7 +64,7 @@ export const routes: Array<RouteRecordRaw> = [
   {
     path: '/config',
     component: Layout,
-    meta: { title: 'menu.config', icon: Tools },
+    meta: { title: 'menu.config', icon: Tools, requiresPermission: 'menu.config' },
     children: [
       {
         path: 'global-settings',
@@ -78,34 +78,34 @@ export const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/config/SiteSettings.vue'),
         meta: { title: 'menu.config.siteSettings', requiresPermission: 'siteSettings:show' },
       },
-      { path: 'model', name: 'ModelList', component: () => import('@/views/config/ModelList.vue'), meta: { title: 'menu.config.model', requiresPermission: 'model:list' } },
-      { path: 'block', name: 'BlockList', component: () => import('@/views/config/BlockList.vue'), meta: { title: 'menu.config.block', requiresPermission: 'block:list' } },
+      { path: 'model', name: 'ModelList', component: () => import('@/views/config/ModelList.vue'), meta: { title: 'menu.config.model', requiresPermission: 'model:page' } },
+      { path: 'block', name: 'BlockList', component: () => import('@/views/config/BlockList.vue'), meta: { title: 'menu.config.block', requiresPermission: 'block:page' } },
       {
         path: 'dict-type',
         name: 'DictTypeList',
         component: () => import('@/views/config/DictTypeList.vue'),
-        meta: { title: 'menu.config.dictType', requiresPermission: 'dictType:list' },
+        meta: { title: 'menu.config.dictType', requiresPermission: 'dictType:page' },
       },
     ],
   },
   {
     path: '/user',
     component: Layout,
-    meta: { title: 'menu.user', icon: UserFilled },
+    meta: { title: 'menu.user', icon: UserFilled, requiresPermission: 'menu.user' },
     children: [
-      { path: 'user', name: 'UserList', component: () => import('@/views/user/UserList.vue'), meta: { title: 'menu.user.user', requiresPermission: 'user:list' } },
-      { path: 'role', name: 'RoleList', component: () => import('@/views/user/RoleList.vue'), meta: { title: 'menu.user.role', requiresPermission: 'role:list' } },
-      { path: 'org', name: 'OrgList', component: () => import('@/views/user/OrgList.vue'), meta: { title: 'menu.user.org', requiresPermission: 'org:list' } },
-      { path: 'group', name: 'GroupList', component: () => import('@/views/user/GroupList.vue'), meta: { title: 'menu.user.group', requiresPermission: 'group:list' } },
+      { path: 'user', name: 'UserList', component: () => import('@/views/user/UserList.vue'), meta: { title: 'menu.user.user', requiresPermission: 'user:page' } },
+      { path: 'role', name: 'RoleList', component: () => import('@/views/user/RoleList.vue'), meta: { title: 'menu.user.role', requiresPermission: 'role:page' } },
+      { path: 'org', name: 'OrgList', component: () => import('@/views/user/OrgList.vue'), meta: { title: 'menu.user.org', requiresPermission: 'org:page' } },
+      { path: 'group', name: 'GroupList', component: () => import('@/views/user/GroupList.vue'), meta: { title: 'menu.user.group', requiresPermission: 'group:page' } },
     ],
   },
   {
     path: '/system',
     component: Layout,
-    meta: { title: 'menu.system', icon: Operation },
+    meta: { title: 'menu.system', icon: Operation, requiresPermission: 'menu.system' },
     children: [
-      { path: 'site', name: 'SiteList', component: () => import('@/views/Enterprise.vue'), meta: { title: 'menu.system.site', requiresPermission: 'site:list' } },
-      // { path: 'task', name: 'TaskList', component: () => import('@/views/system/TaskList.vue'), meta: { title: 'menu.system.task', requiresPermission: 'task:list' } },
+      { path: 'site', name: 'SiteList', component: () => import('@/views/Enterprise.vue'), meta: { title: 'menu.system.site', requiresPermission: 'site:page' } },
+      // { path: 'task', name: 'TaskList', component: () => import('@/views/system/TaskList.vue'), meta: { title: 'menu.system.task', requiresPermission: 'task:page' } },
     ],
   },
   // 404 页面配置必须放在最后
