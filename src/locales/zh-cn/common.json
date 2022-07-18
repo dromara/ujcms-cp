@@ -3,9 +3,15 @@
   "add": "新增",
   "addChild": "新增下级",
   "detail": "详情",
+  "view": "查看",
   "edit": "编辑",
   "permissionSettings": "权限设置",
   "delete": "删除",
+  "completelyDelete": "彻底删除",
+  "execute": "执行",
+  "batchAction": "批量操作",
+  "pass": "审核通过",
+  "reject": "审核驳回",
   "search": "查询",
   "back": "返回",
   "refresh": "刷新",
@@ -23,6 +29,7 @@
   "globalData": "全局数据",
 
   "clickToUpload": "点击上传",
+  "clickOrDragToUpload": "点击或拖拽上传",
   "imageCrop": "图片裁剪",
   "deleteImage": "删除图片",
   "cropImage": "裁剪图片",
@@ -30,6 +37,10 @@
 
   "restoreInitialSettings": "恢复初始设置",
   "confirmDelete": "您确定删除吗？",
+  "confirmCompletelyDelete": "您确定彻底删除吗？",
+  "confirmExecute": "您确定执行吗？",
+  "confirmPass": "您确定审核通过吗？",
+  "confirmReject": "您确定审核驳回吗？",
   "confirmLogin": "登录状态已过期，您可以停留在该页面或者重新登录",
   "loginAgain": "重新登录",
   "enterPassword": "请输入密码",
@@ -39,6 +50,13 @@
 
   "username": "用户名",
   "password": "密码",
+  "mobile": "手机号码",
+  "captcha": "图形验证码",
+  "shortMessage": "短信验证码",
+  "getShortMessage": "获取验证码",
+  "clickToRetrieveCaptcha": "点击重新获取图形验证码",
+  "captchaIncorrect": "验证码不正确",
+  "passwordRemaingDays": "密码还有 {remainingDays} 天过期，请及时修改密码！",
   "login": "登录",
   "logout": "退出",
 
@@ -49,19 +67,22 @@
   "gender.f": "女",
   "gender.n": "保密",
 
+  "undo": "撤销",
+  "redo": "重做",
+
   "begin.date": "开始日期",
   "end.date": "结束日期",
   "begin.number": "起",
   "end.number": "止",
 
   "expand/collapse": "展开/折叠",
-  "checkAll/uncheckAll" : "全选/全不选",
+  "checkAll/uncheckAll": "全选/全不选",
 
-  "contextMenu.refresh":"刷新",
-  "contextMenu.close":"关闭",
-  "contextMenu.closeLeft":"关闭左侧",
-  "contextMenu.closeRight":"关闭右侧",
-  "contextMenu.closeOther":"关闭其他",
+  "contextMenu.refresh": "刷新",
+  "contextMenu.close": "关闭",
+  "contextMenu.closeLeft": "关闭左侧",
+  "contextMenu.closeRight": "关闭右侧",
+  "contextMenu.closeOther": "关闭其他",
 
   "form.prev": "上一条",
   "form.next": "下一条",
@@ -75,8 +96,9 @@
   "error.title": "错误信息",
   "error.forbidden": "对不起，您没有该功能的访问权限",
   "error.fileMaxSize": "文件大小不能超过 {size}",
-  "error.jodConverterNotEnabled":"Office转换器未开启",
+  "error.jodConverterNotEnabled": "Office转换器未开启",
   "error.enterprise": "本功能在商业版中提供。请联系官方网站 <a href=\"https://www.ujcms.com\" target=\"_blank\" class=\"text-primary\">https://www.ujcms.com</a> 购买。支持正版，我们会做的更好！",
+  "error.enterprise.short": "本功能在商业版中提供",
 
   "moveTop": "置顶",
   "moveUp": "上移",
@@ -97,6 +119,12 @@
   "v.minLength": "最少要输入 {minLength} 个字符",
   "v.maxLength": "最多可以输入 {maxLength} 个字符",
   "v.rangeLength": "请输入长度在 {min} 到 {max} 之间的字符串",
+
+  "flowable.groups.normal": "常规",
+  "flowable.properties.name": "名称",
+  "flowable.properties.id": "ID",
+  "flowable.groups.assignment": "用户分配",
+  "flowable.properties.candidateGroups": "候选角色",
 
   "": ""
 }

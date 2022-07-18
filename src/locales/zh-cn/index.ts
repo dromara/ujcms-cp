@@ -4,6 +4,7 @@ import content from './content.json';
 import homepage from './homepage.json';
 import user from './user.json';
 import config from './config.json';
+import log from './log.json';
 import system from './system.json';
 
 export default {
@@ -13,5 +14,6 @@ export default {
   ...homepage,
   ...user,
   ...config,
+  ...log,
   ...system,
 };

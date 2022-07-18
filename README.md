@@ -60,3 +60,22 @@ proxy: {
 },
 ```
 
+## 菜单和角色权限配置
+
+如果进行二次开发，需新增功能，可在`/src/router/index.ts`文件中配置菜单。
+
+并可在`/src/data.ts`文件中配置权限，配置好的权限会在`角色管理 - 权限设置`中的`功能权限`中显示。
+
+配置内容：
+
+```
+export function getPermsTreeData(): any[] {
+  const {
+    global: { t },
+  } = i18n;
+  const perms = [
+    ...
+  ]
+}
+```
+

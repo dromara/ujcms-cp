@@ -33,7 +33,7 @@
               <el-tag :type="row.withSubtitle ? 'success' : 'info'" size="small">{{ $t(row.withSubtitle ? 'yes' : 'no') }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column property="withDescription" :label="$t('block.withDescription')" sortable="custom">
+          <el-table-column property="withDescription" :label="$t('block.withDescription')" display="none" sortable="custom">
             <template #default="{ row }">
               <el-tag :type="row.withDescription ? 'success' : 'info'" size="small">{{ $t(row.withDescription ? 'yes' : 'no') }}</el-tag>
             </template>
@@ -48,6 +48,11 @@
             <template #default="{ row }">
               <el-tag v-if="!row.withMobileImage" :type="row.withMobileImage ? 'success' : 'info'" size="small">{{ $t(row.withMobileImage ? 'yes' : 'no') }}</el-tag>
               <span v-else>{{ `${row.mobileImageWidth} * ${row.mobileImageHeight}` }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column property="recommendable" :label="$t('block.recommendable')" sortable="custom">
+            <template #default="{ row }">
+              <el-tag :type="row.recommendable ? 'success' : 'info'" size="small">{{ $t(row.recommendable ? 'yes' : 'no') }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column property="enabled" :label="$t('block.enabled')" sortable="custom">

@@ -41,7 +41,7 @@
           <query-item
             :label="$t('article.status')"
             name="Q_In_status_Int"
-            :options="[0, 1, 2, 3, 4, 8, 9].map((item) => ({ label: $t(`article.status.${item}`), value: item }))"
+            :options="[0, 1, 10, 11, 12, 15, 20, 21, 22].map((item) => ({ label: $t(`article.status.${item}`), value: item }))"
           ></query-item>
           <query-item
             :label="$t('article.block')"
@@ -64,9 +64,13 @@
       </div>
       <div>
         <el-button type="primary" :disabled="perm('article:create')" :icon="Plus" @click="handleAdd()">{{ $t('add') }}</el-button>
-        <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
+        <el-select v-model="batchAction" class="ml-2">
+          <template #prefix>{{ $t('batchAction') + ':' }}</template>
+          <el-option v-for="item in batchActions" :disabled="perm(`article:${item}`)" :key="item" :value="item" :label="$t(`article.op.${item}`)" />
+        </el-select>
+        <el-popconfirm :title="$t('confirmExecute')" @confirm="handleExecute(batchAction, selectionIds)">
           <template #reference>
-            <el-button :disabled="selection.length <= 0 || perm('article:delete')" :icon="Delete" class="ml-2">{{ $t('delete') }}</el-button>
+            <el-button :disabled="selectionIds.length <= 0 || perm(`article:${batchAction}`)" :icon="Cpu">{{ $t('execute') }}</el-button>
           </template>
         </el-popconfirm>
         <column-setting name="article" class="ml-2" />
@@ -81,12 +85,12 @@
           @sort-change="handleSort"
         >
           <column-list name="article">
-            <el-table-column type="selection" width="45"></el-table-column>
+            <el-table-column type="selection" :selectable="selectable" width="45"></el-table-column>
             <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
             <el-table-column property="title" :label="$t('article.title')" min-width="280" sort-by="@articleExt-title" sortable="custom">
               <template #default="{ row }">
                 <el-link :href="row.url" :underline="false" target="_blank">{{ row.title }}</el-link>
-                <el-tag v-for="item in row.blockItemList" :key="item.id" @close="handleBlockItemDelete(item.id)" size="small" closable>{{ item.block.name }}</el-tag>
+                <el-tag v-for="item in row.blockItemList" :key="item.id" @close="handleBlockItemDelete(item.id)" size="small" class="ml-1" closable>{{ item.block.name }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column property="channel.name" :label="$t('article.channel')" sortable="custom" show-overflow-tooltip></el-table-column>
@@ -149,32 +153,50 @@
             <el-table-column property="status" :label="$t('article.status')" sortable="custom" show-overflow-tooltip>
               <template #default="{ row }">
                 <el-tag v-if="row.status === 0" type="success" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
+                <el-tag v-else-if="row.status === 1" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
+                <el-tag v-else-if="row.status === 20" type="danger" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
+                <el-tag v-else-if="row.status === 21" type="warning" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
+                <el-tooltip v-else-if="row.status === 22" :content="row.rejectReason" placement="top">
+                  <el-tag type="warning" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
+                </el-tooltip>
                 <el-tag v-else type="info" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.action')" min-width="100">
+            <el-table-column :label="$t('table.action')" width="190">
               <template #default="{ row }">
                 <el-button type="primary" :disabled="perm('article:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
-                <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
+                <el-button
+                  v-if="currentUser.epRank > 0 || currentUser.epDisplay"
+                  type="primary"
+                  :disabled="!row.processInstanceId || perm('processInstance:task') || currentUser.epRank < 1"
+                  @click="handleTask(row.processInstanceId)"
+                  size="small"
+                  link
+                >
+                  {{ $t('processInstance.op.task') }}
+                </el-button>
+                <el-popconfirm :title="$t('confirmDelete')" @confirm="handleExecute('delete', [row.id])">
                   <template #reference>
                     <el-button type="primary" :disabled="perm('article:delete')" size="small" link>{{ $t('delete') }}</el-button>
                   </template>
                 </el-popconfirm>
-                <el-dropdown class="ml-2">
+                <el-dropdown class="ml-2 align-middle">
                   <el-button type="primary" size="small" link>
                     <el-icon class="text-primary"><MoreFilled /></el-icon>
                   </el-button>
                   <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item
-                        v-for="item in blockList.filter((it) => it.enabled && it.recommendable)"
-                        :key="item.id"
-                        @click="recommendTo(item.id, row.id, row.title, row.description)"
-                        :disabled="row.blocks.findIndex((block: any) => block.id === item.id) >= 0"
-                      >
-                        <span class="text-xs"> {{ `${$t('article.op.recommendTo')}: ${item.name}` }} </span>
-                      </el-dropdown-item>
-                    </el-dropdown-menu>
+                    <div>
+                      <el-dropdown-menu>
+                        <el-dropdown-item
+                          v-for="item in blockList.filter((it) => it.enabled && it.recommendable)"
+                          :key="item.id"
+                          @click="recommendTo(item.id, row.id, row.title, row.description)"
+                          :disabled="row.blocks.findIndex((block: any) => block.id === item.id) >= 0"
+                        >
+                          <span class="text-xs"> {{ `${$t('article.op.recommendTo')}: ${item.name}` }} </span>
+                        </el-dropdown-item>
+                      </el-dropdown-menu>
+                    </div>
                   </template>
                 </el-dropdown>
               </template>
@@ -206,6 +228,7 @@
         :description="recommendDescription"
         @finished="fetchData"
       />
+      <process-task-list :instanceId="instanceId" v-model="taskListVisible" />
     </el-main>
   </el-container>
 </template>
@@ -217,18 +240,19 @@ export default { name: 'ArticleList' };
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Plus, Delete, MoreFilled } from '@element-plus/icons-vue';
+import { Plus, Cpu, MoreFilled } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
-import { perm } from '@/store/useCurrentUser';
+import { perm, currentUser } from '@/store/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
 import { toTree } from '@/utils/tree';
 import { queryBlockList } from '@/api/config';
-import { deleteArticle, queryArticlePage, queryChannelList, deleteBlockItem } from '@/api/content';
+import { deleteArticle, submitArticle, archiveArticle, offlineArticle, completelyDeleteArticle, queryArticlePage, queryChannelList, deleteBlockItem } from '@/api/content';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import ArticleForm from './ArticleForm.vue';
 import BlockItemForm from './BlockItemForm.vue';
+import ProcessTaskList from '@/views/system/ProcessTaskList.vue';
 
 const { t } = useI18n();
 const params = ref<any>({});
@@ -255,6 +279,57 @@ const channelTreeData = ref<any[]>([]);
 const channelTreeLoading = ref<boolean>(false);
 const channel = ref<any>();
 
+const instanceId = ref<string>();
+const taskListVisible = ref<boolean>(false);
+
+const batchActions = ['delete', 'submit', 'archive', 'offline', 'completelyDelete'];
+const batchAction = ref<string>(batchActions[0]);
+
+const selectable = (bean: any): boolean => {
+  if (batchAction.value === 'delete') {
+    // 已删除 不能删除
+    return ![20].includes(bean.status);
+  }
+  if (batchAction.value === 'submit') {
+    // 已发布、审核中 不能提交
+    return ![0, 12].includes(bean.status);
+  }
+  if (batchAction.value === 'archive') {
+    // 已发布 能归档
+    return [0].includes(bean.status);
+  }
+  if (batchAction.value === 'offline') {
+    // 已发布、已归档、待发布、待审核、审核中 能下线
+    return [0, 1, 5, 11, 12].includes(bean.status);
+  }
+  if (batchAction.value === 'completelyDelete') {
+    // 所有状态都能彻底删除
+    return true;
+  }
+  return true;
+};
+const selectionIds = computed(() => {
+  return selection.value.filter((item: any) => selectable(item)).map((item: any) => item.id);
+});
+
+const handleExecute = async (action: string, ids: number[]) => {
+  if (action === 'delete') {
+    await deleteArticle(ids);
+  } else if (action === 'submit') {
+    await submitArticle(ids);
+  } else if (action === 'archive') {
+    await archiveArticle(ids);
+  } else if (action === 'offline') {
+    await offlineArticle(ids);
+  } else if (action === 'completelyDelete') {
+    await completelyDeleteArticle(ids);
+  } else {
+    throw new Error(`not support action: ${action}`);
+  }
+  fetchData();
+  ElMessage.success(t('success'));
+};
+
 const fetchData = async () => {
   tableLoading.value = true;
   try {
@@ -274,7 +349,7 @@ const fetchData = async () => {
 const fetchChannel = async () => {
   channelTreeLoading.value = true;
   try {
-    channelTreeData.value = toTree(await queryChannelList());
+    channelTreeData.value = toTree(await queryChannelList({ isArticlePermission: true }));
   } finally {
     channelTreeLoading.value = false;
   }
@@ -319,11 +394,6 @@ const handleEdit = (id: number) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const handleDelete = async (ids: number[]) => {
-  await deleteArticle(ids);
-  fetchData();
-  ElMessage.success(t('success'));
-};
 const recommendTo = (blockId: number, articleId: number, title: string, description: string) => {
   recommendVisible.value = true;
   recommendBlockId.value = blockId;
@@ -335,5 +405,9 @@ const handleBlockItemDelete = async (blockItemId: number) => {
   await deleteBlockItem([blockItemId]);
   fetchData();
   ElMessage.success(t('success'));
+};
+const handleTask = (id: string) => {
+  instanceId.value = id;
+  taskListVisible.value = true;
 };
 </script>

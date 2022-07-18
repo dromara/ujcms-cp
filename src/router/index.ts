@@ -1,6 +1,6 @@
 import { Component } from 'vue';
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
-import { Document, Tools, UserFilled, Operation } from '@element-plus/icons-vue';
+import { Document, Tools, UserFilled, Operation, Tickets } from '@element-plus/icons-vue';
 import Layout from '@/layout/index.vue';
 
 declare module 'vue-router' {
@@ -33,6 +33,12 @@ export const routes: Array<RouteRecordRaw> = [
         name: 'ArticleList',
         component: () => import('@/views/content/ArticleList.vue'),
         meta: { title: 'menu.content.article', requiresPermission: 'article:page' },
+      },
+      {
+        path: 'article-review',
+        name: 'ArticleReviewList',
+        component: () => import('@/views/Enterprise.vue'),
+        meta: { title: 'menu.content.articleReview', requiresPermission: 'articleReview:page' },
       },
       {
         path: 'channel',
@@ -100,11 +106,48 @@ export const routes: Array<RouteRecordRaw> = [
     ],
   },
   {
+    path: '/log',
+    component: Layout,
+    meta: { title: 'menu.log', icon: Tickets, requiresPermission: 'menu.log' },
+    children: [
+      {
+        path: 'login-log',
+        name: 'LoginLogList',
+        component: () => import('@/views/Enterprise.vue'),
+        meta: { title: 'menu.log.loginLog', requiresPermission: 'loginLog:page' },
+      },
+      {
+        path: 'short-message',
+        name: 'ShortMessageList',
+        component: () => import('@/views/log/ShortMessageList.vue'),
+        meta: { title: 'menu.log.shortMessage', requiresPermission: 'shortMessage:page' },
+      },
+    ],
+  },
+  {
     path: '/system',
     component: Layout,
     meta: { title: 'menu.system', icon: Operation, requiresPermission: 'menu.system' },
     children: [
       { path: 'site', name: 'SiteList', component: () => import('@/views/Enterprise.vue'), meta: { title: 'menu.system.site', requiresPermission: 'site:page' } },
+      {
+        path: 'process-model',
+        name: 'ProcessModelList',
+        component: () => import('@/views/Enterprise.vue'),
+        meta: { title: 'menu.system.processModel', requiresPermission: 'processModel:page' },
+      },
+      {
+        path: 'process-instance',
+        name: 'ProcessInstanceList',
+        component: () => import('@/views/Enterprise.vue'),
+        meta: { title: 'menu.system.processInstance', requiresPermission: 'processInstance:page' },
+      },
+      {
+        path: 'process-history',
+        name: 'ProcessHistoryList',
+        component: () => import('@/views/Enterprise.vue'),
+        meta: { title: 'menu.system.processHistory', requiresPermission: 'processHistory:page' },
+      },
       // { path: 'task', name: 'TaskList', component: () => import('@/views/system/TaskList.vue'), meta: { title: 'menu.system.task', requiresPermission: 'task:page' } },
     ],
   },

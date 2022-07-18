@@ -34,6 +34,9 @@
           <el-table-column property="alias" :label="$t('channel.alias')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="channelModel.name" :label="$t('channel.channelModel')" display="none" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="articleModel.name" :label="$t('channel.articleModel')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="processKey" :label="$t('channel.processKey')" sortable="custom" show-overflow-tooltip>
+            <template #default="{ row }">{{ processList.find((item) => item.key === row.processKey)?.name }}</template>
+          </el-table-column>
           <el-table-column property="nav" :label="$t('channel.nav')">
             <template #default="{ row }">
               <el-tag :type="row.nav ? 'success' : 'info'" size="small">{{ $t(row.nav ? 'yes' : 'no') }}</el-tag>
@@ -65,12 +68,13 @@ export default { name: 'ChannelList' };
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Plus, Delete, CircleCheck, CircleClose } from '@element-plus/icons-vue';
+import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { perm } from '@/store/useCurrentUser';
+import { perm, currentUser } from '@/store/useCurrentUser';
 import { moveTreeList, toParams, resetParams } from '@/utils/common';
 import { toTree, flatTree, findTreeItem } from '@/utils/tree';
 import { deleteChannel, queryChannelList, updateChannelOrder } from '@/api/content';
+import { queryProcessDefinitionList } from '@/api/system';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import ListMove from '@/components/ListMove.vue';
@@ -88,6 +92,7 @@ const beanId = ref<number>();
 const beanIds = computed(() => flatTree(data.value).map((row) => row.id));
 const filtered = ref<boolean>(false);
 const parent = ref<any>();
+const processList = ref<any[]>([]);
 
 const fetchData = async () => {
   loading.value = true;
@@ -101,7 +106,15 @@ const fetchData = async () => {
     loading.value = false;
   }
 };
-onMounted(fetchData);
+const fetchProcessList = async () => {
+  if (currentUser.epRank > 0) {
+    processList.value = await queryProcessDefinitionList({ category: 'sys_article', latestVersion: true });
+  }
+};
+onMounted(() => {
+  fetchData();
+  fetchProcessList();
+});
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
   if (prop) {

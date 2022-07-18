@@ -18,13 +18,13 @@
     <div class="app-block mt-3">
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="dictType">
-          <el-table-column type="selection" width="45"></el-table-column>
+          <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
           <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('dictType.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="alias" :label="$t('dictType.alias')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="scope" :label="$t('dictType.scope')" sortable="custom">
-            <template #default="{row}">
-              <el-tag v-if="row.scope===2" type="success" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
+            <template #default="{ row }">
+              <el-tag v-if="row.scope === 2" type="success" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
               <el-tag v-else type="info" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
             </template>
           </el-table-column>
@@ -38,7 +38,7 @@
               <el-button type="primary" :disabled="perm('dictType:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                 <template #reference>
-                  <el-button type="primary" :disabled="perm('dictType:delete')" size="small" link>{{ $t('delete') }}</el-button>
+                  <el-button type="primary" :disabled="!deletable(row) || perm('dictType:delete')" size="small" link>{{ $t('delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -78,6 +78,7 @@ const formVisible = ref<boolean>(false);
 const beanId = ref<number>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
+const deletable = (bean: any) => bean.id >= 100;
 const fetchData = async () => {
   loading.value = true;
   try {

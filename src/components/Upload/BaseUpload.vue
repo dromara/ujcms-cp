@@ -10,12 +10,14 @@
     :show-file-list="false"
     :disabled="disabled"
     :multiple="multiple"
+    drag
   >
     <!--
     // 用于测试上传进度条
     action="https://jsonplaceholder.typicode.com/posts/"
-     -->
-    <el-button type="primary" :disabled="disabled">{{ button ?? $t('clickToUpload') }}</el-button>
+    -->
+    {{ $t('clickOrDragToUpload') }}
+    <!-- <el-button type="primary" :disabled="disabled">{{ button ?? $t('clickToUpload') }}</el-button> -->
   </el-upload>
   <el-progress v-if="progressFile.status === 'uploading'" :percentage="parseInt(progressFile.percentage, 10)"></el-progress>
 </template>
@@ -28,13 +30,13 @@ import { handleError } from '@/utils/request';
 import { getAuthHeaders } from '@/utils/auth';
 import { getSiteHeaders } from '@/utils/common';
 import { uploadSettings } from '@/store/useConfig';
-import { imageUploadUrl, videoUploadUrl, docUploadUrl, fileUploadUrl } from '@/api/config';
+import { imageUploadUrl, videoUploadUrl, audioUploadUrl, docUploadUrl, fileUploadUrl } from '@/api/config';
 
 const props = defineProps({
   type: {
-    type: String,
+    type: String as PropType<'image' | 'video' | 'audio' | 'library' | 'doc' | 'file'>,
     default: 'file',
-    validator: (value: string) => ['image', 'video', 'library', 'doc', 'file'].includes(value),
+    validator: (value: string) => ['image', 'video', 'audio', 'library', 'doc', 'file'].includes(value),
   },
   button: { type: String },
   uploadAction: { type: String },
@@ -57,6 +59,8 @@ const action = computed(() => {
       return imageUploadUrl;
     case 'video':
       return videoUploadUrl;
+    case 'audio':
+      return audioUploadUrl;
     case 'library':
       return docUploadUrl;
     case 'doc':
@@ -76,6 +80,8 @@ const accept = computed(() => {
       return uploadSettings.imageInputAccept;
     case 'video':
       return uploadSettings.videoInputAccept;
+    case 'audio':
+      return uploadSettings.audioInputAccept;
     case 'library':
       return uploadSettings.libraryInputAccept;
     case 'doc':
@@ -95,6 +101,8 @@ const maxSize = computed(() => {
       return uploadSettings.imageLimitByte;
     case 'video':
       return uploadSettings.videoLimitByte;
+    case 'audio':
+      return uploadSettings.audioLimitByte;
     case 'library':
       return uploadSettings.libraryLimitByte;
     case 'doc':
@@ -107,7 +115,7 @@ const maxSize = computed(() => {
 });
 const beforeUpload = (file: any) => {
   if (maxSize.value > 0 && file.size > maxSize.value) {
-    ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024}MB` }));
+    ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024} MB` }));
     return false;
   }
   return true;
@@ -117,4 +125,9 @@ const onError = (error: Error) => {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+:deep(.el-upload-dragger) {
+  padding: 0 20px;
+  @apply bg-primary-lighter text-primary;
+}
+</style>

@@ -31,8 +31,9 @@
                 >
                   <template #item="{ element: field }">
                     <el-col :span="field.double ? 12 : 24" class="relative">
-                      <el-form-item :prop="field.code" :label="field.name" :required="field.required" class="mb-0 py-3">
-                        <field-item :field="field" v-model="field.defaultValue"></field-item>
+                      <el-form-item :prop="field.code" :required="field.required" class="mb-0 py-3">
+                        <template #label><label-tip :label="field.name" /></template>
+                        <field-item :field="field" v-model="field.defaultValue" v-model:model-key="field.defaultValueKey"></field-item>
                       </el-form-item>
                       <div
                         :class="['drag-mask', !drag && selected !== field ? 'hover:opacity-10' : null, selected === field ? 'drag-mask-selected' : null]"
@@ -48,7 +49,7 @@
             </el-scrollbar>
           </el-main>
         </el-container>
-        <el-aside class="right-panel w-60">
+        <el-aside class="right-panel w-64">
           <el-scrollbar class="h-full pt-0.5 pb-3">
             <el-tabs v-model="currentTab" stretch>
               <el-tab-pane :label="$t('model.attribute')" name="attribute" class="px-2">
@@ -77,6 +78,7 @@ import draggable from 'vuedraggable';
 import { queryModel, updateModel } from '@/api/config';
 import FieldItem from './components/FieldItem.vue';
 import FieldAttribute from './components/FieldAttribute.vue';
+import LabelTip from '@/components/LabelTip.vue';
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -109,6 +111,7 @@ const components = ref<any[]>([
   { label: t('model.fieldType.switch'), type: 'switch' },
   { label: t('model.fieldType.imageUpload'), type: 'imageUpload' },
   { label: t('model.fieldType.videoUpload'), type: 'videoUpload' },
+  { label: t('model.fieldType.audioUpload'), type: 'audioUpload' },
   { label: t('model.fieldType.fileUpload'), type: 'fileUpload' },
   { label: t('model.fieldType.tinyEditor'), type: 'tinyEditor' },
 ]);
@@ -188,7 +191,7 @@ const handleSubmit = async () => {
   @apply bg-primary-light opacity-30 rounded-sm border border-primary border-dashed;
 }
 .drag-close {
-  @apply absolute -top-1 right-0 z-10 cursor-pointer opacity-70;
+  @apply absolute -top-0.5 right-0 z-10 cursor-pointer opacity-70;
 }
 
 .dialog-full {
@@ -198,7 +201,7 @@ const handleSubmit = async () => {
 }
 .right-panel {
   :deep(.el-form-item) {
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
 }
 

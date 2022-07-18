@@ -1,5 +1,5 @@
 <template>
-  <div class="inline-flex items-center" style="max-width: calc(100% - 16px)">
+  <div class="inline-flex items-center" :style="fixWidth ? { maxWidth: 'calc(100% - 16px)' } : undefined">
     <div class="text-clip overflow-hidden whitespace-nowrap" :title="label ?? $t(message)">{{ label ?? $t(message) }}</div>
     <el-tooltip v-if="help" :content="tooltip ?? $t(message + '.tooltip')" placement="top">
       <el-icon class="text-base align-text-top"><QuestionFilled /></el-icon>
@@ -14,6 +14,7 @@ defineProps({
   label: { type: String },
   tooltip: { type: String },
   help: { type: Boolean, default: false },
-  message: { type: String, required: true },
+  message: { type: String, default: '' },
+  fixWidth: { type: Boolean, default: true },
 });
 </script>

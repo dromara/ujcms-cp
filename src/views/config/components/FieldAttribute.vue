@@ -14,6 +14,7 @@
       { label: '富文本编辑器', type: 'tinyEditor' },
       { label: '图片上传', type: 'imageUpload' },
       { label: '视频上传', type: 'videoUpload' },
+      { label: '音频上传', type: 'audioUpload' },
       { label: '文件上传', type: 'fileUpload' },
 -->
 <template>
@@ -29,7 +30,7 @@
   <el-form-item prop="required" :label="$t('model.field.required')">
     <el-switch v-model="field.required"></el-switch>
   </el-form-item>
-  <template v-if="['text', 'textarea', 'number', 'select', 'multipleSelect', 'videoUpload', 'fileUpload', 'tinyEditor'].includes(field.type)">
+  <template v-if="['text', 'textarea', 'number', 'select', 'multipleSelect', 'videoUpload', 'audioUpload', 'fileUpload', 'tinyEditor'].includes(field.type)">
     <el-form-item prop="placeholder" :label="$t('model.field.placeholder')">
       <el-input v-model="field.placeholder" maxlength="100"></el-input>
     </el-form-item>
@@ -111,22 +112,28 @@
   </template>
   <template v-if="['radio', 'checkbox', 'select', 'multipleSelect'].includes(field.type)">
     <el-form-item prop="dictTypeId" :label="$t('model.field.dictType')" :rules="{ required: true, message: () => $t('v.required') }">
-      <el-select v-model="field.dictTypeId" @change="(typeId) => dictTypeChange(typeId)" class="w-full">
+      <el-select v-model="field.dictTypeId" @change="(typeId) => dictTypeChange()" class="w-full">
         <el-option v-for="item in dictTypeList" :key="item.id" :value="item.id" :label="`${item.name}(${item.alias})`"></el-option>
       </el-select>
     </el-form-item>
   </template>
   <template v-if="['radio', 'select'].includes(field.type)">
     <el-form-item prop="defaultValue" :label="$t('model.field.defaultValue')">
-      <el-select v-model="field.defaultValue" clearable class="w-full">
-        <el-option v-for="item in dictList" :key="item.id" :value="item.name" :label="item.name"></el-option>
+      <el-select v-model="field.defaultValueKey" @change="(val) => (field.defaultValue = dictList.find((item) => item.value === val)?.name)" clearable class="w-full">
+        <el-option v-for="item in dictList" :key="item.id" :value="item.value" :label="item.name"></el-option>
       </el-select>
     </el-form-item>
   </template>
   <template v-if="['checkbox', 'multipleSelect'].includes(field.type)">
     <el-form-item prop="defaultValue" :label="$t('model.field.defaultValue')">
-      <el-select v-model="field.defaultValue" clearable class="w-full" multiple>
-        <el-option v-for="item in dictList" :key="item.id" :value="item.name" :label="item.name"></el-option>
+      <el-select
+        v-model="field.defaultValueKey"
+        @change="(val) => (field.defaultValue = dictList.filter((item) => val.indexOf(item.value) !== -1).map((item) => item.name))"
+        clearable
+        class="w-full"
+        multiple
+      >
+        <el-option v-for="item in dictList" :key="item.id" :value="item.value" :label="item.name"></el-option>
       </el-select>
     </el-form-item>
   </template>
@@ -143,6 +150,16 @@
       </el-select>
     </el-form-item>
   </template>
+  <template v-if="['imageUpload', 'videoUpload', 'audioUpload', 'fileUpload'].includes(field.type)">
+    <el-form-item prop="fileAccept">
+      <template #label><label-tip message="model.field.fileAccept" help :fix-width="false" /></template>
+      <el-input v-model="field.fileAccept" maxlength="255"></el-input>
+    </el-form-item>
+    <el-form-item prop="fileMaxSize" :rules="{ type: 'number', min: 0, max: 65535, message: () => $t('v.range', { min: 0, max: 65535 }) }">
+      <template #label><label-tip message="model.field.fileMaxSize" help :fix-width="false" /></template>
+      <el-input v-model.number="field.fileMaxSize" maxlength="5"></el-input>
+    </el-form-item>
+  </template>
   <template v-if="['tinyEditor'].includes(field.type)">
     <el-form-item prop="minHeight" :label="$t('model.field.minHeight')">
       <el-input-number v-model="field.minHeight" :min="1" :max="65535"></el-input-number>
@@ -153,46 +170,46 @@
   </template>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, toRefs, watchEffect } from 'vue';
+<script lang="ts" setup>
+import { ref, toRefs, watchEffect } from 'vue';
 import { queryDictTypeList } from '@/api/config';
 import { queryDictList } from '@/api/content';
+import LabelTip from '@/components/LabelTip.vue';
 
-export default defineComponent({
-  name: 'FieldAttribute',
-  props: { selected: { type: Object, required: true } },
-  setup(props) {
-    const { selected: field } = toRefs(props);
-    const dictTypeList = ref<any[]>([]);
-    const dictList = ref<any[]>([]);
-    watchEffect(async () => {
-      if (field.value.type === 'date' && !field.value.dateType) {
-        field.value.dateType = 'date';
-      }
-      if (field.value.type === 'switch' && !field.value.inactiveValue) {
-        field.value.inactiveValue = '0';
-      }
-      if (field.value.type === 'switch' && !field.value.activeValue) {
-        field.value.activeValue = '1';
-      }
-      if (['radio', 'checkbox'].includes(field.value.type) && !field.value.checkStyle) {
-        field.value.checkStyle = 'default';
-      }
-      if (['checkbox', 'multipleSelect'].includes(field.value.type) && !field.value.defaultValue) {
-        field.value.defaultValue = [];
-      }
-      if (['checkbox', 'multipleSelect'].includes(field.value.type)) {
-        field.value.multiple = true;
-      }
-      if (['radio', 'checkbox', 'select', 'multipleSelect'].includes(field.value.type)) {
-        dictTypeList.value = await queryDictTypeList();
-      }
-    });
-    const dictTypeChange = async (dictTypeId: number) => {
-      field.value.defaultValue = field.value.multiple ? [] : undefined;
-      dictList.value = await queryDictList({ typeId: dictTypeId });
-    };
-    return { field, dictTypeList, dictList, dictTypeChange };
-  },
+const props = defineProps({ selected: { type: Object, required: true } });
+const { selected: field } = toRefs(props);
+const dictTypeList = ref<any[]>([]);
+const dictList = ref<any[]>([]);
+watchEffect(async () => {
+  if (field.value.type === 'date' && !field.value.dateType) {
+    field.value.dateType = 'date';
+  }
+  if (field.value.type === 'switch' && !field.value.inactiveValue) {
+    field.value.inactiveValue = '0';
+  }
+  if (field.value.type === 'switch' && !field.value.activeValue) {
+    field.value.activeValue = '1';
+  }
+  if (['radio', 'checkbox'].includes(field.value.type) && !field.value.checkStyle) {
+    field.value.checkStyle = 'default';
+  }
+  if (['checkbox', 'multipleSelect'].includes(field.value.type) && !field.value.defaultValue) {
+    field.value.defaultValue = [];
+  }
+  if (['checkbox', 'multipleSelect'].includes(field.value.type)) {
+    field.value.multiple = true;
+  }
+  if (['radio', 'checkbox', 'select', 'multipleSelect'].includes(field.value.type)) {
+    dictTypeList.value = await queryDictTypeList();
+  }
 });
+watchEffect(async () => {
+  if (field.value.dictTypeId != null) {
+    dictList.value = await queryDictList({ typeId: field.value.dictTypeId });
+  }
+});
+const dictTypeChange = async () => {
+  field.value.defaultValue = field.value.multiple ? [] : undefined;
+  field.value.defaultValueKey = field.value.multiple ? [] : undefined;
+};
 </script>

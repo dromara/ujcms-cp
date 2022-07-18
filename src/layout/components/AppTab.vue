@@ -38,13 +38,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch,computed } from 'vue';
 import { RefreshRight, Close, DCaret, Download } from '@element-plus/icons-vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { viewTabs, addViewTab, removeViewTab, removeLeftViewTab, removeRightViewTab } from './useViewTabs';
 import { isExternalPath } from '@/utils/common';
-import { computed } from '@vue/reactivity';
 
 const { t } = useI18n({ useScope: 'global' });
 const route = useRoute();

@@ -64,7 +64,7 @@
         </template>
       </el-dropdown>
     </div>
-    <password-form v-model="passwordFormVisible"></password-form>
+    <password-form v-model="passwordFormVisible" />
     <homepage-environment v-if="hasPermission('homepage:environment')" v-model="homepageEnvironmentVisible"></homepage-environment>
     <homepage-generated-key v-if="hasPermission('homepage:generatedKey')" v-model="homepageGeneratedKeyVisible"></homepage-generated-key>
     <machine-code v-if="hasPermission('machine:code') && isInclude('machine:code')" v-model="machineCodeVisible"></machine-code>

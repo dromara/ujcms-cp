@@ -52,7 +52,8 @@
         <template v-else-if="type === 'customs'">
           <el-row>
             <el-col v-for="field in fields" :key="field.code" :span="field.double ? 12 : 24">
-              <el-form-item :prop="field.code" :label="field.name" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
+              <el-form-item :prop="field.code" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
+                <template #label><label-tip :label="field.name" /></template>
                 <field-item :field="field" v-model="values[field.code]"></field-item>
               </el-form-item>
             </el-col>
@@ -164,7 +165,7 @@
         </template>
         <div>
           <el-button :disabled="perm(`siteSettings:${type}:update`)" :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" native-type="submit">
-            {{ $t('submit') }}
+            {{ $t('save') }}
           </el-button>
         </div>
       </el-form>
@@ -177,7 +178,7 @@ export default { name: 'SiteSettings' };
 </script>
 
 <script setup lang="ts">
-import { defineEmits, onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { toTree } from '@/utils/tree';

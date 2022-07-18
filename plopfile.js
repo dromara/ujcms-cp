@@ -1,4 +1,5 @@
 // npm run plop user user page
+// npm run plop <子系统> <模块> <page|list>
 /* eslint-disable func-names */
 module.exports = function (plop) {
   // controller generator

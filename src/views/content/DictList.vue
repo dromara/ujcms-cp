@@ -31,7 +31,7 @@
           @sort-change="handleSort"
         >
           <column-list name="dict">
-            <el-table-column type="selection" width="45"></el-table-column>
+            <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
             <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
             <el-table-column property="name" :label="$t('dict.name')" sortable="custom" show-overflow-tooltip></el-table-column>
             <el-table-column property="value" :label="$t('dict.value')" sortable="custom" show-overflow-tooltip></el-table-column>
@@ -40,12 +40,17 @@
                 <el-tag :type="row.enabled ? 'success' : 'info'" size="small">{{ $t(row.enabled ? 'yes' : 'no') }}</el-tag>
               </template>
             </el-table-column>
+          <el-table-column property="sys" :label="$t('dict.sys')" sortable="custom">
+            <template #default="{ row }">
+              <el-tag :type="row.sys ? 'success' : 'info'" size="small">{{ $t(row.sys ? 'yes' : 'no') }}</el-tag>
+            </template>
+          </el-table-column>
             <el-table-column :label="$t('table.action')">
               <template #default="{ row }">
                 <el-button type="primary" :disabled="perm('dict:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
                 <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                   <template #reference>
-                    <el-button type="primary" :disabled="perm('dict:delete')" size="small" link>{{ $t('delete') }}</el-button>
+                    <el-button type="primary" :disabled="!deletable(row) || perm('dict:delete')" size="small" link>{{ $t('delete') }}</el-button>
                   </template>
                 </el-popconfirm>
               </template>
@@ -90,6 +95,7 @@ const filtered = ref<boolean>(false);
 const typeList = ref<any[]>([]);
 const typeId = ref<string>();
 const dictType = computed(() => typeList.value.find((item) => item.id === Number(typeId.value)));
+const deletable = (bean: any) => bean.id >= 500;
 const fetchData = async () => {
   loading.value = true;
   try {

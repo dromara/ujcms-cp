@@ -10,11 +10,14 @@
       :on-error="onError"
       :show-file-list="false"
       multiple
+      drag
     >
       <!--
-    action="https://jsonplaceholder.typicode.com/posts/"
-     -->
-      <el-button type="primary">{{ $t('clickToUpload') }}</el-button>
+      // 用于测试上传进度条
+      action="https://jsonplaceholder.typicode.com/posts/"
+      -->
+      {{ $t('clickOrDragToUpload') }}
+      <!-- <el-button type="primary">{{ $t('clickToUpload') }}</el-button> -->
     </el-upload>
     <el-progress v-if="progressFile.status === 'uploading'" :percentage="parseInt(progressFile.percentage, 10)"></el-progress>
     <transition-group tag="ul" :class="['el-upload-list', 'el-upload-list--text', { 'is-disabled': disabled }]" name="el-list">
@@ -41,7 +44,7 @@
         <el-form-item prop="url" label="URL" :rules="{ required: true, message: () => $t('v.required') }">
           <el-input v-model="previewFile.url" maxlength="255"></el-input>
         </el-form-item>
-        <el-button @click.prevent="handleSubmit()" type="primary" native-type="submit">{{ $t('submit') }}</el-button>
+        <el-button @click.prevent="handleSubmit()" type="primary" native-type="submit">{{ $t('save') }}</el-button>
       </el-form>
     </el-dialog>
   </div>
@@ -104,7 +107,7 @@ const accept = computed(() => fileAccept?.value ?? uploadSettings.fileInputAccep
 const maxSize = computed(() => fileMaxSize?.value ?? uploadSettings.fileLimitByte);
 const beforeUpload = (file: any) => {
   if (maxSize.value > 0 && file.size > maxSize.value) {
-    ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024}MB` }));
+    ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024} MB` }));
     return false;
   }
   return true;
@@ -114,4 +117,9 @@ const onError = (error: Error) => {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+:deep(.el-upload-dragger) {
+  padding: 0 20px;
+  @apply bg-primary-lighter text-primary;
+}
+</style>

@@ -8,36 +8,34 @@
     :width="large ? '98%' : '768px'"
     :top="large ? '16px' : '8vh'"
   >
-    <div>
+    <div v-loading="loading || buttonLoading">
       <el-button v-if="isEdit && addable" :disabled="perm(`${perms}:create`)" type="primary" :icon="Plus" @click="handleAdd">{{ $t('add') }}</el-button>
-      <el-popconfirm v-if="isEdit" :title="$t('confirmDelete')" @confirm="handleDelete">
-        <template #reference>
-          <el-button :loading="buttonLoading" :disabled="disableDelete?.(bean) || perm(`${perms}:delete`)" :icon="Delete">{{ $t('delete') }}</el-button>
-        </template>
-      </el-popconfirm>
-      <el-button v-if="isEdit" @click="handlePrev" :disabled="!hasPrev">{{ $t('form.prev') }}</el-button>
-      <el-button v-if="isEdit" @click="handleNext" :disabled="!hasNext">{{ $t('form.next') }}</el-button>
-      <el-button @click="handleCancel" type="primary">{{ $t('back') }}</el-button>
+      <slot name="header-action" :bean="bean" :isEdit="isEdit" :disabled="disabled" :unsaved="unsaved" :disableDelete="disableDelete" :handleDelete="handleDelete">
+        <el-popconfirm v-if="isEdit" :title="$t('confirmDelete')" @confirm="handleDelete()">
+          <template #reference>
+            <el-button :disabled="disableDelete?.(bean) || perm(`${perms}:delete`)" :icon="Delete">{{ $t('delete') }}</el-button>
+          </template>
+        </el-popconfirm>
+      </slot>
+      <el-button-group class="ml-2">
+        <el-button v-if="isEdit" @click="handlePrev" :disabled="!hasPrev">{{ $t('form.prev') }}</el-button>
+        <el-button v-if="isEdit" @click="handleNext" :disabled="!hasNext">{{ $t('form.next') }}</el-button>
+      </el-button-group>
+      <el-button @click="handleCancel" type="primary" class="ml-2">{{ $t('back') }}</el-button>
       <el-tooltip :content="$t('form.continuous')" placement="top">
         <el-switch v-model="continuous" size="small" class="ml-2"></el-switch>
       </el-tooltip>
       <el-tag v-if="unsaved" type="danger" class="ml-2">{{ $t('form.unsaved') }}</el-tag>
-      <slot name="header" :bean="bean" :isEdit="isEdit" :disabled="disabled"></slot>
+      <slot name="header-status" :bean="bean" :isEdit="isEdit" :disabled="disabled"></slot>
     </div>
-    <el-form
-      :class="['mt-5', 'pr-5']"
-      ref="form"
-      v-loading="loading"
-      :model="values"
-      :disabled="disabled"
-      :label-width="labelWidth ?? '150px'"
-      :label-position="labelPosition ?? 'right'"
-    >
+    <el-form :class="['mt-5', 'pr-5']" ref="form" :model="values" :disabled="disabled" :label-width="labelWidth ?? '150px'" :label-position="labelPosition ?? 'right'">
       <slot :bean="bean" :isEdit="isEdit" :disabled="disabled"></slot>
-      <div v-if="!disabled">
-        <el-button :disabled="perm(isEdit ? `${perms}:update` : `${perms}:create`)" :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" native-type="submit">
-          {{ $t('submit') }}
-        </el-button>
+      <div v-if="!disabled" v-loading="buttonLoading">
+        <slot name="footer-action" :bean="bean" :isEdit="isEdit" :disabled="disabled" :handleSubmit="handleSubmit">
+          <el-button :disabled="perm(isEdit ? `${perms}:update` : `${perms}:create`)" @click.prevent="handleSubmit()" type="primary" native-type="submit">
+            {{ $t('save') }}
+          </el-button>
+        </slot>
       </div>
     </el-form>
   </el-dialog>
@@ -87,7 +85,7 @@ const props = defineProps({
   perms: String,
   focus: Object,
   large: Boolean,
-  labelPosition: String,
+  labelPosition: String as PropType<'top' | 'right' | 'left'>,
   labelWidth: String,
 });
 const emit = defineEmits({
@@ -115,10 +113,10 @@ const unsaved = computed(() => {
   //   console.log(JSON.stringify(origValues.value));
   //   console.log(JSON.stringify(values.value));
   // }
-  return !_.isEqual(origValues.value, values.value);
+  return !loading.value && !_.isEqual(origValues.value, values.value);
 });
 const disabled = computed(() => disableEdit?.value?.(bean.value) ?? false);
-const title = computed(() => `${name.value} - ${isEdit.value ? `${t('edit')} (ID: ${id.value})` : `${t('add')}`}`);
+const title = computed(() => `${name.value} - ${isEdit.value ? `${t(disabled ? 'detail' : 'edit')} (ID: ${id.value})` : `${t('add')}`}`);
 const loadBean = async () => {
   loading.value = true;
   try {
@@ -210,5 +208,45 @@ const handleDelete = async () => {
     buttonLoading.value = false;
   }
 };
-defineExpose({ form });
+const submit = (
+  executor: (values: any, payload: { isEdit: boolean; continuous: boolean; form: any; props: any; focus: any; loadBean: () => Promise<any>; emit: any }) => Promise<any>,
+) => {
+  form.value.validate(async (valid: boolean) => {
+    if (!valid) return;
+    buttonLoading.value = true;
+    try {
+      emit('beforeSubmit', values.value);
+
+      await executor(values.value, { isEdit: isEdit.value, continuous: continuous.value, form: form.value, props: props, focus: focus?.value, loadBean, emit });
+
+      if (!continuous.value) emit('update:modelValue', false);
+      emit('finished', bean.value);
+    } finally {
+      buttonLoading.value = false;
+    }
+  });
+};
+const remove = async (
+  executor: (values: any, payload: { isEdit: boolean; continuous: boolean; form: any; props: any; focus: any; loadBean: () => Promise<any>; emit: any }) => Promise<any>,
+) => {
+  buttonLoading.value = true;
+  try {
+    await executor(values.value, { isEdit: isEdit.value, continuous: continuous.value, form: form.value, props: props, focus: focus?.value, loadBean, emit });
+    if (!continuous.value) emit('update:modelValue', false);
+    if (hasNext.value) {
+      handleNext();
+      ids.value.splice(index.value - 1, 1);
+    } else if (hasPrev.value) {
+      handlePrev();
+      ids.value.splice(index.value + 1, 1);
+    } else {
+      emit('update:modelValue', false);
+    }
+    ElMessage.success(t('success'));
+    emit('finished');
+  } finally {
+    buttonLoading.value = false;
+  }
+};
+defineExpose({ form, submit, remove });
 </script>

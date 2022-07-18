@@ -12,7 +12,7 @@ export default { name: 'TuiEditor' };
 import { onMounted, ref, toRefs, watch, PropType, onUnmounted, nextTick } from 'vue';
 import { useFormItem } from 'element-plus';
 import { vOnClickOutside } from '@vueuse/components';
-import {decodeHTML} from 'entities';
+import { decodeHTML } from 'entities';
 import Editor, { EditorType, PreviewStyle, EditorOptions } from '@toast-ui/editor';
 import chart from '@toast-ui/editor-plugin-chart';
 import codeSyntaxHighlight from '@toast-ui/editor-plugin-code-syntax-highlight';
@@ -104,7 +104,7 @@ onMounted(() => {
     height: height.value,
     previewStyle: previewStyle.value,
     language: language.value,
-
+    autofocus: false,
     usageStatistics: false,
     el: toastuiEditor.value,
     events: eventOptions,

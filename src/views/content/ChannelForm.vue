@@ -183,7 +183,8 @@
             </el-col>
             <template v-for="field in fields" :key="field.code">
               <el-col :span="field.double ? 12 : 24">
-                <el-form-item :prop="`customs.${field.code}`" :label="field.name" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
+                <el-form-item :prop="`customs.${field.code}`" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
+                  <template #label><label-tip :label="field.name" /></template>
                   <field-item :field="field" v-model="values.customs[field.code]"></field-item>
                 </el-form-item>
               </el-col>
@@ -208,6 +209,7 @@
                   :data="parentChannelList"
                   node-key="id"
                   :props="{ label: 'name', disabled: 'disabled' }"
+                  :render-after-expand="false"
                   check-strictly
                   clearable
                   class="w-full"
@@ -216,6 +218,15 @@
               <el-form-item prop="type" :label="asides['type'].name ?? $t('channel.type')" :rules="{ required: true, message: () => $t('v.required') }">
                 <el-select v-model="values.type" class="w-full">
                   <el-option v-for="n in [1, 2, 3, 4, 5]" :key="n" :label="$t(`channel.type.${n}`)" :value="n"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item
+                prop="processKey"
+                :label="asides['processKey'].name ?? $t('channel.processKey')"
+                :rules="asides['processKey'].required ? { required: true, message: () => $t('v.required') } : undefined"
+              >
+                <el-select v-model="values.processKey" clearable class="w-full">
+                  <el-option v-for="item in processList" :key="item.key" :label="item.name" :value="item.key"></el-option>
                 </el-select>
               </el-form-item>
               <el-form-item prop="pageSize" :label="asides['pageSize'].name ?? $t('channel.pageSize')" :rules="{ required: true, message: () => $t('v.required') }">
@@ -237,8 +248,10 @@ export default { name: 'ChannelForm' };
 import { onMounted, ref, computed, toRefs, watch } from 'vue';
 import { toTree, disableSubtree } from '@/utils/tree';
 import { queryChannel, createChannel, updateChannel, deleteChannel, queryChannelList, queryChannelTemplates, queryArticleTemplates } from '@/api/content';
+import { queryProcessDefinitionList } from '@/api/system';
 import { queryModelList } from '@/api/config';
 import { getModelData, mergeModelFields, arr2obj } from '@/data';
+import { currentUser } from '@/store/useCurrentUser';
 import FieldItem from '@/views/config/components/FieldItem.vue';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
@@ -255,6 +268,7 @@ const emit = defineEmits({ 'update:modelValue': null, finished: null });
 const { modelValue: visible, parent } = toRefs(props);
 const focus = ref<any>();
 const values = ref<any>({});
+const processList = ref<any[]>([]);
 const channelList = ref<any[]>([]);
 const channelModelList = ref<any[]>([]);
 const articleModelList = ref<any[]>([]);
@@ -274,6 +288,11 @@ watch(visible, () => {
 });
 const fetchChannelList = async () => {
   channelList.value = toTree(await queryChannelList());
+};
+const fetchProcessList = async () => {
+  if (currentUser.epRank > 0) {
+    processList.value = await queryProcessDefinitionList({ category: 'sys_article', latestVersion: true });
+  }
 };
 const finished = async () => {
   await fetchChannelList();
@@ -301,6 +320,7 @@ onMounted(() => {
   fetchChannelTemplates();
   fetchArticleTemplates();
   fetchChannelList();
+  fetchProcessList();
 });
 const initCustoms = (customs: any) => {
   fields.value.forEach((field: any) => {
@@ -317,7 +337,8 @@ const initCustoms = (customs: any) => {
     margin-bottom: 12px;
   }
   :deep(.el-form-item__label) {
-    margin-bottom: 0;
+    margin-bottom: 4px;
+    width: 100% !important;
   }
 }
 </style>

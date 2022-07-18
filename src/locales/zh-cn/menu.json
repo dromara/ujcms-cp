@@ -1,31 +1,44 @@
 {
   "menu.home": "首页",
+
   "menu.personal":"个人设置",
   "menu.personal.password":"修改密码",
   "menu.personal.machine.code":"许可请求码",
   "menu.personal.machine.license":"许可证信息",
   "menu.personal.homepage.environment":"系统信息",
   "menu.personal.homepage.generatedKey":"密钥生成器",
+
   "menu.content": "内容",
   "menu.content.article": "文章管理",
+  "menu.content.articleReview": "文章审核",
   "menu.content.channel": "栏目管理",
   "menu.content.blockItem": "区块管理",
   "menu.content.dict": "字典管理",
   "menu.content.attachment": "附件管理",
   "menu.content.generator": "生成管理",
+
   "menu.user": "用户",
   "menu.user.org": "组织管理",
   "menu.user.group": "用户组管理",
   "menu.user.role": "角色管理",
   "menu.user.user": "用户管理",
+
   "menu.config": "配置",
   "menu.config.globalSettings": "全局设置",
   "menu.config.siteSettings": "站点设置",
   "menu.config.block": "区块设置",
   "menu.config.model": "模型管理",
   "menu.config.dictType": "字典设置",
+
+  "menu.log": "日志",
+  "menu.log.shortMessage": "短信日志",
+  "menu.log.loginLog": "登录日志",
+
   "menu.system": "系统",
   "menu.system.site": "站点管理",
+  "menu.system.processModel": "流程模型",
+  "menu.system.processInstance": "流程实例",
+  "menu.system.processHistory": "历史流程",
   "menu.system.task": "任务管理",
 
   "": ""

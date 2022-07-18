@@ -23,6 +23,7 @@
         :on-error="onError"
         :show-file-list="false"
         multiple
+        drag
       >
         <el-progress v-if="progressFile.status === 'uploading'" type="circle" :percentage="parseInt(progressFile.percentage, 10)" />
         <div v-else class="el-upload--picture-card">
@@ -116,7 +117,7 @@ const accept = computed(() => fileAccept?.value ?? uploadSettings.imageInputAcce
 const maxSize = computed(() => fileMaxSize?.value ?? uploadSettings.imageLimitByte);
 const beforeUpload = (file: any) => {
   if (maxSize.value > 0 && file.size > maxSize.value) {
-    ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024}MB` }));
+    ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024} MB` }));
     return false;
   }
   return true;
@@ -135,5 +136,11 @@ const onError = (error: Error) => {
 }
 .image-action {
   @apply cursor-pointer text-xl text-white;
+}
+:deep(.el-upload-dragger) {
+  padding: 0;
+}
+:deep(.el-upload--picture-card) {
+  border: 0;
 }
 </style>

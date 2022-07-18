@@ -11,10 +11,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { viewTabs } from './useViewTabs';
+// import { computed } from 'vue';
+// import { viewTabs } from './useViewTabs';
 
 // 保留状态会导致一个页签的修改无法更新到另一个页签，需要刷新才能显示。
-// const includes: string[] = [];
-const includes = computed((): string[] => viewTabs.filter((it) => !it.noCache).map((it) => it.component));
+const includes: string[] = [];
+// const includes = computed((): string[] => viewTabs.filter((it) => !it.noCache).map((it) => it.component));
 </script>

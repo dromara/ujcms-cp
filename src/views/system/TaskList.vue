@@ -71,7 +71,7 @@ export default { name: 'TaskList' };
 </script>
 
 <script setup lang="ts">
-import { defineExpose, computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
@@ -81,7 +81,7 @@ import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
 import { deleteTask, queryTaskPage } from '@/api/system';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
-import TaskForm from './TaskForm.vue';
+import TaskForm from '@/views/system/TaskForm.vue';
 
 const { t } = useI18n();
 const params = ref<any>({});

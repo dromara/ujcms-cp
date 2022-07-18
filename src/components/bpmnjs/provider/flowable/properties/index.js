@@ -1,0 +1,1 @@
+export { CandidateGroupsProps } from './CandidateGroupsProps';

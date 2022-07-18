@@ -26,6 +26,7 @@
           node-key="id"
           :props="{ label: 'name', disabled: 'disabled' }"
           :default-expanded-keys="orgList.map((item) => item.id)"
+          :render-after-expand="false"
           check-strictly
           class="w-full"
         />

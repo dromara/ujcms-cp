@@ -1,22 +1,25 @@
 <template>
   <dialog-form
+    ref="dialog"
     :name="$t('menu.content.article')"
     :queryBean="queryArticle"
     :createBean="createArticle"
     :updateBean="updateArticle"
-    :deleteBean="deleteArticle"
+    :deleteBean="completelyDeleteArticle"
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="(): any => ({
-      editorType: mains['text'].editorType,
-      channelId: channel?.id,
-      allowComment: true,
-      customs: initCustoms({}),
-      fileList: [],
-      imageList: [],
-    })"
-    :toValues="(bean:any) => ({ ...bean })"
+    :initValues="
+      () => ({
+        editorType: mains['text'].editorType,
+        channelId: channel?.id,
+        allowComment: true,
+        customs: initCustoms({}),
+        fileList: [],
+        imageList: [],
+      })
+    "
+    :toValues="(bean) => ({ ...bean })"
     perms="article"
     v-model:values="values"
     :model-value="modelValue"
@@ -30,13 +33,58 @@
         articleModelId = bean.channel?.articleModelId ?? channel?.articleModelId;
       }
     "
-    labelWidth="120px"
+    :addable="!isReview"
+    labelWidth="140px"
     large
   >
-    <template #header="{ isEdit }">
+    <template #header-action="{ isEdit, bean, unsaved, handleDelete }">
+      <el-button-group v-if="isReview">
+        <el-popconfirm v-if="isEdit && isReview" @confirm="handleExecute('pass', bean.id)" :title="$t('confirmPass')">
+          <template #reference>
+            <el-button :disabled="perm('articleReview:pass') || unsaved" type="primary" :icon="CircleCheck">{{ $t('pass') }}</el-button>
+          </template>
+        </el-popconfirm>
+        <el-button :disabled="perm('articleReview:reject') || unsaved" @click="handleExecute('reject', bean.id)" :icon="CircleClose">{{ $t('reject') }}</el-button>
+      </el-button-group>
+      <el-button-group v-if="!isReview" class="ml-2">
+        <el-popconfirm v-if="isEdit" @confirm="handleExecute('submit', bean.id)" :title="$t('confirmExecute')">
+          <template #reference>
+            <el-button :disabled="[0, 12].includes(bean.status) || perm('article:submit') || unsaved" :icon="Finished">{{ $t('article.op.submit') }}</el-button>
+          </template>
+        </el-popconfirm>
+        <el-popconfirm v-if="isEdit" @confirm="handleExecute('archive', bean.id)" :title="$t('confirmExecute')">
+          <template #reference>
+            <el-button :disabled="![0].includes(bean.status) || perm('article:archive') || unsaved" :icon="Box">{{ $t('article.op.archive') }}</el-button>
+          </template>
+        </el-popconfirm>
+        <el-popconfirm v-if="isEdit" @confirm="handleExecute('offline', bean.id)" :title="$t('confirmExecute')">
+          <template #reference>
+            <el-button :disabled="![0, 1, 5, 11, 12].includes(bean.status) || perm('article:offline') || unsaved" :icon="Hide">{{ $t('article.op.offline') }}</el-button>
+          </template>
+        </el-popconfirm>
+      </el-button-group>
+      <el-button-group class="ml-2">
+        <el-popconfirm v-if="isEdit && !isReview" @confirm="handleDelete()" :title="$t('confirmDelete')">
+          <template #reference>
+            <el-button :disabled="perm('article:delete') || unsaved" :icon="DocumentRemove">{{ $t('delete') }}</el-button>
+          </template>
+        </el-popconfirm>
+        <el-popconfirm v-if="isEdit" :title="$t('confirmCompletelyDelete')" @confirm="handleDelete()">
+          <template #reference>
+            <el-button :disabled="perm('article:completelyDelete')" :icon="Delete">{{ $t('article.op.completelyDelete') }}</el-button>
+          </template>
+        </el-popconfirm>
+      </el-button-group>
+    </template>
+    <template #header-status="{ isEdit }">
       <template v-if="isEdit">
-        <el-tag v-if="values.status === 0" type="success" class="ml-2">{{ values.status != null ? $t(`article.status.${values.status}`) : undefined }}</el-tag>
-        <el-tag v-else type="info" class="ml-2">{{ values.status != null ? $t(`article.status.${values.status}`) : undefined }}</el-tag>
+        <span class="ml-2" v-if="values.status != null">
+          <el-tag v-if="values.status === 0" type="success" size="small" disable-transitions>{{ $t(`article.status.${values.status}`) }}</el-tag>
+          <el-tag v-else-if="values.status === 1" size="small" disable-transitions>{{ $t(`article.status.${values.status}`) }}</el-tag>
+          <el-tag v-else-if="values.status === 20" type="danger" size="small" disable-transitions>{{ $t(`article.status.${values.status}`) }}</el-tag>
+          <el-tag v-else-if="[21, 22].includes(values.status)" type="warning" size="small" disable-transitions>{{ $t(`article.status.${values.status}`) }}</el-tag>
+          <el-tag v-else type="info" size="small" disable-transitions>{{ $t(`article.status.${values.status}`) }}</el-tag>
+        </span>
       </template>
     </template>
     <template #default="{ isEdit }">
@@ -172,8 +220,9 @@
             </el-col>
             <template v-for="field in fields" :key="field.code">
               <el-col :span="field.double ? 12 : 24">
-                <el-form-item :prop="`customs.${field.code}`" :label="field.name" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
-                  <field-item :field="field" v-model="values.customs[field.code]"></field-item>
+                <el-form-item :prop="`customs.${field.code}`" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
+                  <template #label><label-tip :label="field.name" /></template>
+                  <field-item :field="field" v-model="values.customs[field.code]" v-model:model-key="values.customs[field.code + '_key']"></field-item>
                 </el-form-item>
               </el-col>
             </template>
@@ -184,12 +233,12 @@
                 :rules="mains['file'].required ? { required: true, message: () => $t('v.required') } : undefined"
               >
                 <el-row class="w-full">
-                  <el-col :span="12">
+                  <el-col :span="16">
                     <el-input v-model="values.fileName">
                       <template #prepend>{{ $t('name') }}</template>
                     </el-input>
                   </el-col>
-                  <el-col :span="12">
+                  <el-col :span="8">
                     <el-input v-model="values.fileLength">
                       <template #prepend>{{ $t('size') }}</template>
                       <template #append>Byte</template>
@@ -208,19 +257,61 @@
                 :label="mains['video'].name ?? $t('article.video')"
                 :rules="mains['video'].required ? { required: true, message: () => $t('v.required') } : undefined"
               >
-                <el-row>
+                <el-row class="w-full">
                   <el-col :span="16">
-                    <el-input v-model="values.video">
+                    <el-input v-model="values.video" maxlength="255">
                       <template #prepend>URL</template>
                     </el-input>
                   </el-col>
                   <el-col :span="8">
-                    <el-input v-model="values.videoTime" maxlength="10">
-                      <template #prepend>{{ $t('article.videoTime') }}</template>
+                    <el-input v-model="values.videoDuration" maxlength="10">
+                      <template #prepend>{{ $t('article.videoDuration') }}</template>
+                      <template #append> {{ formatDuration(values.videoDuration) }}</template>
                     </el-input>
                   </el-col>
                 </el-row>
-                <base-upload type="video" :on-success="(res: any) => (values.video = res.url)"></base-upload>
+                <base-upload
+                  type="video"
+                  :on-success="
+                    (res) => {
+                      values.video = res.url;
+                      values.videoDuration = res.duration;
+                      if (!values.image) {
+                        values.image = res.image;
+                      }
+                    }
+                  "
+                ></base-upload>
+              </el-form-item>
+            </el-col>
+            <el-col :span="mains['audio'].double ? 12 : 24" v-if="mains['audio'].show">
+              <el-form-item
+                prop="audio"
+                :label="mains['audio'].name ?? $t('article.audio')"
+                :rules="mains['audio'].required ? { required: true, message: () => $t('v.required') } : undefined"
+              >
+                <el-row class="w-full">
+                  <el-col :span="16">
+                    <el-input v-model="values.audio" maxlength="255">
+                      <template #prepend>URL</template>
+                    </el-input>
+                  </el-col>
+                  <el-col :span="8">
+                    <el-input v-model="values.audioDuration" maxlength="10">
+                      <template #prepend>{{ $t('article.audioDuration') }}</template>
+                      <template #append> {{ formatDuration(values.audioDuration) }}</template>
+                    </el-input>
+                  </el-col>
+                </el-row>
+                <base-upload
+                  type="audio"
+                  :on-success="
+                    (res) => {
+                      values.audio = res.url;
+                      values.audioDuration = res.duration;
+                    }
+                  "
+                ></base-upload>
               </el-form-item>
             </el-col>
             <el-col :span="mains['doc'].double ? 12 : 24" v-if="mains['doc'].show">
@@ -320,6 +411,7 @@
             <template v-for="field in editorFields" :key="field.code">
               <el-col :span="field.double ? 12 : 24">
                 <el-form-item :prop="`customs.${field.code}`" :label="field.name" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
+                  <template #label><label-tip :label="field.name" /></template>
                   <field-item :field="field" v-model="values.customs[field.code]"></field-item>
                 </el-form-item>
               </el-col>
@@ -335,6 +427,7 @@
                   :data="channelList"
                   nodeKey="id"
                   :props="{ label: 'name' }"
+                  :render-after-expand="false"
                   class="w-full"
                   @change="
                     (value: any) => {
@@ -420,6 +513,12 @@
         </el-col>
       </el-row>
     </template>
+    <template #footer-action="{ isEdit, handleSubmit }">
+      <el-button :disabled="perm(isEdit ? 'article:update' : 'article:create')" @click.prevent="handleSubmit()" type="primary" native-type="submit">
+        {{ $t(isEdit ? 'save' : 'submit') }}
+      </el-button>
+      <el-button v-if="!isEdit" @click="handleSaveAsDraft()">{{ $t('article.op.saveAsDraft') }}</el-button>
+    </template>
   </dialog-form>
 </template>
 
@@ -429,11 +528,28 @@ export default { name: 'ArticleForm' };
 
 <script setup lang="ts">
 import { computed, onMounted, ref, toRefs, watch, nextTick } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { Finished, Box, Hide, DocumentRemove, Delete, CircleCheck, CircleClose } from '@element-plus/icons-vue';
+import { useI18n } from 'vue-i18n';
 import { perm, currentUser } from '@/store/useCurrentUser';
-import { queryArticle, createArticle, updateArticle, deleteArticle, queryChannelList, queryArticleTemplates } from '@/api/content';
+import {
+  queryArticle,
+  createArticle,
+  updateArticle,
+  submitArticle,
+  archiveArticle,
+  offlineArticle,
+  deleteArticle,
+  completelyDeleteArticle,
+  passArticle,
+  rejectArticle,
+  queryChannelList,
+  queryArticleTemplates,
+} from '@/api/content';
 import { queryModelList } from '@/api/config';
 import { jodConvertDocUrl, jodConvertLibraryUrl, queryjodConvertEnabled, queryDictListByAlias } from '@/api/content';
 import { toTree } from '@/utils/tree';
+import { formatDuration } from '@/utils/common';
 import { getModelData, mergeModelFields, arr2obj } from '@/data';
 import FieldItem from '@/views/config/components/FieldItem.vue';
 import DialogForm from '@/components/DialogForm.vue';
@@ -447,10 +563,13 @@ const props = defineProps({
   beanId: { required: true },
   beanIds: { type: Array, required: true },
   channel: null,
+  isReview: { type: Boolean, default: false },
 });
 defineEmits({ 'update:modelValue': null, finished: null });
 
 const { modelValue: visible, channel } = toRefs(props);
+const { t } = useI18n();
+const dialog = ref<any>();
 const showSubtitle = ref<boolean>(false);
 const showFullTitle = ref<boolean>(false);
 const showLinkUrl = ref<boolean>(false);
@@ -478,7 +597,7 @@ const fetchJodconverterEnabled = async () => {
     jodconverterEnabled.value = await queryjodConvertEnabled();
   }
 };
-const fetchSourceList = (name: string) => queryDictListByAlias('article_source', name);
+const fetchSourceList = (name: string) => queryDictListByAlias('sys_article_source', name);
 const fetchChannelList = async () => {
   flatChannelList.value = await queryChannelList();
   channelList.value = toTree(flatChannelList.value);
@@ -502,11 +621,59 @@ onMounted(() => {
 const initCustoms = (customs: any) => {
   fields.value.forEach((field: any) => {
     if (customs[field.code] == null) {
-      // eslint-disable-next-line no-param-reassign
       customs[field.code] = field.defaultValue;
+      if (field.defaultValueKey != null) {
+        customs[field.code + '_key'] = field.defaultValueKey;
+      }
     }
   });
   return customs;
+};
+
+const handleSaveAsDraft = () => {
+  dialog.value.submit(async (values: any, { focus, emit, props, form }: { focus: any; emit: any; props: any; form: any }) => {
+    // 草稿
+    values.status = 10;
+    await createArticle(values);
+    focus?.focus?.();
+    emit('update:values', props.initValues(values.value));
+    form.resetFields();
+    ElMessage.success(t('success'));
+  });
+};
+
+const handleExecute = async (action: string, id: number) => {
+  if (['pass', 'reject'].includes(action)) {
+    dialog.value.remove(async (values: any) => {
+      if (action === 'pass') {
+        await passArticle([id]);
+      } else if (action === 'reject') {
+        const { value } = await ElMessageBox.prompt(t('article.rejectReason'), t('reject'), {
+          confirmButtonText: t('submit'),
+          cancelButtonText: t('cancel'),
+          inputPattern: /\S+/,
+          inputErrorMessage: t('v.required'),
+        });
+        await rejectArticle([id], value);
+      }
+    });
+    return;
+  }
+
+  dialog.value.submit(async (values: any, { loadBean }: { loadBean: () => Promise<any> }) => {
+    if (action === 'delete') {
+      await deleteArticle([id]);
+    } else if (action === 'submit') {
+      await submitArticle([id]);
+    } else if (action === 'archive') {
+      await archiveArticle([id]);
+    } else if (action === 'offline') {
+      await offlineArticle([id]);
+    } else {
+      throw new Error(`not support action: ${action}`);
+    }
+    loadBean();
+  });
 };
 </script>
 
@@ -516,7 +683,8 @@ const initCustoms = (customs: any) => {
     margin-bottom: 12px;
   }
   :deep(.el-form-item__label) {
-    margin-bottom: 0;
+    margin-bottom: 4px;
+    width: 100% !important;
   }
 }
 </style>

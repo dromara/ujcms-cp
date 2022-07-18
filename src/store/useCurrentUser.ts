@@ -5,7 +5,7 @@ import i18n from '@/i18n';
 import { sm2Encrypt } from '@/utils/sm';
 import { queryClientPublicKey } from '@/api/login';
 import { appState, setLoginBoxDisplay } from '@/store/useAppState';
-import { accountLogin, accountRefreshToken, LoginParam, queryCurrentUser } from '@/api/login';
+import { accountLogin, accountLogout, accountRefreshToken, LoginParam, queryCurrentUser } from '@/api/login';
 import {
   setAccessToken,
   removeAccessToken,
@@ -63,6 +63,10 @@ export const login = async (params: LoginParam): Promise<any> => {
 };
 
 export const logout = (): void => {
+  const refreshToken = getRefreshToken();
+  if (refreshToken) {
+    accountLogout(refreshToken);
+  }
   removeAccessAt();
   removeRefreshAt();
   removeAccessToken();
@@ -147,7 +151,9 @@ const runRefreshToken = async () => {
   // 记录刷新时间，用于重新加载页面时，初始化Interval。
   setRefreshAt(now);
   const data = await accountRefreshToken({ refreshToken });
-  if (data.status !== 0) return;
+  if (data.status !== 0) {
+    return;
+  }
   const { result } = data;
   setAccessToken(result.accessToken);
   setRefreshToken(result.refreshToken);
@@ -158,7 +164,9 @@ export const initRefreshInterval = (): void => {
   if (afterTime < 0) afterTime = 0;
   setTimeout(() => {
     runRefreshToken();
-    if (!refreshInterval) refreshInterval = setInterval(runRefreshToken, interval);
+    if (!refreshInterval) {
+      refreshInterval = setInterval(runRefreshToken, interval);
+    }
   }, afterTime);
 };
 

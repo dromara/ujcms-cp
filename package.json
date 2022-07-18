@@ -1,6 +1,6 @@
 {
   "name": "ujcms-cp",
-  "version": "3.1.0",
+  "version": "4.1.1",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -9,6 +9,7 @@
     "plop": "plop"
   },
   "dependencies": {
+    "@bpmn-io/properties-panel": "^0.14.0",
     "@element-plus/icons-vue": "^2.0.5",
     "@toast-ui/editor": "^3.1.4",
     "@toast-ui/editor-plugin-chart": "^3.0.1",
@@ -18,11 +19,13 @@
     "@vueuse/components": "^8.2.6",
     "@vueuse/core": "^8.2.6",
     "axios": "^0.25.0",
+    "bpmn-js": "^9.1.0",
+    "bpmn-js-properties-panel": "^1.1.1",
     "core-js": "^3.21.0",
     "cropperjs": "^1.5.12",
     "crypto-js": "^4.1.1",
     "dayjs": "^1.10.7",
-    "element-plus": "^2.2.5",
+    "element-plus": "^2.2.9",
     "entities": "^4.3.0",
     "js-cookie": "^3.0.1",
     "lodash": "^4.17.21",

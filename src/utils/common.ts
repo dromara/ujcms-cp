@@ -119,3 +119,43 @@ export const moveList = (selected: any[], list: any[], type: 'top' | 'up' | 'dow
 export const isExternalPath = (path: string): boolean => {
   return /^(https?:|mailto:|tel:)/.test(path);
 };
+
+export const formatDuration = (duration?: number): string => {
+  if (duration == null) {
+    return '';
+  }
+  const hours = Math.floor(duration / 3600);
+  const minutes = Math.floor((duration - hours * 3600) / 60);
+  const seconds = duration - hours * 3600 - minutes * 60;
+  let str = '';
+  if (hours > 0) {
+    str = hours + ':';
+  }
+  if (minutes < 10) {
+    str += '0' + minutes + ':';
+  } else {
+    str += minutes + ':';
+  }
+  if (seconds < 10) {
+    str += '0' + seconds;
+  } else {
+    str += seconds;
+  }
+  return str;
+};
+
+export const passwordPattern = (strength: number): RegExp => {
+  if (strength === 1) {
+    return /(?=.*[0-9])(?=.*[A-Za-z])./;
+  }
+  if (strength === 2) {
+    return /(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])./;
+  }
+  if (strength === 3) {
+    return /(?=.*[0-9])(?=.*[A-Za-z])(?=.*[^a-zA-Z0-9])./;
+  }
+  if (strength === 4) {
+    return /(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[^a-zA-Z0-9])./;
+  }
+  return /.*/;
+};

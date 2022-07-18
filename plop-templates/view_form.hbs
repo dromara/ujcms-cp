@@ -25,6 +25,10 @@
   </dialog-form>
 </template>
 
+<script lang="ts">
+export default { name: '{{pascalCase name}}Form' };
+</script>
+
 <script setup lang="ts">
 import { ref } from 'vue';
 import { query{{pascalCase name}}, create{{pascalCase name}}, update{{pascalCase name}}, delete{{pascalCase name}} } from '@/api/{{kebabCase path}}';

@@ -50,7 +50,7 @@
             <el-tag v-else type="info" size="small">{{ $t(`role.scope.${row.scope}`) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('table.action')">
+        <el-table-column :label="$t('table.action')" width="160">
           <template #default="{ row }">
             <el-button type="primary" @click="handleEdit(row.id)" :disabled="perm('role:update')" size="small" link>{{ $t('edit') }}</el-button>
             <el-button type="primary" @click="handlePermissionEdit(row.id)" :disabled="perm('role:updatePermission')" size="small" link>{{ $t('permissionSettings') }}</el-button>

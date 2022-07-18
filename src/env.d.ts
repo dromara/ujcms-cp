@@ -7,6 +7,17 @@ declare module '*.vue' {
   export default component;
 }
 
+declare module 'bpmn-js/lib/Modeler';
+declare module 'bpmn-js/lib/Viewer';
+declare module 'bpmn-js-properties-panel';
+declare module 'bpmn-js/lib/util/ModelUtil';
+declare module '@/components/bpmnjs/provider/bpmn';
+declare module '@/components/bpmnjs/provider/flowable';
+declare module '@/components/bpmnjs/descriptors/flowable';
+declare module '@/components/bpmnjs/palette';
+declare module '@/components/bpmnjs/context-pad';
+
+
 interface ImportMetaEnv {
   readonly VITE_BASE_API: string;
   readonly VITE_PUBLIC_PATH: string;

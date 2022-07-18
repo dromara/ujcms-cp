@@ -17,7 +17,15 @@ export const queryArticlePage = async (params?: Record<string, any>): Promise<an
 export const queryArticle = async (id: number): Promise<any> => (await axios.get(`/backend/core/article/${id}`)).data;
 export const createArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/article', data)).data;
 export const updateArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/article?_method=put', data)).data;
-export const deleteArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article?_method=delete', data)).data;
+export const deleteArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article/delete?_method=put', data)).data;
+export const submitArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article/submit?_method=put', data)).data;
+export const archiveArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article/archive?_method=put', data)).data;
+export const offlineArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article/offline?_method=put', data)).data;
+export const completelyDeleteArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article?_method=delete', data)).data;
+
+export const queryArticleReviewPage = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/article-review', { params })).data;
+export const passArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article-review/pass?_method=put', data)).data;
+export const rejectArticle = async (ids: number[], reason: string): Promise<any> => (await axios.post('/backend/core/article-review/reject?_method=put', { ids, reason })).data;
 
 export const queryBlockItemList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/block-item', { params })).data;
 export const queryBlockItem = async (id: number): Promise<any> => (await axios.get(`/backend/core/block-item/${id}`)).data;
@@ -27,7 +35,7 @@ export const updateBlockItemOrder = async (data: number[]): Promise<any> => (awa
 export const deleteBlockItem = async (data: number[]): Promise<any> => (await axios.post('/backend/core/block-item?_method=delete', data)).data;
 
 export const queryDictList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/dict', { params })).data;
-export const queryDictListByAlias = async (alias: string, name: string): Promise<any> => (await axios.get('/backend/core/dict/list-by-alias', { params: { alias, name } })).data;
+export const queryDictListByAlias = async (alias: string, name?: string): Promise<any> => (await axios.get('/backend/core/dict/list-by-alias', { params: { alias, name } })).data;
 export const queryDict = async (id: number): Promise<any> => (await axios.get(`/backend/core/dict/${id}`)).data;
 export const createDict = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/dict', data)).data;
 export const updateDict = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/dict?_method=put', data)).data;

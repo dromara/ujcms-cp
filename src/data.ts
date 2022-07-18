@@ -56,18 +56,32 @@ export function getPermsTreeData(): any[] {
         {
           label: t('menu.content.article'),
           key: 'article.key',
-          perms: ['article:page', 'article:list', 'channel:list', 'dict:list', 'model:list', 'block:list'],
+          perms: ['article:page', 'article:list', 'channel:list', 'dict:list', 'model:list', 'block:list', 'processInstance:task'],
           children: [
             { label: t('list'), key: 'article:page' },
-            { label: t('add'), key: 'article:create', perms: ['article:create', 'jodConvert:doc', 'jodConvert:library'] },
-            { label: t('edit'), key: 'article:update', perms: ['article:update', 'article:show', 'jodConvert:doc', 'jodConvert:library'] },
+            { label: t('add'), key: 'article:create', perms: ['article:create', 'article.submit', 'jodConvert:doc', 'jodConvert:library'] },
+            { label: t('edit'), key: 'article:update', perms: ['article:update', 'article.submit', 'article:show', 'jodConvert:doc', 'jodConvert:library'] },
+            { label: t('article.op.submit'), key: 'article:submit', perms: ['article:submit'] },
+            { label: t('article.op.archive'), key: 'article:archive', perms: ['article:archive'] },
+            { label: t('article.op.offline'), key: 'article:offline', perms: ['article:offline'] },
             { label: t('delete'), key: 'article:delete', perms: ['article:delete'] },
+            { label: t('completelyDelete'), key: 'article:completelyDelete', perms: ['article:completelyDelete'] },
+          ],
+        },
+        {
+          label: t('menu.content.articleReview'),
+          key: 'articleReview.key',
+          perms: ['articleReview:page', 'articleReview:list', 'channel:list', 'dict:list', 'model:list', 'block:list', 'processInstance:task'],
+          children: [
+            { label: t('list'), key: 'articleReview:page' },
+            { label: t('pass'), key: 'articleReview:pass', perms: ['articleReview:pass'] },
+            { label: t('reject'), key: 'articleReview:reject', perms: ['articleReview:reject'] },
           ],
         },
         {
           label: t('menu.content.channel'),
           key: 'channel.key',
-          perms: ['channel:page', 'channel:list'],
+          perms: ['channel:page', 'channel:list', 'processDefinition:list'],
           children: [
             { label: t('list'), key: 'channel:page' },
             { label: t('add'), key: 'channel:create', perms: ['channel:create'] },
@@ -133,6 +147,8 @@ export function getPermsTreeData(): any[] {
           children: [
             { label: t('config.settings.base'), key: 'config:base:update', perms: ['config:base:update'] },
             { label: t('config.settings.upload'), key: 'config:upload:update', perms: ['config:upload:update'] },
+            { label: t('config.settings.security'), key: 'config:security:update', perms: ['config:security:update'] },
+            { label: t('config.settings.sms'), key: 'config:sms:update', perms: ['config:sms:show', 'config:sms:update'] },
             {
               label: t('config.settings.uploadStorage'),
               key: 'config:uploadStorage:update',
@@ -251,6 +267,31 @@ export function getPermsTreeData(): any[] {
       ],
     },
     {
+      label: t('menu.log'),
+      key: 'menu.log.key',
+      perms: ['menu.log'],
+      children: [
+        {
+          label: t('menu.log.loginLog'),
+          key: 'loginLog.key',
+          perms: ['loginLog:page', 'loginLog:list', 'loginLog:show'],
+          children: [
+            { label: t('list'), key: 'loginLog:page' },
+            { label: t('delete'), key: 'loginLog:delete', perms: ['loginLog:delete'] },
+          ],
+        },
+        {
+          label: t('menu.log.shortMessage'),
+          key: 'shortMessage.key',
+          perms: ['shortMessage:page', 'shortMessage:list', 'shortMessage:show'],
+          children: [
+            { label: t('list'), key: 'shortMessage:page' },
+            { label: t('delete'), key: 'shortMessage:delete', perms: ['shortMessage:delete'] },
+          ],
+        },
+      ],
+    },
+    {
       label: t('menu.system'),
       key: 'menu.system.key',
       perms: ['menu.system'],
@@ -264,6 +305,36 @@ export function getPermsTreeData(): any[] {
             { label: t('add'), key: 'site:create', perms: ['site:create'] },
             { label: t('edit'), key: 'site:update', perms: ['site:update', 'site:show'] },
             { label: t('delete'), key: 'site:delete', perms: ['site:delete'] },
+          ],
+        },
+        {
+          label: t('menu.system.processModel'),
+          key: 'processModel.key',
+          perms: ['processModel:page', 'processModel:list', 'processDefinition:list', 'dict:list', 'processDefinition:xml'],
+          children: [
+            { label: t('list'), key: 'processModel:page' },
+            { label: t('add'), key: 'processModel:create', perms: ['processModel:create'] },
+            { label: t('edit'), key: 'processModel:update', perms: ['processModel:update', 'processModel:show'] },
+            { label: t('processModel.op.deploy'), key: 'processModel:deploy', perms: ['processModel:deploy'] },
+            { label: t('delete'), key: 'processModel:delete', perms: ['processModel:delete', 'processDefinition:delete'] },
+          ],
+        },
+        {
+          label: t('menu.system.processInstance'),
+          key: 'processInstance.key',
+          perms: ['processInstance:page', 'processInstance:list', 'processInstance:task', 'processHistory:activity', 'dict:list'],
+          children: [
+            { label: t('list'), key: 'processInstance:page' },
+            { label: t('delete'), key: 'processInstance:delete', perms: ['processInstance:delete'] },
+          ],
+        },
+        {
+          label: t('menu.system.processHistory'),
+          key: 'processHistory.key',
+          perms: ['processHistory:page', 'processHistory:list', 'processInstance:task', 'processHistory:activity', 'dict:list'],
+          children: [
+            { label: t('list'), key: 'processHistory:page' },
+            { label: t('delete'), key: 'processHistory:delete', perms: ['processHistory:delete'] },
           ],
         },
         // {
@@ -298,6 +369,7 @@ export function getModelData(): any {
         { code: 'image', must: false, show: true, double: false, required: false, type: 'image', imageWidth: 300, imageHeight: 200, imageMode: 'manual' },
         { code: 'file', must: false, show: false, double: false, required: false },
         { code: 'video', must: false, show: false, double: false, required: false },
+        { code: 'audio', must: false, show: false, double: false, required: false },
         { code: 'doc', must: false, show: false, double: false, required: false },
         { code: 'imageList', must: false, show: false, double: false, required: false, type: 'imageList', imageMaxWidth: 1920, imageMaxHeight: 1920 },
         { code: 'fileList', must: false, show: false, double: false, required: false },
@@ -338,6 +410,7 @@ export function getModelData(): any {
       asides: [
         { code: 'parent', must: true, show: true, required: false },
         { code: 'type', must: true, show: true, required: true },
+        { code: 'processKey', must: false, show: true, required: false },
         { code: 'pageSize', must: true, show: true, required: true },
       ],
     },

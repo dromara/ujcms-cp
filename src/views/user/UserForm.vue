@@ -9,7 +9,7 @@
     :beanIds="beanIds"
     :focus="focus"
     :initValues="(): any => ({orgId:org?.id, gender: 'm', roleIds: [] })"
-    :toValues="(bean: any) => ({ ...bean, roleIds: bean.roleList.map((item:any) => item.id) ?? [] })"
+    :toValues="(bean: any) => ({ ...bean })"
     :disableDelete="(bean: any) => bean.id <= 1"
     :disableEdit="(bean) => currentUser.rank > bean.rank"
     perms="user"
@@ -19,7 +19,7 @@
     @finished="$emit('finished')"
     large
   >
-    <template #header="{ isEdit }">
+    <template #header-status="{ isEdit }">
       <template v-if="isEdit">
         <el-tag v-if="values.status === 0" type="success" class="ml-2">{{ $t(`user.status.${values.status}`) }}</el-tag>
         <el-tag v-else-if="values.status === 1" type="info" class="ml-2">{{ $t(`user.status.${values.status}`) }}</el-tag>
@@ -38,6 +38,7 @@
               nodeKey="id"
               :default-expanded-keys="orgList.map((item) => item.id)"
               :props="{ label: 'name' }"
+              :render-after-expand="false"
               check-strictly
               class="w-full"
             />
@@ -75,8 +76,20 @@
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item prop="plainPassword" :label="$t('user.plainPassword')" :rules="[{ required: !isEdit, message: () => $t('v.required') }]">
-            <el-input v-model="values.plainPassword" maxlength="50" show-password></el-input>
+          <el-form-item
+            prop="plainPassword"
+            :label="$t('user.plainPassword')"
+            :rules="[
+              { required: !isEdit, message: () => $t('v.required') },
+              {
+                min: securitySettings.passwordMinLength,
+                max: securitySettings.passwordMaxLength,
+                message: () => $t('user.error.passwordLength', { min: securitySettings.passwordMinLength, max: securitySettings.passwordMaxLength }),
+              },
+              { pattern: passwordPattern(securitySettings.passwordStrength), message: () => $t(`user.error.passwordPattern.${securitySettings.passwordStrength}`) },
+            ]"
+          >
+            <el-input v-model="values.plainPassword" :maxlength="securitySettings.passwordMaxLength" show-password></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -195,8 +208,10 @@ export default { name: 'UserForm' };
 <script setup lang="ts">
 import { onMounted, ref, toRefs, watch } from 'vue';
 import { currentUser } from '@/store/useCurrentUser';
-import { queryUser, createUser, updateUser, deleteUser, usernameExist, emailExist, mobileExist, queryGroupList, queryOrgList, queryRoleList } from '@/api/user';
+import { securitySettings } from '@/store/useConfig';
+import { queryUser, createUser, updateUser, deleteUser, usernameExist, emailExist, mobileExist, queryGroupList, queryOrgList } from '@/api/user';
 import { toTree } from '@/utils/tree';
+import { passwordPattern } from '@/utils/common';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 
@@ -214,7 +229,6 @@ const focus = ref<any>();
 const values = ref<any>({});
 const groupList = ref<any[]>([]);
 const orgList = ref<any[]>([]);
-const roleList = ref<any[]>([]);
 
 const fetchGroupList = async () => {
   groupList.value = await queryGroupList({ type: 2 });
@@ -222,13 +236,9 @@ const fetchGroupList = async () => {
 const fetchOrgList = async () => {
   orgList.value = toTree(await queryOrgList({ current: !showGlobalData.value }));
 };
-const fetchRoleList = async () => {
-  roleList.value = await queryRoleList();
-};
 
 onMounted(() => {
   fetchGroupList();
-  fetchRoleList();
 });
 
 watch(visible, () => {

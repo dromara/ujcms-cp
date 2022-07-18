@@ -19,11 +19,11 @@ export default defineConfig(({ mode }) => {
       port: Number(env.VITE_PORT),
       proxy: {
         [env.VITE_BASE_API]: {
-          target: env.VITE_PROXY,
+          target: env.VITE_PROXY_API,
           changeOrigin: true,
         },
-        '/uploads': {
-          target: env.VITE_PROXY,
+        [env.VITE_BASE_UPLOADS]: {
+          target: env.VITE_PROXY_UPLOADS,
           changeOrigin: true,
         },
       },

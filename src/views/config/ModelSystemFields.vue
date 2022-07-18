@@ -58,7 +58,7 @@
         </el-table-column>
       </el-table>
       <div class="mt-3">
-        <el-button :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" native-type="submit">{{ $t('submit') }}</el-button>
+        <el-button :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" native-type="submit">{{ $t('save') }}</el-button>
         <el-button @click="handleReset">{{ $t('restoreInitialSettings') }}</el-button>
       </div>
     </el-form>

@@ -25,7 +25,7 @@
         </div>
         <div>
           <el-button @click="$emit('update:modelValue', false)">{{ $t('cancel') }}</el-button>
-          <el-button type="primary" @click="handleSubmit()" :loading="buttonLoading" :disabled="disabled">{{ $t('submit') }}</el-button>
+          <el-button type="primary" @click="handleSubmit()" :loading="buttonLoading" :disabled="disabled">{{ $t('save') }}</el-button>
         </div>
       </div>
     </template>

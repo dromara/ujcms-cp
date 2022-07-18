@@ -1,7 +1,6 @@
 import axios from '@/utils/request';
 
 export const updatePassword = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/personal/password?_method=put', data)).data;
-export const passwordMatches = async (password?: string): Promise<any> => (await axios.get('/backend/core/personal/password-matches', { params: { password } })).data;
 
 export const queryMachineCode = async (): Promise<any> => (await axios.get('/backend/core/machine/code')).data;
 export const queryMachineLicense = async (): Promise<any> => (await axios.get('/backend/core/machine/license')).data;

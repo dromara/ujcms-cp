@@ -19,3 +19,25 @@ export const queryTask = async (id: number): Promise<any> => (await axios.get(`/
 export const createTask = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/task', data)).data;
 export const updateTask = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/task?_method=put', data)).data;
 export const deleteTask = async (data: number[]): Promise<any> => (await axios.post('/backend/core/task?_method=delete', data)).data;
+
+export const queryProcessModelList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/process-model', { params })).data;
+export const queryProcessModel = async (id: string): Promise<any> => (await axios.get(`/backend/core/process-model/${id}`)).data;
+export const queryProcessModelXml = async (id: string): Promise<any> => (await axios.get(`/backend/core/process-model/xml/${id}`)).data;
+export const createProcessModel = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/process-model', data)).data;
+export const updateProcessModel = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/process-model?_method=put', data)).data;
+export const updateProcessModelXml = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/process-model/xml?_method=put', data)).data;
+export const validateProcessModelXml = async (xml: string): Promise<any> =>
+  (await axios.post('/backend/core/process-model/xml/validate', xml, { headers: { 'Content-Type': 'text/plain' } })).data;
+export const deployProcessModel = async (id: string): Promise<any> => (await axios.post(`/backend/core/process-model/deploy/${id}`)).data;
+export const deleteProcessModel = async (data: string[]): Promise<any> => (await axios.post('/backend/core/process-model?_method=delete', data)).data;
+
+export const queryProcessDefinitionList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/process-definition', { params })).data;
+export const queryProcessDefinitionXml = async (id: string): Promise<any> => (await axios.get(`/backend/core/process-definition/xml/${id}`)).data;
+export const deleteProcessDefinition = async (data: string[]): Promise<any> => (await axios.post('/backend/core/process-definition?_method=delete', data)).data;
+
+export const queryProcessInstanceList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/process-instance', { params })).data;
+export const queryProcessTaskList = async (instanceId: string): Promise<any> => (await axios.get(`/backend/core/process-instance/task/${instanceId}`)).data;
+export const deleteProcessInstance = async (data: string[]): Promise<any> => (await axios.post('/backend/core/process-instance?_method=delete', data)).data;
+
+export const queryProcessHistoryList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/process-history', { params })).data;
+export const deleteProcessHistory = async (data: string[]): Promise<any> => (await axios.post('/backend/core/process-history?_method=delete', data)).data;

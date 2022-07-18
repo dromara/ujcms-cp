@@ -9,26 +9,24 @@
     "
   >
     <el-form ref="form" :model="values" v-loading="loading" label-width="150px" label-position="right">
+      <el-alert v-if="error" :title="error" type="error" class="mb-3" :closable="false" show-icon />
+      <el-form-item prop="password" :label="$t('user.origPassword')" :rules="[{ required: true, message: () => $t('v.required') }]">
+        <el-input v-model="values.password" ref="focus" maxlength="50" show-password></el-input>
+      </el-form-item>
       <el-form-item
-        prop="password"
-        :label="$t('user.origPassword')"
+        prop="plainPassword"
+        :label="$t('user.newPassword')"
         :rules="[
           { required: true, message: () => $t('v.required') },
           {
-            asyncValidator: async (rule:any, value:any, callback:any) => {
-              if (!(await passwordMatches(sm2Encrypt(value, publicKey)))) {
-                callback($t('user.error.passwordWrong'));
-              }
-              callback();
-            },
-            trigger: 'blur',
+            min: securitySettings.passwordMinLength,
+            max: securitySettings.passwordMaxLength,
+            message: () => $t('user.error.passwordLength', { min: securitySettings.passwordMinLength, max: securitySettings.passwordMaxLength }),
           },
+          { pattern: passwordPattern(securitySettings.passwordStrength), message: () => $t(`user.error.passwordPattern.${securitySettings.passwordStrength}`) },
         ]"
       >
-        <el-input v-model="values.password" ref="focus" maxlength="50" show-password></el-input>
-      </el-form-item>
-      <el-form-item prop="plainPassword" :label="$t('user.newPassword')" :rules="{ required: true, message: () => $t('v.required') }">
-        <el-input v-model="values.plainPassword" maxlength="50" show-password></el-input>
+        <el-input v-model="values.plainPassword" :maxlength="securitySettings.passwordMaxLength" show-password></el-input>
       </el-form-item>
       <el-form-item
         prop="passwordAgain"
@@ -42,7 +40,6 @@
               }
               callback();
             },
-            trigger: 'blur',
           },
         ]"
       >
@@ -64,8 +61,10 @@ import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { sm2Encrypt } from '@/utils/sm';
+import { passwordPattern } from '@/utils/common';
+import { securitySettings } from '@/store/useConfig';
 import { queryClientPublicKey } from '@/api/login';
-import { updatePassword, passwordMatches } from '@/api/personal';
+import { updatePassword } from '@/api/personal';
 
 defineProps({ modelValue: { type: Boolean, required: true } });
 const emit = defineEmits({ 'update:modelValue': null });
@@ -76,6 +75,7 @@ const focus = ref<any>();
 const loading = ref<boolean>(false);
 const buttonLoading = ref<boolean>(false);
 const publicKey = ref<string>('');
+const error = ref<string>();
 
 onMounted(async () => {
   loading.value = true;
@@ -92,7 +92,14 @@ const handleSubmit = () => {
     buttonLoading.value = true;
     try {
       const password = sm2Encrypt(values.value.password, publicKey.value);
-      await updatePassword({ ...values.value, password });
+      const data = await updatePassword({ ...values.value, password });
+
+      // 登录失败，显示错误信息
+      if (data.status !== 0) {
+        error.value = data.message;
+        return;
+      }
+      error.value = undefined;
       form.value.resetFields();
       ElMessage.success(t('success'));
       emit('update:modelValue', false);
