@@ -144,7 +144,7 @@ export default { name: 'RolePermissionForm' };
 </script>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, toRefs } from 'vue';
+import { ref, watch, computed, onMounted, toRefs, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { getPermsTreeData } from '@/data';
@@ -182,8 +182,11 @@ const fetchRole = async () => {
   if (beanId?.value != null) {
     bean.value = await queryRole(beanId.value);
     values.value = { ...bean.value };
-    permissionTree.value?.setCheckedKeys(bean.value.permission?.split(',') ?? []);
-    grantPermissionTree.value?.setCheckedKeys(bean.value.grantPermission?.split(',') ?? []);
+    // 树组件先加载好，再赋值
+    nextTick().then(() => {
+      permissionTree.value?.setCheckedKeys(bean.value.permission?.split(',') ?? []);
+      grantPermissionTree.value?.setCheckedKeys(bean.value.grantPermission?.split(',') ?? []);
+    });
   }
 };
 const fetchArticlePermissions = async () => {
@@ -198,9 +201,10 @@ const fetchChannelData = async () => {
   channelData.value = toTree(await queryChannelList());
 };
 
-watch(visible, () => {
+watch(visible, async () => {
   if (visible.value) {
-    fetchRole();
+    // 要等待获取Role之后，再设置文章权限，否则切换不同角色时，文章权限无法正常赋值
+    await fetchRole();
     fetchArticlePermissions();
   }
 });
