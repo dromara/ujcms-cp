@@ -10,7 +10,7 @@ import { useI18n } from 'vue-i18n';
 import { useFormItem } from 'element-plus';
 import { getAuthHeaders } from '@/utils/auth';
 import { uploadSettings } from '@/store/useConfig';
-import { imageUploadUrl } from '@/api/config';
+import { imageUploadUrl, fileUploadUrl, videoUploadUrl } from '@/api/config';
 
 // 参考：https://www.tiny.cloud/docs/advanced/usage-with-module-loaders/webpack/webpack_es6_npm/
 // 参考：https://github.com/tinymce/tinymce-vue/blob/main/src/main/ts/components/Editor.ts
@@ -103,12 +103,12 @@ export default defineComponent({
           'searchreplace table visualblocks visualchars',
         toolbar:
           'fullscreen code | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | selectall removeformat pastetext | ' +
-          'quickimage media link | blockquote codesample table | bullist numlist | outdent indent lineheight | forecolor backcolor | fontselect fontsizeselect formatselect | ' +
+          'quickimage media | blockquote codesample table | bullist numlist | outdent indent lineheight | forecolor backcolor | fontselect fontsizeselect formatselect | ' +
           'superscript subscript charmap | hr | ltr rtl | visualblocks visualchars | restoredraft undo redo | searchreplace',
         font_formats:
           '宋体=SimSun; 微软雅黑=Microsoft YaHei; 楷体=SimKai,KaiTi; 黑体=SimHei; 隶书=SimLi,LiSu; Andale Mono=andale mono,times;Arial=arial,helvetica,sans-serif;' +
           'Arial Black=arial black,avant garde;Comic Sans MS=comic sans ms,sans-serif;Helvetica=helvetica;Impact=impact,chicago;Times New Roman=times new roman,times',
-        quickbars_selection_toolbar: 'bold italic | h2 h3 blockquote',
+        quickbars_selection_toolbar: 'bold italic | h2 h3 blockquote | link',
         quickbars_insert_toolbar: false,
         paste_data_images: true,
         image_uploadtab: false,
@@ -169,17 +169,21 @@ export default defineComponent({
           input.setAttribute('type', 'file');
 
           let fileSizeLimtByte = 0;
+          let uploadUrl: string;
           if (meta.filetype === 'image') {
             fileSizeLimtByte = uploadSettings.imageLimitByte;
             input.setAttribute('accept', uploadSettings.imageInputAccept);
+            uploadUrl = imageUploadUrl;
             // input.setAttribute('accept', 'image/*');
           } else if (meta.filetype === 'media') {
             fileSizeLimtByte = uploadSettings.videoLimitByte;
             input.setAttribute('accept', uploadSettings.videoInputAccept);
+            uploadUrl = videoUploadUrl;
             // input.setAttribute('accept', 'video/*');
           } else {
             fileSizeLimtByte = uploadSettings.fileLimitByte;
             input.setAttribute('accept', uploadSettings.fileInputAccept);
+            uploadUrl = fileUploadUrl;
           }
 
           /*
@@ -199,7 +203,7 @@ export default defineComponent({
               return;
             }
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', imageUploadUrl);
+            xhr.open('POST', uploadUrl);
 
             // xhr.upload.onprogress = (e) => {
             //   progress((e.loaded / e.total) * 100);

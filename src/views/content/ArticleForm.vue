@@ -599,7 +599,7 @@ const fetchJodconverterEnabled = async () => {
 };
 const fetchSourceList = (name: string) => queryDictListByAlias('sys_article_source', name);
 const fetchChannelList = async () => {
-  flatChannelList.value = await queryChannelList();
+  flatChannelList.value = await queryChannelList({ isArticlePermission: true });
   channelList.value = toTree(flatChannelList.value);
 };
 const fetchArticleModeList = async () => {

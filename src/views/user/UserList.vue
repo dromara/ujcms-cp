@@ -120,7 +120,7 @@
                 <el-tag v-else type="danger">{{ row.status }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.action')" min-width="120">
+            <el-table-column :label="$t('table.action')" width="160">
               <template #default="{ row }">
                 <el-button type="primary" @click="handleEdit(row.id)" :disabled="perm('user:update')" size="small" link>{{ $t('edit') }}</el-button>
                 <el-button type="primary" @click="handlePermissionEdit(row.id)" :disabled="perm('user:updatePermission')" size="small" link>

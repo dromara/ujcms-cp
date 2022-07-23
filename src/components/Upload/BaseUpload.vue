@@ -16,7 +16,7 @@
     // 用于测试上传进度条
     action="https://jsonplaceholder.typicode.com/posts/"
     -->
-    {{ $t('clickOrDragToUpload') }}
+    {{ button ?? $t('clickOrDragToUpload') }}
     <!-- <el-button type="primary" :disabled="disabled">{{ button ?? $t('clickToUpload') }}</el-button> -->
   </el-upload>
   <el-progress v-if="progressFile.status === 'uploading'" :percentage="parseInt(progressFile.percentage, 10)"></el-progress>

@@ -33,7 +33,11 @@
       <el-radio v-for="item in dictList" :key="item.id" :label="item.value">{{ item.name }}</el-radio>
     </template>
   </el-radio-group>
-  <el-checkbox-group v-else-if="field.type === 'checkbox'" v-model="dataKey" @change="(val) => (data = dictList.filter((item) => val.includes(item.value)))">
+  <el-checkbox-group
+    v-else-if="field.type === 'checkbox'"
+    v-model="dataKey"
+    @change="(val) => (data = dictList.filter((item) => val.indexOf(item.value) !== -1).map((item) => item.name))"
+  >
     <template v-if="field.checkStyle === 'button'">
       <el-checkbox-button v-for="item in dictList" :key="item.id" :label="item.value">{{ item.name }}</el-checkbox-button>
     </template>
