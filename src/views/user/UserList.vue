@@ -6,6 +6,7 @@
           <el-checkbox
             v-model="showGlobalData"
             @change="
+              org = undefined;
               fetchOrg();
               fetchData();
             "
@@ -120,9 +121,12 @@
                 <el-tag v-else type="danger">{{ row.status }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.action')" width="160">
+            <el-table-column :label="$t('table.action')" width="220">
               <template #default="{ row }">
                 <el-button type="primary" @click="handleEdit(row.id)" :disabled="perm('user:update')" size="small" link>{{ $t('edit') }}</el-button>
+                <el-button type="primary" @click="handlePasswordEdit(row.id, row.username)" :disabled="!deletable(row) || perm('user:updatePassword')" size="small" link>{{
+                  $t('changePassword')
+                }}</el-button>
                 <el-button type="primary" @click="handlePermissionEdit(row.id)" :disabled="perm('user:updatePermission')" size="small" link>
                   {{ $t('permissionSettings') }}
                 </el-button>
@@ -150,6 +154,7 @@
       </div>
       <user-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" :org="org" :showGlobalData="showGlobalData" @finished="fetchData" />
       <user-permission-form v-model="permissionFormVisible" :beanId="beanId" @finished="fetchData"></user-permission-form>
+      <user-password-form v-model="passwordFormVisible" :beanId="beanId" :username="passwordFormUsername"></user-password-form>
     </el-main>
   </el-container>
 </template>
@@ -171,6 +176,7 @@ import { deleteUser, updateUserStatus, queryUserList, queryOrgList } from '@/api
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import UserForm from './UserForm.vue';
+import UserPasswordForm from './UserPasswordForm.vue';
 import UserPermissionForm from './UserPermissionForm.vue';
 
 const { t } = useI18n();
@@ -184,7 +190,9 @@ const data = ref<Array<any>>([]);
 const selection = ref<Array<any>>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
+const passwordFormVisible = ref<boolean>(false);
 const permissionFormVisible = ref<boolean>(false);
+const passwordFormUsername = ref<string>('');
 const beanId = ref<number>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 
@@ -251,6 +259,11 @@ const handleAdd = () => {
 const handleEdit = (id: number) => {
   beanId.value = id;
   formVisible.value = true;
+};
+const handlePasswordEdit = (id: number, username: string) => {
+  beanId.value = id;
+  passwordFormUsername.value = username;
+  passwordFormVisible.value = true;
 };
 const handlePermissionEdit = (id: number) => {
   beanId.value = id;

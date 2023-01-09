@@ -143,19 +143,3 @@ export const formatDuration = (duration?: number): string => {
   }
   return str;
 };
-
-export const passwordPattern = (strength: number): RegExp => {
-  if (strength === 1) {
-    return /(?=.*[0-9])(?=.*[A-Za-z])./;
-  }
-  if (strength === 2) {
-    return /(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])./;
-  }
-  if (strength === 3) {
-    return /(?=.*[0-9])(?=.*[A-Za-z])(?=.*[^a-zA-Z0-9])./;
-  }
-  if (strength === 4) {
-    return /(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[^a-zA-Z0-9])./;
-  }
-  return /.*/;
-};

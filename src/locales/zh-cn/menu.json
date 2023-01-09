@@ -17,6 +17,9 @@
   "menu.content.attachment": "附件管理",
   "menu.content.generator": "生成管理",
 
+  "menu.interaction" : "互动",
+  "menu.interaction.messageBoard" : "留言管理",
+
   "menu.user": "用户",
   "menu.user.org": "组织管理",
   "menu.user.group": "用户组管理",
@@ -31,8 +34,9 @@
   "menu.config.dictType": "字典设置",
 
   "menu.log": "日志",
-  "menu.log.shortMessage": "短信日志",
   "menu.log.loginLog": "登录日志",
+  "menu.log.operationLog": "操作日志",
+  "menu.log.shortMessage": "短信日志",
 
   "menu.system": "系统",
   "menu.system.site": "站点管理",

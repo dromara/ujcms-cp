@@ -24,7 +24,7 @@
   <el-date-picker v-else-if="field.type === 'date'" :type="field.dateType ?? 'date'" v-model="data" :placeholder="field.placeholder" />
   <el-color-picker v-else-if="field.type === 'color'" v-model="data"></el-color-picker>
   <el-slider v-else-if="field.type === 'slider'" v-model="data" :showInput="field.showInput ?? false" :min="field.min" :max="field.max"></el-slider>
-  <el-switch v-else-if="field.type === 'switch'" v-model="data" :active-value="field.activeValue" :inactive-value="field.inactiveValue"></el-switch>
+  <el-switch v-else-if="field.type === 'switch'" v-model="data"></el-switch>
   <el-radio-group v-else-if="field.type === 'radio'" v-model="dataKey" @change="(val) => (data = dictList.find((item) => item.value === val)?.name)">
     <template v-if="field.checkStyle === 'button'">
       <el-radio-button v-for="item in dictList" :key="item.id" :label="item.value">{{ item.name }}</el-radio-button>
@@ -104,6 +104,7 @@
   </template>
   <tinymce
     v-else-if="field.type === 'tinyEditor'"
+    class="w-full"
     v-model="data"
     :init="{ placeholder: field.placeholder, ...(field.minHeight ? { min_height: field.minHeight } : {}), ...(field.maxHeight ? { max_height: field.maxHeight } : {}) }"
   />

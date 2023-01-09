@@ -20,8 +20,9 @@ export const queryClientPublicKey = async (): Promise<any> => (await axios.get('
 export const queryConfig = async (): Promise<any> => (await axios.get('/env/config')).data;
 export const queryCaptcha = async (): Promise<any> => (await axios.get('/captcha')).data;
 export const queryIsDisplayCaptcha = async (): Promise<any> => (await axios.get('/captcha/is-display')).data;
-export const queryShortMessage = async (token: string, captcha: string, mobile: string): Promise<any> =>
-  (await axios.get('/sms/mfa-login', { params: { token, captcha, mobile } })).data;
+export const sendMobileMessage = async (token: string, captcha: string, mobile: string, usage: number): Promise<any> =>
+  (await axios.post('/sms/mobile', { token, captcha, receiver: mobile, usage })).data;
 export const queryIsMfaLogin = async (): Promise<any> => (await axios.get('/env/is-mfa-login')).data;
 export const tryCaptcha = async (token: string, captcha: string): Promise<any> => (await axios.get('/captcha/try', { params: { token, captcha } })).data;
-export const changePassword = async (data: Record<string, any>): Promise<any> => (await axios.post('/change-password', data)).data;
+export const mobileNotExist = async (mobile: string): Promise<any> => (await axios.get('/user/mobile-not-exist', { params: { mobile } })).data;
+export const updatePassword = async (data: Record<string, any>): Promise<any> => (await axios.post('/update-password?_method=put', data)).data;

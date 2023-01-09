@@ -8,7 +8,7 @@
     :width="large ? '98%' : '768px'"
     :top="large ? '16px' : '8vh'"
   >
-    <div v-loading="loading || buttonLoading">
+    <div v-loading="loading || buttonLoading" class="space-x-2">
       <el-button v-if="isEdit && addable" :disabled="perm(`${perms}:create`)" type="primary" :icon="Plus" @click="handleAdd">{{ $t('add') }}</el-button>
       <slot name="header-action" :bean="bean" :isEdit="isEdit" :disabled="disabled" :unsaved="unsaved" :disableDelete="disableDelete" :handleDelete="handleDelete">
         <el-popconfirm v-if="isEdit" :title="$t('confirmDelete')" @confirm="handleDelete()">
@@ -17,15 +17,15 @@
           </template>
         </el-popconfirm>
       </slot>
-      <el-button-group class="ml-2">
-        <el-button v-if="isEdit" @click="handlePrev" :disabled="!hasPrev">{{ $t('form.prev') }}</el-button>
-        <el-button v-if="isEdit" @click="handleNext" :disabled="!hasNext">{{ $t('form.next') }}</el-button>
+      <el-button-group v-if="isEdit">
+        <el-button @click="handlePrev" :disabled="!hasPrev">{{ $t('form.prev') }}</el-button>
+        <el-button @click="handleNext" :disabled="!hasNext">{{ $t('form.next') }}</el-button>
       </el-button-group>
-      <el-button @click="handleCancel" type="primary" class="ml-2">{{ $t('back') }}</el-button>
+      <el-button @click="handleCancel" type="primary">{{ $t('back') }}</el-button>
       <el-tooltip :content="$t('form.continuous')" placement="top">
-        <el-switch v-model="continuous" size="small" class="ml-2"></el-switch>
+        <el-switch v-model="continuous" size="small"></el-switch>
       </el-tooltip>
-      <el-tag v-if="unsaved" type="danger" class="ml-2">{{ $t('form.unsaved') }}</el-tag>
+      <el-tag v-if="unsaved" type="danger">{{ $t('form.unsaved') }}</el-tag>
       <slot name="header-status" :bean="bean" :isEdit="isEdit" :disabled="disabled"></slot>
     </div>
     <el-form :class="['mt-5', 'pr-5']" ref="form" :model="values" :disabled="disabled" :label-width="labelWidth ?? '150px'" :label-position="labelPosition ?? 'right'">
@@ -122,7 +122,7 @@ const loadBean = async () => {
   try {
     bean.value = id.value != null ? await props.queryBean(id.value) : props.initValues(values.value);
     origValues.value = id.value != null ? props.toValues(bean.value) : bean.value;
-    emit('update:values', { ...origValues.value });
+    emit('update:values', _.cloneDeep(origValues.value));
     emit('beanChange', bean.value);
     form.value?.resetFields();
   } finally {

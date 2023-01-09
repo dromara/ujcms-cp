@@ -9,7 +9,7 @@ UJCMS-CP是UJCMS的后台前端项目。使用 TypeScript、Vite 2、Vue 3、Ele
 ## 搭建步骤
 
 * 使用 vscode 开发工具。
-* 安装 node 环境。建议 node 14 版本，最低为 node 12.14 版本。
+* 安装 node 环境。Node 14.18+ / 16+ 版本。
 * 使用淘宝 npm 镜像。
 * 安装依赖，执行：npm install
 * 启动程序，执行：npm run dev

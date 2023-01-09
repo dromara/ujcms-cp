@@ -5,15 +5,15 @@
         <query-item :label="$t('{{camelCase name}}.name')" name="Q_Contains_name"></query-item>
       </query-form>
     </div>
-    <div>
+    <div class="space-x-2">
       <el-button type="primary" :disabled="perm('{{camelCase name}}:create')" :icon="Plus" @click="handleAdd()">\{{ $t('add') }}</el-button>
       <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
         <template #reference>
           <el-button :disabled="selection.length <= 0 || perm('{{camelCase name}}:delete')" :icon="Delete">\{{ $t('delete') }}</el-button>
         </template>
       </el-popconfirm>
-      <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" class="ml-2" />
-      <column-setting name="{{camelCase name}}" class="ml-2" />
+      <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" />
+      <column-setting name="{{camelCase name}}" />
     </div>
     <div class="app-block mt-3">
       <el-table

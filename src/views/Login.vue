@@ -18,7 +18,7 @@
       </el-form-item>
       <el-form-item
         v-if="isDisplayCaptcha"
-        prop="captchaValue"
+        prop="captcha"
         :rules="[
           { required: true, message: () => $t('v.required') },
           {
@@ -33,7 +33,7 @@
         ]"
         class="captcha"
       >
-        <el-input v-model="bean.captchaValue" name="captchaValue" :placeholder="$t('captcha')" :prefix-icon="Picture">
+        <el-input v-model="bean.captcha" name="captcha" :placeholder="$t('captcha')" :prefix-icon="Picture">
           <template #append>
             <el-image :src="captchaData" style="height: 30px; margin-right: 1px" class="rounded-r cursor-pointer" @click="fetchCaptcha()" :title="$t('clickToRetrieveCaptcha')" />
           </template>
@@ -56,6 +56,7 @@ import { useI18n } from 'vue-i18n';
 import { ElMessageBox } from 'element-plus';
 import { User, Lock, Picture, Cellphone } from '@element-plus/icons-vue';
 import { sm2Encrypt } from '@/utils/sm';
+import { removeAccessToken, removeRefreshToken } from '@/utils/auth';
 import { queryClientPublicKey, queryIsDisplayCaptcha, queryIsMfaLogin, queryCaptcha, tryCaptcha } from '@/api/login';
 import { login } from '@/store/useCurrentUser';
 import ChangePassword from '@/views/ChangePassword.vue';
@@ -69,7 +70,7 @@ const isDisplayCaptcha = ref<boolean>(false);
 const isDisplayShortMessage = ref<boolean>(false);
 const captchaData = ref<string>();
 const captchaToken = ref<string>();
-const shortMessageToken = ref<string>();
+const shortMessageId = ref<number>();
 const error = ref<string>();
 const buttonLoading = ref<boolean>(false);
 const redirect = ref<string | null>();
@@ -81,6 +82,10 @@ const changePasswordVisible = ref<boolean>(false);
 const getShortMessageVisible = ref<boolean>(false);
 const shortMessageTimer = ref<number>(60);
 const shortMessageText = ref<string>(t('getShortMessage'));
+
+// 先删除accessToken，以免登录失败
+removeAccessToken();
+removeRefreshToken();
 
 if (import.meta.env.MODE === 'development') {
   bean.value = { username: 'admin', password: 'password' };
@@ -96,6 +101,9 @@ const fetchCaptcha = async () => {
 
 const fetchIsDisplayCaptcha = async () => {
   isDisplayCaptcha.value = await queryIsDisplayCaptcha();
+  if (isDisplayCaptcha.value) {
+    fetchCaptcha();
+  }
 };
 
 const fetchIsMfaLogin = async () => {
@@ -105,7 +113,6 @@ const fetchIsMfaLogin = async () => {
 onMounted(async () => {
   focus.value.focus();
   focus.value.select();
-  fetchCaptcha();
   fetchIsDisplayCaptcha();
   fetchIsMfaLogin();
 });
@@ -114,8 +121,8 @@ watchEffect(() => {
   redirect.value = route.query.redirect as LocationQueryValue;
 });
 
-const finishGetShortMessage = (val: string) => {
-  shortMessageToken.value = val;
+const finishGetShortMessage = (val: number) => {
+  shortMessageId.value = val;
   shortMessageTimer.value -= 1;
   shortMessageText.value = String(shortMessageTimer.value);
   const timerInterval = setInterval(() => {
@@ -136,7 +143,7 @@ const handleLogin = () => {
     try {
       const publicKey = await queryClientPublicKey();
       const password = sm2Encrypt(bean.value.password, publicKey);
-      const data = await login({ ...bean.value, password, captchaToken: captchaToken.value, shortMessageToken: shortMessageToken.value });
+      const data = await login({ ...bean.value, password, captchaToken: captchaToken.value, shortMessageId: shortMessageId.value });
       // 登录失败，显示错误信息
       if (data.status !== 0) {
         fetchIsDisplayCaptcha();

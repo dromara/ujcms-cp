@@ -1,43 +1,80 @@
 <template>
   <div>
     <!-- <transition-group tag="ul" :class="['el-upload-list', 'el-upload-list--picture-card', { 'is-disabled': disabled }]" name="el-list"> -->
-    <ul :class="['el-upload-list', 'el-upload-list--picture-card', { 'is-disabled': disabled }]">
-      <li v-for="file in fileList" :key="file.url" class="el-upload-list__item is-success">
-        <div class="w-full h-full bg-gray-50 flex justify-center items-center">
-          <img class="max-w-full max-h-full block" :src="file.url" alt="" />
-          <div class="full-flex-center absolute rounded-md cursor-default bg-black bg-opacity-50 opacity-0 hover:opacity-100 space-x-4" @click.stop>
-            <el-icon class="image-action" @click="(cropperVisible = true), (currentFile = file)" :title="$t('cropImage')"><Crop /></el-icon>
-            <el-icon class="image-action" @click="handlePreview(file)" :title="$t('previewImage')"><View /></el-icon>
-            <el-icon class="image-action" @click="fileList.splice(fileList.indexOf(file), 1)" :title="$t('deleteImage')"><Delete /></el-icon>
+    <draggable
+      :list="fileList"
+      tag="ul"
+      item-key="url"
+      :animation="250"
+      @start="dragging = true"
+      @end="dragging = false"
+      class="el-upload-list"
+      :class="[listType === 'picture' ? 'el-upload-list--picture' : 'el-upload-list--picture-card', { 'is-disabled': disabled }]"
+    >
+      <template #item="{ element: file }">
+        <li class="el-upload-list__item is-success">
+          <div :class="listType === 'picture' ? ['w-32', 'h-32'] : ['w-full', 'h-full']" class="bg-gray-50 flex justify-center items-center relative">
+            <img class="max-w-full max-h-full block" :src="file.url" alt="" />
+            <div
+              class="full-flex-center absolute rounded-md cursor-move bg-black bg-opacity-50 opacity-0 space-x-4"
+              :class="dragging ? undefined : 'hover:opacity-100'"
+              @click.stop
+            >
+              <el-icon class="image-action" @click="(cropperVisible = true), (currentFile = file)" :title="$t('cropImage')"><Crop /></el-icon>
+              <el-icon class="image-action" @click="handlePreview(file)" :title="$t('previewImage')"><View /></el-icon>
+              <el-icon class="image-action" @click="fileList.splice(fileList.indexOf(file), 1)" :title="$t('deleteImage')"><Delete /></el-icon>
+            </div>
           </div>
-        </div>
-      </li>
-      <el-upload
-        :action="imageUploadUrl"
-        :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
-        :data="getData()"
-        :accept="accept"
-        :before-upload="beforeUpload"
-        :on-success="(res, file) => fileList.push({ name: res.name, url: res.url })"
-        :on-progress="(event, file) => (progressFile = file)"
-        :on-error="onError"
-        :show-file-list="false"
-        multiple
-        drag
-      >
-        <el-progress v-if="progressFile.status === 'uploading'" type="circle" :percentage="parseInt(progressFile.percentage, 10)" />
-        <div v-else class="el-upload--picture-card">
-          <el-icon><Plus /></el-icon>
-        </div>
-      </el-upload>
-    </ul>
+          <div v-if="listType === 'picture'" class="ml-2">
+            <el-input v-model="file.url" placeholder="URL" maxlength="255">
+              <template #prepend>URL</template>
+            </el-input>
+            <el-input v-model="file.name" :placeholder="$t('article.imageList.name')" class="mt-1">
+              <template #prepend>{{ $t('article.imageList.name') }}</template>
+            </el-input>
+            <el-input v-model="file.description" type="textarea" :rows="2" :placeholder="$t('article.imageList.description')" class="mt-1"></el-input>
+          </div>
+        </li>
+      </template>
+      <template #footer>
+        <el-upload
+          :action="imageUploadUrl"
+          :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
+          :data="getData()"
+          :accept="accept"
+          :before-upload="beforeUpload"
+          :on-success="(res: any, file: any) => fileList.push({ name: res.name, url: res.url })"
+          :on-progress="(event: any, file: any) => (progressFile = file)"
+          :on-error="onError"
+          :show-file-list="false"
+          :disabled="disabled"
+          multiple
+          drag
+        >
+          <el-progress v-if="progressFile.status === 'uploading'" type="circle" :percentage="parseInt(progressFile.percentage, 10)" />
+          <div v-else class="el-upload--picture-card">
+            <el-icon><Plus /></el-icon>
+          </div>
+        </el-upload>
+      </template>
+    </draggable>
     <!-- </transition-group> -->
     <div>
       <el-dialog v-model="previewVisible" top="5vh" :width="768">
         <el-input v-model="previewFile.url" maxlength="255">
           <template #prepend>URL</template>
         </el-input>
-        <el-input v-model="previewFile.description" type="textarea" :rows="2" :placeholder="$t('article.imageList.description')" class="mt-1"></el-input>
+        <el-input v-if="listType !== 'picture'" v-model="previewFile.name" :placeholder="$t('article.imageList.name')" class="mt-1">
+          <template #prepend>{{ $t('article.imageList.name') }}</template>
+        </el-input>
+        <el-input
+          v-if="listType !== 'picture'"
+          v-model="previewFile.description"
+          type="textarea"
+          :rows="2"
+          :placeholder="$t('article.imageList.description')"
+          class="mt-1"
+        ></el-input>
         <img :src="previewFile.url" alt="" class="mt-1 border border-gray-300" />
       </el-dialog>
     </div>
@@ -52,10 +89,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, toRefs, computed, watch } from 'vue';
+import { ref, toRefs, computed, watch, PropType } from 'vue';
 import { ElMessage, useFormItem } from 'element-plus';
 import { Plus, Crop, View, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
+import draggable from 'vuedraggable';
 import { handleError } from '@/utils/request';
 import { getAuthHeaders } from '@/utils/auth';
 import { getSiteHeaders } from '@/utils/common';
@@ -69,6 +107,7 @@ const props = defineProps({
   fileMaxSize: { type: Number },
   maxWidth: { type: Number },
   maxHeight: { type: Number },
+  listType: { type: String as PropType<'pictureCard' | 'picture'>, default: 'pictureCard' },
   disabled: { type: Boolean, default: false },
 });
 
@@ -76,6 +115,7 @@ const emit = defineEmits({ 'update:modelValue': null });
 
 const { modelValue, maxWidth, maxHeight, fileAccept, fileMaxSize } = toRefs(props);
 const { t } = useI18n();
+const dragging = ref<boolean>(false);
 const progressFile = ref<any>({});
 const currentFile = ref<any>({});
 const previewVisible = ref<boolean>(false);
@@ -113,7 +153,7 @@ const getData = () => {
   }
   return data;
 };
-const accept = computed(() => fileAccept?.value ?? uploadSettings.imageInputAccept );
+const accept = computed(() => fileAccept?.value ?? uploadSettings.imageInputAccept);
 const maxSize = computed(() => fileMaxSize?.value ?? uploadSettings.imageLimitByte);
 const beforeUpload = (file: any) => {
   if (maxSize.value > 0 && file.size > maxSize.value) {
@@ -142,5 +182,14 @@ const onError = (error: Error) => {
 }
 :deep(.el-upload--picture-card) {
   border: 0;
+}
+// 修复进度圈位置不正确
+:deep(.el-upload-list--picture-card .el-progress) {
+  left: 0;
+  transform: none;
+}
+// 修复拖动图集无动画效果
+:deep(.el-upload-list__item) {
+  transition: none;
 }
 </style>

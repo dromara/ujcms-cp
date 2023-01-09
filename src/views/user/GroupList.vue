@@ -32,6 +32,17 @@
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">
               <el-button type="primary" :disabled="perm('group:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
+              <el-button
+                v-if="currentUser.epRank > 0 || currentUser.epDisplay"
+                type="primary"
+                @click="handlePermissionEdit(row.id)"
+                :disabled="perm('group:updatePermission') || currentUser.epRank <= 0"
+                :title="currentUser.epRank <= 0 ? $t('error.enterprise.short') : undefined"
+                size="small"
+                link
+              >
+                {{ $t('permissionSettings') }}
+              </el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                 <template #reference>
                   <el-button type="primary" :disabled="!deletable(row.id) || perm('group:delete')" size="small" link>{{ $t('delete') }}</el-button>
@@ -43,6 +54,7 @@
       </el-table>
     </div>
     <group-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" />
+    <group-permission-form v-model="permissionFormVisible" :beanId="beanId" @finished="fetchData"></group-permission-form>
   </div>
 </template>
 
@@ -55,13 +67,14 @@ import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { perm } from '@/store/useCurrentUser';
+import { perm, currentUser } from '@/store/useCurrentUser';
 import { moveList, toParams, resetParams } from '@/utils/common';
 import { deleteGroup, queryGroupList, updateGroupOrder } from '@/api/user';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import ListMove from '@/components/ListMove.vue';
 import GroupForm from './GroupForm.vue';
+import GroupPermissionForm from './GroupPermissionForm.vue';
 
 const { t } = useI18n();
 const params = ref<any>({});
@@ -71,6 +84,7 @@ const data = ref<any[]>([]);
 const selection = ref<any[]>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
+const permissionFormVisible = ref<boolean>(false);
 const beanId = ref<number>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
@@ -108,6 +122,10 @@ const handleAdd = () => {
 const handleEdit = (id: number) => {
   beanId.value = id;
   formVisible.value = true;
+};
+const handlePermissionEdit = (id: number) => {
+  beanId.value = id;
+  permissionFormVisible.value = true;
 };
 const deletable = (id: number) => id > 10;
 const handleDelete = async (ids: number[]) => {

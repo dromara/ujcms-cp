@@ -62,7 +62,7 @@ export const findTreeItem = (tree: any[], predicate: (value: any, index: number,
 
 export const sortTreeData = (data: any[]): any[] => flatTree(toTree(data));
 
-const doDisableSubtree = (data: any[], disabledId: any, disabled: boolean): any[] => {
+const doDisableSubtree = (data: any[], disabledId: string | number, disabled: boolean): any[] => {
   data.forEach((item) => {
     if (disabled || item.id === disabledId) {
       // eslint-disable-next-line no-param-reassign
@@ -78,7 +78,23 @@ export const disableSubtree = (data: any[], disabledId?: string | number): any[]
   return doDisableSubtree(data, disabledId, false);
 };
 
-export const disablePermissionTree = (data: any[], permissions: readonly string[]) : boolean => {
+const doDisableTreeWithPermission = (data: any[], permissionIds: any[]): any[] => {
+  data.forEach((item) => {
+    if (!permissionIds.includes(item.id)) {
+      // eslint-disable-next-line no-param-reassign
+      item.disabled = true;
+    }
+    doDisableTreeWithPermission(item.children, permissionIds);
+  });
+  return data;
+};
+
+export const disableTreeWithPermission = (data: any[], permissionIds?: string[] | number[]): any[] => {
+  if (!permissionIds) return data;
+  return doDisableTreeWithPermission(data, permissionIds);
+};
+
+export const disablePermissionTree = (data: any[], permissions: readonly string[]): boolean => {
   let allDisabled = true;
   data.forEach((item) => {
     if (!(item.children && item.children.length > 0) && !permissions.includes(item.key) && !permissions.includes('*')) {

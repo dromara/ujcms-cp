@@ -28,7 +28,7 @@
         <el-tag v-else type="danger" class="ml-2">{{ values.status }}</el-tag>
       </template>
     </template>
-    <template #default="{ bean, isEdit }">
+    <template #default="{ bean, isEdit, disabled }">
       <el-row>
         <el-col :span="12">
           <el-form-item prop="orgId" :label="$t('user.org')" :rules="{ required: true, message: () => $t('v.required') }">
@@ -47,7 +47,7 @@
         <el-col :span="12">
           <el-form-item prop="groupId" :label="$t('user.group')" :rules="{ required: true, message: () => $t('v.required') }">
             <el-select v-model="values.groupId" class="w-full">
-              <el-option v-for="item in groupList" :key="item.id" :value="item.id" :label="item.name"></el-option>
+              <el-option v-for="item in groupList" :key="item.id" :value="item.id" :label="item.name" :disabled="item.type !== 2"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
@@ -73,43 +73,6 @@
         <el-col :span="12">
           <el-form-item prop="realName" :label="$t('user.realName')">
             <el-input v-model="values.realName" maxlength="50"></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item
-            prop="plainPassword"
-            :label="$t('user.plainPassword')"
-            :rules="[
-              { required: !isEdit, message: () => $t('v.required') },
-              {
-                min: securitySettings.passwordMinLength,
-                max: securitySettings.passwordMaxLength,
-                message: () => $t('user.error.passwordLength', { min: securitySettings.passwordMinLength, max: securitySettings.passwordMaxLength }),
-              },
-              { pattern: passwordPattern(securitySettings.passwordStrength), message: () => $t(`user.error.passwordPattern.${securitySettings.passwordStrength}`) },
-            ]"
-          >
-            <el-input v-model="values.plainPassword" :maxlength="securitySettings.passwordMaxLength" show-password></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item
-            prop="passwordAgain"
-            :label="$t('user.passwordAgain')"
-            :rules="[
-              { required: !isEdit, message: () => $t('v.required') },
-              {
-                validator: (rule:any, value:any, callback:any) => {
-                  if (value != values.plainPassword) {
-                    callback($t('user.error.passwordNotMatch'));
-                  }
-                  callback();
-                },
-                trigger: 'blur',
-              },
-            ]"
-          >
-            <el-input v-model="values.passwordAgain" maxlength="50" show-password></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -172,6 +135,20 @@
             <el-input v-model="values.bio" type="textarea" :rows="3" maxlength="2000"></el-input>
           </el-form-item>
         </el-col>
+        <el-col :span="24">
+          <el-form-item prop="avatar" :label="$t('user.avatar')">
+            <image-upload
+              v-model="values.avatar"
+              :width="registerSettings.largeAvatarSize"
+              :height="registerSettings.largeAvatarSize"
+              mode="manual"
+              type="avatar"
+              :disabled="disabled"
+              @crop-success="(url: string) => (values.mediumAvatar = url + '@medium' + url.substring(url.lastIndexOf('.')))"
+            ></image-upload>
+            <el-avatar v-if="values.mediumAvatar != null" :src="values.mediumAvatar" :size="100" class="ml-2" />
+          </el-form-item>
+        </el-col>
         <el-col :span="12" v-if="isEdit">
           <el-form-item prop="created" :label="$t('user.created')">
             <template #label><label-tip message="user.created" /></template>
@@ -207,13 +184,13 @@ export default { name: 'UserForm' };
 
 <script setup lang="ts">
 import { onMounted, ref, toRefs, watch } from 'vue';
+import { registerSettings } from '@/store/useConfig';
 import { currentUser } from '@/store/useCurrentUser';
-import { securitySettings } from '@/store/useConfig';
 import { queryUser, createUser, updateUser, deleteUser, usernameExist, emailExist, mobileExist, queryGroupList, queryOrgList } from '@/api/user';
 import { toTree } from '@/utils/tree';
-import { passwordPattern } from '@/utils/common';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
+import { ImageUpload } from '@/components/Upload';
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -231,7 +208,7 @@ const groupList = ref<any[]>([]);
 const orgList = ref<any[]>([]);
 
 const fetchGroupList = async () => {
-  groupList.value = await queryGroupList({ type: 2 });
+  groupList.value = await queryGroupList();
 };
 const fetchOrgList = async () => {
   orgList.value = toTree(await queryOrgList({ current: !showGlobalData.value }));

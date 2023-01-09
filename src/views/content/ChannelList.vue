@@ -27,7 +27,7 @@
         @sort-change="handleSort"
       >
         <column-list name="channel">
-          <el-table-column type="selection" width="45"></el-table-column>
+          <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
           <el-table-column property="name" :label="$t('channel.name')" sortable="custom" show-overflow-tooltip>
             <template #default="{ row }">{{ filtered ? row.names.join(' / ') : row.name }}</template>
           </el-table-column>
@@ -45,11 +45,11 @@
           <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">
-              <el-button type="primary" :disabled="perm('channel:create')" @click="handleAdd(row)" size="small" link>{{ $t('addChild') }}</el-button>
+              <el-button type="primary" :disabled="perm('channel:create') || !deletable(row)" @click="handleAdd(row)" size="small" link>{{ $t('addChild') }}</el-button>
               <el-button type="primary" :disabled="perm('channel:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
                 <template #reference>
-                  <el-button type="primary" :disabled="perm('channel:delete')" size="small" link>{{ $t('delete') }}</el-button>
+                  <el-button type="primary" :disabled="perm('channel:delete') || !deletable(row)" size="small" link>{{ $t('delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -73,7 +73,7 @@ import { useI18n } from 'vue-i18n';
 import { perm, currentUser } from '@/store/useCurrentUser';
 import { moveTreeList, toParams, resetParams } from '@/utils/common';
 import { toTree, flatTree, findTreeItem } from '@/utils/tree';
-import { deleteChannel, queryChannelList, updateChannelOrder } from '@/api/content';
+import { deleteChannel, queryChannelList, queryChannelPermissions, updateChannelOrder } from '@/api/content';
 import { queryProcessDefinitionList } from '@/api/system';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
@@ -92,7 +92,10 @@ const beanId = ref<number>();
 const beanIds = computed(() => flatTree(data.value).map((row) => row.id));
 const filtered = ref<boolean>(false);
 const parent = ref<any>();
+const channelPermissions = ref<number[]>([]);
 const processList = ref<any[]>([]);
+
+const deletable = (bean: any) => currentUser.allChannelPermission || channelPermissions.value.includes(bean.id);
 
 const fetchData = async () => {
   loading.value = true;
@@ -111,9 +114,13 @@ const fetchProcessList = async () => {
     processList.value = await queryProcessDefinitionList({ category: 'sys_article', latestVersion: true });
   }
 };
+const fetchChannelPermissions = async () => {
+  channelPermissions.value = await queryChannelPermissions();
+};
 onMounted(() => {
   fetchData();
   fetchProcessList();
+  fetchChannelPermissions();
 });
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {

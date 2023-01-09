@@ -34,6 +34,7 @@
         fetchChannelList();
       }
     "
+    :disableEdit="(bean) => !currentUser.allChannelPermission && bean.id != null && !channelPermissions.includes(bean.id)"
     labelWidth="120px"
     large
   >
@@ -59,7 +60,13 @@
               </el-form-item>
             </el-col>
             <el-col :span="mains['linkUrl'].double ? 12 : 24" v-if="values.type === 3">
-              <el-form-item prop="linkUrl" :rules="{ required: true, message: () => $t('v.required') }">
+              <el-form-item
+                prop="linkUrl"
+                :rules="[
+                  { required: true, message: () => $t('v.required') },
+                  { pattern: /^(http|\/).*$/, message: () => $t('channel.error.linkUrl') },
+                ]"
+              >
                 <template #label><label-tip :label="mains['linkUrl'].name ?? $t('channel.linkUrl')" message="channel.linkUrl" help /></template>
                 <el-input v-model="values.linkUrl" maxlength="255">
                   <template #append>
@@ -185,7 +192,7 @@
               <el-col :span="field.double ? 12 : 24">
                 <el-form-item :prop="`customs.${field.code}`" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
                   <template #label><label-tip :label="field.name" /></template>
-                  <field-item :field="field" v-model="values.customs[field.code]"></field-item>
+                  <field-item :field="field" v-model="values.customs[field.code]" v-model:model-key="values.customs[field.code + '_key']"></field-item>
                 </el-form-item>
               </el-col>
             </template>
@@ -245,9 +252,9 @@ export default { name: 'ChannelForm' };
 </script>
 
 <script setup lang="ts">
-import { onMounted, ref, computed, toRefs, watch } from 'vue';
-import { toTree, disableSubtree } from '@/utils/tree';
-import { queryChannel, createChannel, updateChannel, deleteChannel, queryChannelList, queryChannelTemplates, queryArticleTemplates } from '@/api/content';
+import { ref, computed, toRefs, watch } from 'vue';
+import { toTree, disableSubtree, disableTreeWithPermission } from '@/utils/tree';
+import { queryChannel, createChannel, updateChannel, deleteChannel, queryChannelList, queryChannelPermissions, queryChannelTemplates, queryArticleTemplates } from '@/api/content';
 import { queryProcessDefinitionList } from '@/api/system';
 import { queryModelList } from '@/api/config';
 import { getModelData, mergeModelFields, arr2obj } from '@/data';
@@ -272,6 +279,7 @@ const processList = ref<any[]>([]);
 const channelList = ref<any[]>([]);
 const channelModelList = ref<any[]>([]);
 const articleModelList = ref<any[]>([]);
+const channelPermissions = ref<number[]>([]);
 const channelTemplates = ref<any[]>([]);
 const articleTemplates = ref<any[]>([]);
 const channelModelId = ref<number>();
@@ -279,13 +287,14 @@ const channelModel = computed(() => channelModelList.value.find((item) => item.i
 const mains = computed(() => arr2obj(mergeModelFields(getModelData().channel.mains, channelModel.value?.mains, 'channel')));
 const asides = computed(() => arr2obj(mergeModelFields(getModelData().channel.asides, channelModel.value?.asides, 'channel')));
 const fields = computed(() => JSON.parse(channelModel.value?.customs || '[]'));
-const parentChannelList = computed(() => disableSubtree(channelList.value, values.value.id));
-
-watch(visible, () => {
-  if (visible.value) {
-    channelModelId.value = parent.value?.articleModelId ?? channelModelList.value[0]?.id;
+const parentChannelList = computed(() => {
+  const list = disableSubtree(channelList.value, values.value.id);
+  if (!currentUser.allChannelPermission) {
+    return disableTreeWithPermission(list, channelPermissions.value);
   }
+  return list;
 });
+
 const fetchChannelList = async () => {
   channelList.value = toTree(await queryChannelList());
 };
@@ -314,13 +323,20 @@ const fetchChannelTemplates = async () => {
 const fetchArticleTemplates = async () => {
   articleTemplates.value = await queryArticleTemplates();
 };
-onMounted(() => {
-  fetchChannelModelList();
-  fetchArticleModelList();
-  fetchChannelTemplates();
-  fetchArticleTemplates();
-  fetchChannelList();
-  fetchProcessList();
+const fetchChannelPermissions = async () => {
+  channelPermissions.value = await queryChannelPermissions();
+};
+watch(visible, () => {
+  if (visible.value) {
+    channelModelId.value = parent.value?.articleModelId ?? channelModelList.value[0]?.id;
+    fetchChannelPermissions();
+    fetchChannelModelList();
+    fetchArticleModelList();
+    fetchChannelTemplates();
+    fetchArticleTemplates();
+    fetchChannelList();
+    fetchProcessList();
+  }
 });
 const initCustoms = (customs: any) => {
   fields.value.forEach((field: any) => {

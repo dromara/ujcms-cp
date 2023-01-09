@@ -152,6 +152,16 @@
           </el-form-item>
         </el-col>
         <el-col :span="12">
+          <el-form-item prop="withVideo" :label="$t('block.withVideo')" :rules="{ required: true, message: () => $t('v.required') }">
+            <el-switch v-model="values.withVideo"></el-switch>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item prop="videoRequired" :label="$t('block.videoRequired')" :rules="{ required: true, message: () => $t('v.required') }">
+            <el-switch v-model="values.videoRequired"></el-switch>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
           <el-form-item prop="enabled" :label="$t('block.enabled')" :rules="{ required: true, message: () => $t('v.required') }">
             <el-switch v-model="values.enabled"></el-switch>
           </el-form-item>

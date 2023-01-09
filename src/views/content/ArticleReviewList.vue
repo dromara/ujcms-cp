@@ -46,7 +46,7 @@
               <el-tag v-else type="info" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('table.action')" min-width="180">
+          <el-table-column :label="$t('table.action')" min-width="200">
             <template #default="{ row }">
               <el-button type="primary" :disabled="perm('article:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
               <el-button type="primary" :disabled="!row.processInstanceId || perm('processInstance:task')" @click="handleTask(row.processInstanceId)" size="small" link>{{

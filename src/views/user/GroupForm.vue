@@ -8,7 +8,7 @@
     :beanId="beanId"
     :beanIds="beanIds"
     :focus="focus"
-    :initValues="() => ({ type: 2 })"
+    :initValues="() => ({ type: 2, allAccessPermission: true })"
     :toValues="(bean) => ({ ...bean })"
     :disableDelete="(bean) => bean.id <= 10"
     perms="group"
@@ -24,9 +24,9 @@
       <el-form-item prop="description" :label="$t('group.description')">
         <el-input v-model="values.description" maxlength="255"></el-input>
       </el-form-item>
-      <el-form-item prop="allAccessPermission" :rules="{ required: true, message: () => $t('v.required') }">
+      <el-form-item prop="allAccessPermission">
         <template #label><label-tip message="group.allAccessPermission" /></template>
-        <el-switch v-model="values.allAccessPermission" ></el-switch>
+        <el-switch v-model="values.allAccessPermission"></el-switch>
       </el-form-item>
       <el-form-item prop="type" :label="$t('group.type')" :rules="{ required: true, message: () => $t('v.required') }">
         <el-select v-model="values.type" :disabled="values.type === 1">

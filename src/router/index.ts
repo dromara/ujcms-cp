@@ -1,6 +1,6 @@
 import { Component } from 'vue';
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
-import { Document, Tools, UserFilled, Operation, Tickets } from '@element-plus/icons-vue';
+import { Document, Tools, UserFilled, Operation, Tickets, Connection } from '@element-plus/icons-vue';
 import Layout from '@/layout/index.vue';
 
 declare module 'vue-router' {
@@ -68,6 +68,19 @@ export const routes: Array<RouteRecordRaw> = [
     ],
   },
   {
+    path: '/interaction',
+    component: Layout,
+    meta: { title: 'menu.interaction', icon: Connection, requiresPermission: 'menu.interaction' },
+    children: [
+      {
+        path: 'message-board',
+        name: 'MessageBoardList',
+        component: () => import('@/views/Enterprise.vue'),
+        meta: { title: 'menu.interaction.messageBoard', requiresPermission: 'messageBoard:page' },
+      },
+    ],
+  },
+  {
     path: '/config',
     component: Layout,
     meta: { title: 'menu.config', icon: Tools, requiresPermission: 'menu.config' },
@@ -111,16 +124,22 @@ export const routes: Array<RouteRecordRaw> = [
     meta: { title: 'menu.log', icon: Tickets, requiresPermission: 'menu.log' },
     children: [
       {
+        path: 'short-message',
+        name: 'ShortMessageList',
+        component: () => import('@/views/log/ShortMessageList.vue'),
+        meta: { title: 'menu.log.shortMessage', requiresPermission: 'shortMessage:page' },
+      },
+      {
         path: 'login-log',
         name: 'LoginLogList',
         component: () => import('@/views/Enterprise.vue'),
         meta: { title: 'menu.log.loginLog', requiresPermission: 'loginLog:page' },
       },
       {
-        path: 'short-message',
-        name: 'ShortMessageList',
-        component: () => import('@/views/log/ShortMessageList.vue'),
-        meta: { title: 'menu.log.shortMessage', requiresPermission: 'shortMessage:page' },
+        path: 'operation-log',
+        name: 'OperationLogList',
+        component: () => import('@/views/Enterprise.vue'),
+        meta: { title: 'menu.log.operationLog', requiresPermission: 'operationLog:page' },
       },
     ],
   },

@@ -91,12 +91,14 @@
     <el-form-item prop="defaultValue" :label="$t('model.field.defaultValue')">
       <el-switch v-model="field.defaultValue" :active-value="field.activeValue" :inactive-value="field.inactiveValue"></el-switch>
     </el-form-item>
+    <!--
     <el-form-item prop="activeValue" :label="$t('model.field.activeValue')" :rules="{ required: true, message: () => $t('v.required') }">
       <el-input v-model="field.activeValue" maxlength="20"></el-input>
     </el-form-item>
     <el-form-item prop="inactiveValue" :label="$t('model.field.inactiveValue')" :rules="{ required: true, message: () => $t('v.required') }">
       <el-input v-model="field.inactiveValue" maxlength="20"></el-input>
     </el-form-item>
+     -->
   </template>
   <template v-if="['radio', 'checkbox'].includes(field.type)">
     <el-form-item prop="checkStyle" :label="$t('model.field.checkStyle')">

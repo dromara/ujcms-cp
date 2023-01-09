@@ -10,6 +10,7 @@ export const createChannel = async (data: Record<string, any>): Promise<any> => 
 export const updateChannel = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/channel?_method=put', data)).data;
 export const updateChannelOrder = async (data: number[]): Promise<any> => (await axios.post('/backend/core/channel/order?_method=put', data)).data;
 export const deleteChannel = async (data: number[]): Promise<any> => (await axios.post('/backend/core/channel?_method=delete', data)).data;
+export const queryChannelPermissions = async (): Promise<any> => (await axios.get('/backend/core/channel/channel-permissions')).data;
 export const queryChannelTemplates = async (): Promise<any> => (await axios.get('/backend/core/channel/channel-templates')).data;
 export const queryArticleTemplates = async (): Promise<any> => (await axios.get('/backend/core/channel/article-templates')).data;
 
@@ -17,6 +18,7 @@ export const queryArticlePage = async (params?: Record<string, any>): Promise<an
 export const queryArticle = async (id: number): Promise<any> => (await axios.get(`/backend/core/article/${id}`)).data;
 export const createArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/article', data)).data;
 export const updateArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/article?_method=put', data)).data;
+export const stickyArticle = async (ids: number[], sticky: number): Promise<any> => (await axios.post('/backend/core/article/sticky?_method=put', { ids, sticky })).data;
 export const deleteArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article/delete?_method=put', data)).data;
 export const submitArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article/submit?_method=put', data)).data;
 export const archiveArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article/archive?_method=put', data)).data;

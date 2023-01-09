@@ -9,12 +9,8 @@
     "
   >
     <el-form ref="form" :model="values" v-loading="loading" label-width="150px" label-position="right">
-      <el-alert v-if="error" :title="error" type="error" class="mb-3" :closable="false" show-icon />
-      <el-form-item prop="username" :label="$t('user.username')" :rules="[{ required: true, message: () => $t('v.required') }]">
-        <el-input v-model="values.username" ref="focus" maxlength="30"></el-input>
-      </el-form-item>
-      <el-form-item prop="password" :label="$t('user.origPassword')" :rules="[{ required: true, message: () => $t('v.required') }]">
-        <el-input v-model="values.password" maxlength="50" show-password></el-input>
+      <el-form-item prop="username" :label="$t('user.username')">
+        <el-input :model-value="username" readonly></el-input>
       </el-form-item>
       <el-form-item
         prop="newPassword"
@@ -29,7 +25,7 @@
           { pattern: new RegExp(securitySettings.passwordPattern), message: () => $t(`user.error.passwordPattern.${securitySettings.passwordStrength}`) },
         ]"
       >
-        <el-input v-model="values.newPassword" :maxlength="securitySettings.passwordMaxLength" show-password></el-input>
+        <el-input v-model="values.newPassword" :maxlength="securitySettings.passwordMaxLength" ref="focus" show-password></el-input>
       </el-form-item>
       <el-form-item
         prop="passwordAgain"
@@ -56,19 +52,21 @@
 </template>
 
 <script lang="ts">
-export default { name: 'ChangePassword' };
+export default { name: 'UserPasswordForm' };
 </script>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, toRefs, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { sm2Encrypt } from '@/utils/sm';
 import { securitySettings } from '@/store/useConfig';
-import { queryClientPublicKey, updatePassword } from '@/api/login';
+import { queryClientPublicKey } from '@/api/login';
+import { updateUserPassword } from '@/api/user';
 
-defineProps({ modelValue: { type: Boolean, required: true } });
+const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: -1 }, username: { type: String, default: '' } });
 const emit = defineEmits({ 'update:modelValue': null });
+const { beanId, username } = toRefs(props);
 const { t } = useI18n();
 const values = ref<any>({});
 const form = ref<any>();
@@ -76,7 +74,6 @@ const focus = ref<any>();
 const loading = ref<boolean>(false);
 const buttonLoading = ref<boolean>(false);
 const publicKey = ref<string>('');
-const error = ref<string>();
 
 onMounted(async () => {
   loading.value = true;
@@ -92,15 +89,8 @@ const handleSubmit = () => {
     if (!valid) return;
     buttonLoading.value = true;
     try {
-      const password = sm2Encrypt(values.value.password, publicKey.value);
       const newPassword = sm2Encrypt(values.value.newPassword, publicKey.value);
-      const data = await updatePassword({ ...values.value, password, newPassword, passwordAgain: undefined });
-      // 登录失败，显示错误信息
-      if (data.status !== 0) {
-        error.value = data.message;
-        return;
-      }
-      error.value = undefined;
+      await updateUserPassword(beanId.value, newPassword);
       form.value.resetFields();
       ElMessage.success(t('success'));
       emit('update:modelValue', false);

@@ -61,6 +61,7 @@ export function getPermsTreeData(): any[] {
             { label: t('list'), key: 'article:page' },
             { label: t('add'), key: 'article:create', perms: ['article:create', 'article.submit', 'jodConvert:doc', 'jodConvert:library'] },
             { label: t('edit'), key: 'article:update', perms: ['article:update', 'article.submit', 'article:show', 'jodConvert:doc', 'jodConvert:library'] },
+            { label: t('article.op.sticky'), key: 'article:sticky', perms: ['article:sticky'] },
             { label: t('article.op.submit'), key: 'article:submit', perms: ['article:submit'] },
             { label: t('article.op.archive'), key: 'article:archive', perms: ['article:archive'] },
             { label: t('article.op.offline'), key: 'article:offline', perms: ['article:offline'] },
@@ -81,7 +82,7 @@ export function getPermsTreeData(): any[] {
         {
           label: t('menu.content.channel'),
           key: 'channel.key',
-          perms: ['channel:page', 'channel:list', 'processDefinition:list'],
+          perms: ['channel:page', 'channel:list', 'processDefinition:list', 'model:list'],
           children: [
             { label: t('list'), key: 'channel:page' },
             { label: t('add'), key: 'channel:create', perms: ['channel:create'] },
@@ -136,6 +137,25 @@ export function getPermsTreeData(): any[] {
       ],
     },
     {
+      label: t('menu.interaction'),
+      key: 'menu.interaction.key',
+      perms: ['menu.interaction'],
+      children: [
+        {
+          label: t('menu.interaction.messageBoard'),
+          key: 'messageBoard.key',
+          perms: ['messageBoard:page', 'messageBoard:list'],
+          children: [
+            { label: t('list'), key: 'messageBoard:page' },
+            { label: t('add'), key: 'messageBoard:create', perms: ['messageBoard:create'] },
+            { label: t('edit'), key: 'messageBoard:update', perms: ['messageBoard:update', 'messageBoard:show'] },
+            { label: t('updateStatus'), key: 'messageBoard:updateStatus', perms: ['messageBoard:updateStatus'] },
+            { label: t('delete'), key: 'messageBoard:delete', perms: ['messageBoard:delete'] },
+          ],
+        },
+      ],
+    },
+    {
       label: t('menu.config'),
       key: 'menu.config.key',
       perms: ['menu.config'],
@@ -147,8 +167,10 @@ export function getPermsTreeData(): any[] {
           children: [
             { label: t('config.settings.base'), key: 'config:base:update', perms: ['config:base:update'] },
             { label: t('config.settings.upload'), key: 'config:upload:update', perms: ['config:upload:update'] },
+            { label: t('config.settings.register'), key: 'config:register:update', perms: ['config:register:update'] },
             { label: t('config.settings.security'), key: 'config:security:update', perms: ['config:security:update'] },
             { label: t('config.settings.sms'), key: 'config:sms:update', perms: ['config:sms:show', 'config:sms:update'] },
+            { label: t('config.settings.email'), key: 'config:email:update', perms: ['config:email:show', 'config:email:update'] },
             {
               label: t('config.settings.uploadStorage'),
               key: 'config:uploadStorage:update',
@@ -174,6 +196,7 @@ export function getPermsTreeData(): any[] {
           children: [
             { label: t('site.settings.base'), key: 'siteSettings:base:update', perms: ['siteSettings:base:update'] },
             { label: t('site.settings.watermark'), key: 'siteSettings:watermark:update', perms: ['siteSettings:watermark:update'] },
+            { label: t('site.settings.messageBoard'), key: 'siteSettings:messageBoard:update', perms: ['siteSettings:messageBoard:update'] },
             { label: t('site.settings.customs'), key: 'siteSettings:customs:update', perms: ['siteSettings:customs:update'] },
           ],
         },
@@ -225,8 +248,9 @@ export function getPermsTreeData(): any[] {
             { label: t('list'), key: 'user:page' },
             { label: t('add'), key: 'user:create', perms: ['user:create'] },
             { label: t('edit'), key: 'user:update', perms: ['user:update', 'user:show'] },
+            { label: t('changePassword'), key: 'user:updatePassword', perms: ['user:updatePassword', 'user:show'] },
+            { label: t('updateStatus'), key: 'user:updateStatus', perms: ['user:updateStatus', 'user:show'] },
             { label: t('permissionSettings'), key: 'user:updatePermission', perms: ['user:updatePermission', 'user:show'] },
-            { label: t('user.op.status'), key: 'user:updateStatus', perms: ['user:updateStatus', 'user:show'] },
             { label: t('delete'), key: 'user:delete', perms: ['user:delete'] },
           ],
         },
@@ -261,6 +285,7 @@ export function getPermsTreeData(): any[] {
             { label: t('list'), key: 'group:page' },
             { label: t('add'), key: 'group:create', perms: ['group:create'] },
             { label: t('edit'), key: 'group:update', perms: ['group:update', 'group:show'] },
+            { label: t('permissionSettings'), key: 'group:updatePermission', perms: ['group:updatePermission', 'group:show'] },
             { label: t('delete'), key: 'group:delete', perms: ['group:delete'] },
           ],
         },
@@ -272,6 +297,15 @@ export function getPermsTreeData(): any[] {
       perms: ['menu.log'],
       children: [
         {
+          label: t('menu.log.shortMessage'),
+          key: 'shortMessage.key',
+          perms: ['shortMessage:page', 'shortMessage:list', 'shortMessage:show'],
+          children: [
+            { label: t('list'), key: 'shortMessage:page' },
+            { label: t('delete'), key: 'shortMessage:delete', perms: ['shortMessage:delete'] },
+          ],
+        },
+        {
           label: t('menu.log.loginLog'),
           key: 'loginLog.key',
           perms: ['loginLog:page', 'loginLog:list', 'loginLog:show'],
@@ -281,12 +315,12 @@ export function getPermsTreeData(): any[] {
           ],
         },
         {
-          label: t('menu.log.shortMessage'),
-          key: 'shortMessage.key',
-          perms: ['shortMessage:page', 'shortMessage:list', 'shortMessage:show'],
+          label: t('menu.log.operationLog'),
+          key: 'operationLog.key',
+          perms: ['operationLog:page', 'operationLog:list', 'operationLog:show'],
           children: [
-            { label: t('list'), key: 'shortMessage:page' },
-            { label: t('delete'), key: 'shortMessage:delete', perms: ['shortMessage:delete'] },
+            { label: t('list'), key: 'operationLog:page' },
+            { label: t('delete'), key: 'operationLog:delete', perms: ['operationLog:delete'] },
           ],
         },
       ],
@@ -371,7 +405,7 @@ export function getModelData(): any {
         { code: 'video', must: false, show: false, double: false, required: false },
         { code: 'audio', must: false, show: false, double: false, required: false },
         { code: 'doc', must: false, show: false, double: false, required: false },
-        { code: 'imageList', must: false, show: false, double: false, required: false, type: 'imageList', imageMaxWidth: 1920, imageMaxHeight: 1920 },
+        { code: 'imageList', must: false, show: false, double: false, required: false, type: 'imageList', imageListType: 'pictureCard', imageMaxWidth: 1920, imageMaxHeight: 1920 },
         { code: 'fileList', must: false, show: false, double: false, required: false },
         { code: 'text', must: false, show: true, double: false, required: true, type: 'editor', editorType: 1, editorSwitch: true },
       ],
@@ -442,3 +476,152 @@ export function arr2obj(arr: any[]): Record<string, any> {
   });
   return obj;
 }
+
+export const logModules = [
+  'article',
+  'channel',
+  'blockItem',
+  'dict',
+  'attachment',
+  'fulltext',
+  'html',
+  'messageBoard',
+  'config',
+  'siteSettings',
+  'model',
+  'block',
+  'dictType',
+  'user',
+  'role',
+  'org',
+  'group',
+  'shortMessage',
+  'loginLog',
+  'operationLog',
+  'site',
+  'process',
+  'task',
+  'personal',
+];
+
+export const logNames = [
+  'article.create',
+  'article.update',
+  'article.submit',
+  'article.pass',
+  'article.reject',
+  'article.completelyDelete',
+  'article.delete',
+  'article.sticky',
+
+  'channel.create',
+  'channel.update',
+  'channel.updateOrder',
+  'channel.delete',
+
+  'blockItem.create',
+  'blockItem.update',
+  'blockItem.updateOrder',
+  'blockItem.delete',
+
+  'dict.create',
+  'dict.update',
+  'dict.updateOrder',
+  'dict.delete',
+
+  'attachment.delete',
+
+  'fulltext.reindexAll',
+  'fulltext.reindexSite',
+
+  'html.updateAll',
+  'html.updateHome',
+  'html.updateChannel',
+  'html.updateArticle',
+
+  'messageBoard.create',
+  'messageBoard.update',
+  'messageBoard.updateStatus',
+  'messageBoard.delete',
+
+  'config.updateBase',
+  'config.updateUpload',
+  'config.updateRegister',
+  'config.updateSecurity',
+  'config.updateSms',
+  'config.sendSms',
+  'config.updateEmail',
+  'config.sendEmail',
+  'config.updateUploadStorage',
+  'config.updateHtmlStorage',
+  'config.updateTemplateStorage',
+  'config.updateCustoms',
+
+  'siteSettings.updateBase',
+  'siteSettings.updateWatermark',
+  'siteSettings.updateMessageBoard',
+  'siteSettings.updateCustoms',
+  'siteSettings.updateHtml',
+
+  'model.create',
+  'model.update',
+  'model.updateOrder',
+  'model.delete',
+
+  'block.create',
+  'block.update',
+  'block.updateOrder',
+  'block.delete',
+
+  'dictType.create',
+  'dictType.update',
+  'dictType.updateOrder',
+  'dictType.delete',
+
+  'user.create',
+  'user.update',
+  'user.updatePermission',
+  'user.updateStatus',
+  'user.updatePassword',
+  'user.delete',
+
+  'role.create',
+  'role.update',
+  'role.updateOrder',
+  'role.delete',
+
+  'org.create',
+  'org.update',
+  'org.updateOrder',
+  'org.delete',
+
+  'group.create',
+  'group.update',
+  'group.updatePermission',
+  'group.updateOrder',
+  'group.delete',
+
+  'shortMessage.delete',
+
+  'loginLog.delete',
+
+  'operationLog.delete',
+
+  'site.create',
+  'site.update',
+  'site.updateOrder',
+  'site.delete',
+
+  'process.createProcessModel',
+  'process.updateProcessModel',
+  'process.updateProcessXml',
+  'process.deployProcessModel',
+  'process.deleteProcessModel',
+  'process.deleteProcessDefinition',
+  'process.deleteProcessHistory',
+  'process.deleteProcessInstance',
+
+  'task.delete',
+
+  'personal.updatePassword',
+];

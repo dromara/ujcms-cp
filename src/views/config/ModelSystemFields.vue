@@ -35,6 +35,9 @@
               <el-input v-model.number="row.imageMaxWidth">
                 <template #prepend>{{ $t('model.field.imageMaxWidth') }}</template>
               </el-input>
+              <el-select v-model="row.imageListType" :placeholder="$t('model.field.imageListType')" class="w-full">
+                <el-option v-for="n in ['pictureCard', 'picture']" :key="n" :value="n" :label="$t(`model.field.imageListType.${n}`)"></el-option>
+              </el-select>
             </template>
             <template v-else-if="row.type === 'editor'">
               <el-select v-model="row.editorType" :placeholder="$t('model.field.editorType')" class="w-full">

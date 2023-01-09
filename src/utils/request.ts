@@ -3,7 +3,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import { ElMessageBox } from 'element-plus';
 import i18n from '@/i18n';
-import { getAuthHeaders, setAccessAt } from '@/utils/auth';
+import { getAuthHeaders, removeAccessToken, removeRefreshToken, setAccessAt } from '@/utils/auth';
 import { getSiteHeaders, removeSessionSiteId } from '@/utils/common';
 import { appState, setMessageBoxDisplay } from '@/store/useAppState';
 
@@ -33,7 +33,7 @@ const showMessageBox = () => {
 
 const service = axios.create({
   baseURL: import.meta.env.VITE_BASE_API,
-  timeout: 10000,
+  timeout: 30000,
 });
 
 service.interceptors.request.use(
@@ -64,11 +64,13 @@ export const handleError = ({ timestamp, message, path, error, exception, trace,
   } else if (exception === 'com.ujcms.util.web.exception.LogicException') {
     ElMessageBox.alert(message, { type: 'warning' });
   } else if (status === 401) {
+    removeAccessToken();
+    removeRefreshToken();
     showMessageBox();
   } else if (status === 403) {
     ElMessageBox({
       title: String(status),
-      message: h('div', null, [h('p', { class: 'text-lg' }, t('error.forbidden')), h('p', { class: 'mt-2' }, message)]),
+      message: h('div', null, [h('p', { class: 'text-lg' }, t('error.forbidden')), h('p', { class: 'mt-2' }, path), h('p', { class: 'mt-2' }, message)]),
     });
   } else {
     ElMessageBox({
@@ -81,7 +83,7 @@ export const handleError = ({ timestamp, message, path, error, exception, trace,
         h('p', { class: 'mt-2' }, exception),
         h('pre', { class: 'mt-2' }, [h('code', { class: ['whitespace-pre-wrap'] }, trace)]),
       ]),
-      customClass: 'msgbox-error',
+      customStyle: { maxWidth: '100%' },
     });
   }
 };
@@ -90,10 +92,16 @@ service.interceptors.response.use(
   (response) => response,
   (e) => {
     const {
-      response: { data, status },
+      response: { data, status, statusText },
     } = e;
-    handleError(data);
-    return Promise.reject(data.error);
+    // spring boot 的响应
+    if (data) {
+      handleError(data);
+      return Promise.reject(data.error);
+    }
+    // spring scurity BearerTokenAuthenticationEntryPoint 的响应
+    handleError({ status });
+    return Promise.reject(statusText);
   },
 );
 

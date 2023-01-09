@@ -14,7 +14,7 @@
         <el-input v-model="values.password" ref="focus" maxlength="50" show-password></el-input>
       </el-form-item>
       <el-form-item
-        prop="plainPassword"
+        prop="newPassword"
         :label="$t('user.newPassword')"
         :rules="[
           { required: true, message: () => $t('v.required') },
@@ -23,10 +23,10 @@
             max: securitySettings.passwordMaxLength,
             message: () => $t('user.error.passwordLength', { min: securitySettings.passwordMinLength, max: securitySettings.passwordMaxLength }),
           },
-          { pattern: passwordPattern(securitySettings.passwordStrength), message: () => $t(`user.error.passwordPattern.${securitySettings.passwordStrength}`) },
+          { pattern: new RegExp(securitySettings.passwordPattern), message: () => $t(`user.error.passwordPattern.${securitySettings.passwordStrength}`) },
         ]"
       >
-        <el-input v-model="values.plainPassword" :maxlength="securitySettings.passwordMaxLength" show-password></el-input>
+        <el-input v-model="values.newPassword" :maxlength="securitySettings.passwordMaxLength" show-password></el-input>
       </el-form-item>
       <el-form-item
         prop="passwordAgain"
@@ -35,7 +35,7 @@
           { required: true, message: () => $t('v.required') },
           {
             validator: (rule:any, value:any, callback:any) => {
-              if (value !== values.plainPassword) {
+              if (value !== values.newPassword) {
                 callback($t('user.error.passwordNotMatch'));
               }
               callback();
@@ -61,7 +61,6 @@ import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { sm2Encrypt } from '@/utils/sm';
-import { passwordPattern } from '@/utils/common';
 import { securitySettings } from '@/store/useConfig';
 import { queryClientPublicKey } from '@/api/login';
 import { updatePassword } from '@/api/personal';
@@ -92,7 +91,8 @@ const handleSubmit = () => {
     buttonLoading.value = true;
     try {
       const password = sm2Encrypt(values.value.password, publicKey.value);
-      const data = await updatePassword({ ...values.value, password });
+      const newPassword = sm2Encrypt(values.value.newPassword, publicKey.value);
+      const data = await updatePassword({ ...values.value, password, newPassword, passwordAgain: undefined });
 
       // 登录失败，显示错误信息
       if (data.status !== 0) {

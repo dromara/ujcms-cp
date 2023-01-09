@@ -1,14 +1,15 @@
 <template>
   <el-upload
-    :action="imageUploadUrl"
+    :action="type === 'avatar' ? avatarUploadUrl : imageUploadUrl"
     :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
     :accept="accept"
     :before-upload="beforeUpload"
     :data="data"
     :show-file-list="false"
-    :on-success="(res) => ((src = res.url), (cropperVisible = mode === 'manual'))"
+    :on-success="(res: any) => ((src = res.url), (cropperVisible = mode === 'manual'))"
     :on-error="onError"
-    :on-progress="(event, file) => (progressFile = file)"
+    :on-progress="(event: any, file: any) => (progressFile = file)"
+    :disabled="disabled"
     :drag="!src"
   >
     <!--
@@ -36,11 +37,11 @@
       <img :src="src" alt="" class="mt-1 border border-gray-300" />
     </el-dialog>
   </div>
-  <image-cropper v-model="cropperVisible" :src="src" :width="width" :height="height" @success="(url) => (src = url)"></image-cropper>
+  <image-cropper v-model="cropperVisible" :type="type" :src="src" :width="width" :height="height" @success="onCropSuccess" />
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toRefs } from 'vue';
+import { computed, ref, toRefs, PropType } from 'vue';
 import { ElMessage, useFormItem } from 'element-plus';
 import { Plus, Crop, View, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
@@ -48,7 +49,7 @@ import { getAuthHeaders } from '@/utils/auth';
 import { getSiteHeaders } from '@/utils/common';
 import { handleError } from '@/utils/request';
 import { uploadSettings } from '@/store/useConfig';
-import { imageUploadUrl } from '@/api/config';
+import { imageUploadUrl, avatarUploadUrl } from '@/api/config';
 import ImageCropper from './ImageCropper.vue';
 
 // 'image/jpg,image/jpeg,image/png,image/gif'
@@ -59,12 +60,20 @@ const props = defineProps({
   fileMaxSize: { type: Number },
   width: { type: Number },
   height: { type: Number },
-  mode: { type: String, default: 'none' },
+  /**
+   * none: 原图上传, cut: 自动裁剪, resize: 自动压缩, manual: 手动裁剪
+   */
+  mode: { type: String as PropType<'none' | 'cut' | 'resize' | 'manual'>, default: 'none' },
+  /**
+   * image: 图片上传, avatar: 头像上传
+   */
+  type: { type: String as PropType<'image' | 'avatar'>, default: 'image' },
+  disabled: { type: Boolean, default: false },
 });
 
-const emit = defineEmits({ 'update:modelValue': null });
+const emit = defineEmits({ 'update:modelValue': null, cropSuccess: null });
 
-const { modelValue, width, height, mode, fileAccept, fileMaxSize } = toRefs(props);
+const { modelValue, type, width, height, mode, fileAccept, fileMaxSize } = toRefs(props);
 const { t } = useI18n();
 const progressFile = ref<any>({});
 const previewVisible = ref<boolean>(false);
@@ -105,6 +114,10 @@ const beforeUpload = (file: any) => {
 };
 const onError = (error: Error) => {
   handleError(JSON.parse(error.message));
+};
+const onCropSuccess = (url: string) => {
+  src.value = url;
+  emit('cropSuccess', url);
 };
 </script>
 

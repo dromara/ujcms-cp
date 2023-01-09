@@ -9,8 +9,8 @@ import { defineComponent, ref, toRefs, watch, onMounted, onBeforeUnmount, onActi
 import { useI18n } from 'vue-i18n';
 import { useFormItem } from 'element-plus';
 import { getAuthHeaders } from '@/utils/auth';
-import { uploadSettings } from '@/store/useConfig';
-import { imageUploadUrl, fileUploadUrl, videoUploadUrl } from '@/api/config';
+import { baseSettings, uploadSettings, securitySettings } from '@/store/useConfig';
+import { imageUploadUrl, fileUploadUrl, videoUploadUrl, fetchImage } from '@/api/config';
 
 // 参考：https://www.tiny.cloud/docs/advanced/usage-with-module-loaders/webpack/webpack_es6_npm/
 // 参考：https://github.com/tinymce/tinymce-vue/blob/main/src/main/ts/components/Editor.ts
@@ -64,7 +64,7 @@ export default defineComponent({
   props: {
     id: String,
     modelValue: { type: String, default: '' },
-    disabled: Boolean,
+    disabled: { type: Boolean, default: false },
     inline: Boolean,
     init: Object,
     modelEvents: [String, Array],
@@ -87,7 +87,10 @@ export default defineComponent({
     const { formItem } = useFormItem();
 
     const initWrapper = (): void => {
-      const publicPath = import.meta.env.VITE_PUBLIC_PATH;
+      let publicPath = import.meta.env.VITE_PUBLIC_PATH;
+      if (publicPath.endsWith('/')) {
+        publicPath = publicPath.substring(0, publicPath.length - 1);
+      }
       const finalInit = {
         language_url: `${publicPath}/tinymce/langs/zh_CN.js`,
         language: 'zh_CN',
@@ -262,6 +265,80 @@ export default defineComponent({
           if (props.init && typeof props.init.setup === 'function') {
             props.init.setup(editor);
           }
+
+          const replaceString = (content: string, search: string, replace: string): string => {
+            let index = 0;
+            do {
+              index = content.indexOf(search, index);
+              if (index !== -1) {
+                content = content.substring(0, index) + replace + content.substring(index + search.length);
+                index += replace.length - search.length + 1;
+              }
+            } while (index !== -1);
+            return content;
+          };
+          const transparentSrc = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+          const replaceImageUrl = (content: string, targetUrl: string, replacementUrl: string): string => {
+            const replacementString = `src="${replacementUrl}"${replacementUrl === transparentSrc ? ' data-mce-placeholder="1"' : ''}`;
+            content = replaceString(content, `src="${targetUrl}"`, replacementString);
+            content = replaceString(content, 'data-mce-src="' + targetUrl + '"', 'data-mce-src="' + replacementUrl + '"');
+            return content;
+          };
+          const replaceUrlInUndoStack = (targetUrl: string, replacementUrl: string) => {
+            editor.undoManager.data.forEach((level: any) => {
+              if (level.type === 'fragmented') {
+                level.fragments = level.fragments.map((fragment: any) => replaceImageUrl(fragment, targetUrl, replacementUrl));
+              } else {
+                level.content = replaceImageUrl(level.content, targetUrl, replacementUrl);
+              }
+            });
+          };
+          editor.on('SetContent', ({ content, format, paste }: { content: string; format?: string; paste?: boolean; selection?: boolean }) => {
+            if (format === 'html' && paste && content.includes('src="')) {
+              const images = Array.from(editor.getBody().getElementsByTagName('img')).filter((img: any) => {
+                const src = img.src;
+                if (src.startsWith(baseSettings.uploadUrlPrefix)) {
+                  return false;
+                }
+                if (img.hasAttribute('data-mce-bogus')) {
+                  return false;
+                }
+                if (img.hasAttribute('data-mce-placeholder')) {
+                  return false;
+                }
+                if (!src || src === transparentSrc) {
+                  return false;
+                }
+                if (src.indexOf('blob:') === 0) {
+                  return false;
+                }
+                if (src.indexOf('data:') === 0) {
+                  return false;
+                }
+                const host = new URL(src).host;
+                for (let domain of securitySettings.ssrfList) {
+                  if (domain === '*' || host === domain || host.endsWith('.' + domain)) {
+                    return true;
+                  }
+                }
+                return false;
+              });
+              images.forEach(async (image: any) => {
+                const data = await fetchImage(image.src);
+                if (data.status === -1) {
+                  console.warn(data.message);
+                  return;
+                }
+                const resultUri = data.result.url;
+                const src = editor.convertURL(resultUri, 'src');
+                replaceUrlInUndoStack(image.src, resultUri);
+                editor.$(image).attr({
+                  src: resultUri,
+                  'data-mce-src': src,
+                });
+              });
+            }
+          });
         },
         branding: false,
       };
@@ -271,9 +348,9 @@ export default defineComponent({
       tinymce.init({ toolbar_mode: 'sliding', ...finalInit });
       mounting = false;
     };
-    watch(disabled, (disable) => {
+    watch(disabled, () => {
       if (vueEditor != null) {
-        vueEditor.setMode(disable ? 'readonly' : 'design');
+        vueEditor.setMode(disabled.value ? 'readonly' : 'design');
       }
     });
     onMounted(async () => {

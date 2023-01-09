@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-aside width="180px" class="pr-3">
-      <el-tabs v-model="type" @tab-click="({ paneName }) => tabClick(paneName)" tab-position="left" stretch class="bg-white">
+      <el-tabs v-model="type" @tab-click="({ paneName }: any) => tabClick(paneName)" tab-position="left" stretch class="bg-white">
         <el-tab-pane v-for="tp in types" :key="tp" :name="tp" :label="$t(`config.settings.${tp}`)"></el-tab-pane>
       </el-tabs>
     </el-aside>
@@ -95,6 +95,66 @@
             </el-col>
           </el-row>
         </template>
+        <template v-else-if="type === 'register'">
+          <el-row>
+            <el-col :span="12">
+              <el-form-item prop="enabled" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.register.enabled" /></template>
+                <el-switch v-model="values.enabled" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="verifyMode" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.register.verifyMode" /></template>
+                <el-select v-model="values.verifyMode">
+                  <el-option v-for="n in [1, 2, 3, 4]" :key="n" :label="t(`config.register.verifyMode.${n}`)" :value="n" />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="usernameMinLength" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.register.usernameMinLength" /></template>
+                <el-input-number v-model="values.usernameMinLength" :min="1" :max="12"></el-input-number>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="usernameMaxLength" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.register.usernameMaxLength" /></template>
+                <el-input-number v-model="values.usernameMaxLength" :min="1" :max="30"></el-input-number>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item prop="usernameRegex" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.register.usernameRegex" help /></template>
+                <el-input v-model="values.usernameRegex" maxlength="100"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="smallAvatarSize" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.register.smallAvatarSize" /></template>
+                <el-input-number v-model="values.smallAvatarSize" :min="1" :max="9999"></el-input-number>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="mediumAvatarSize" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.register.mediumAvatarSize" /></template>
+                <el-input-number v-model="values.mediumAvatarSize" :min="1" :max="9999"></el-input-number>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="largeAvatarSize" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.register.largeAvatarSize" /></template>
+                <el-input-number v-model="values.largeAvatarSize" :min="1" :max="9999"></el-input-number>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item prop="avatar" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.register.avatar" /></template>
+                <el-input v-model="values.avatar" maxlength="255"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </template>
         <template v-else-if="type === 'security' && currentUser.epRank < 1">
           <el-alert type="warning" :closable="false" :show-icon="true">
             <template #title><span v-html="$t('error.enterprise')"></span></template>
@@ -119,7 +179,7 @@
             <el-col :span="12">
               <el-form-item prop="passwordMaxLength">
                 <template #label><label-tip message="config.security.passwordMaxLength" help /></template>
-                <el-input-number v-model="values.passwordMaxLength" :min="16" :max="128" />
+                <el-input-number v-model="values.passwordMaxLength" :min="16" :max="64" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -182,6 +242,13 @@
                 </el-form-item>
               </el-col>
             </template>
+            <el-col :span="24">
+              <el-divider content-position="left"></el-divider>
+              <el-form-item prop="ssrfWhiteList">
+                <template #label><label-tip message="config.security.ssrfWhiteList" help /></template>
+                <el-input v-model="values.ssrfWhiteList" :rows="12" type="textarea" />
+              </el-form-item>
+            </el-col>
           </el-row>
         </template>
         <template v-else-if="type === 'sms'">
@@ -287,6 +354,89 @@
             </template>
           </el-row>
         </template>
+        <template v-else-if="type === 'email'">
+          <el-row>
+            <el-col :span="12">
+              <el-form-item prop="host" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.email.host" help /></template>
+                <el-input v-model="values.host" maxlength="50"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="port" :rules="{ type: 'number', min: 0, max: 65535, message: () => $t('v.range', { min: 0, max: 65535 }) }">
+                <template #label><label-tip message="config.email.port" help /></template>
+                <el-input v-model.number="values.port"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="username" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.email.username" help /></template>
+                <el-input v-model="values.username" maxlength="50"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="password" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.email.password" help /></template>
+                <el-input v-model="values.password" maxlength="50" show-password></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="from" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.email.from" help /></template>
+                <el-input v-model="values.from" maxlength="50"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="timeout" :rules="{ type: 'number', min: 0, max: 65535, message: () => $t('v.range', { min: 0, max: 65535 }) }">
+                <template #label><label-tip message="config.email.timeout" help /></template>
+                <el-input v-model.number="values.timeout"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="ssl">
+                <template #label><label-tip message="config.email.ssl" help /></template>
+                <el-switch v-model="values.ssl" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="maxPerIp">
+                <template #label><label-tip message="config.email.maxPerIp" /></template>
+                <el-input-number v-model="values.maxPerIp" :min="1" :max="99999" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="codeLength">
+                <template #label><label-tip message="config.email.codeLength" /></template>
+                <el-input-number v-model="values.codeLength" :min="4" :max="6" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="codeExpires">
+                <template #label><label-tip message="config.email.codeExpires" help /></template>
+                <el-input-number v-model="values.codeExpires" :min="3" :max="30" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item prop="subject" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.email.subject" /></template>
+                <el-input v-model="values.subject" maxlength="100"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item prop="text" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="config.email.text" help /></template>
+                <el-input v-model="values.text" :rows="3" type="textarea" maxlength="400"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-divider content-position="left">{{ $t('config.email.testEmail') }}</el-divider>
+            <el-col :span="24">
+              <el-form-item prop="testTo">
+                <template #label><label-tip message="config.email.testTo" /></template>
+                <el-input v-model="values.testTo" maxlength="50"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </template>
         <template v-else-if="type === 'uploadStorage' || type === 'htmlStorage' || type === 'templateStorage'">
           <el-row>
             <el-col :span="24">
@@ -295,7 +445,7 @@
                 :rules="[
                   { required: true, message: () => $t('v.required') },
                   {
-                    validator: (rule, value, callback) => {
+                    validator: (rule: any, value: any, callback: any) => {
                       if (value === 1 && currentUser.epRank < 1) {
                         callback($t('error.enterprise.short'));
                       }
@@ -366,7 +516,7 @@
             <el-col v-for="field in fields" :key="field.code" :span="field.double ? 12 : 24">
               <el-form-item :prop="field.code" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
                 <template #label><label-tip :label="field.name" /></template>
-                <field-item :field="field" v-model="values[field.code]"></field-item>
+                <field-item :field="field" v-model="values[field.code]" v-model:model-key="values[field.code + '_key']"></field-item>
               </el-form-item>
             </el-col>
           </el-row>
@@ -422,8 +572,11 @@
           <el-button :disabled="perm(`config:${type}:update`)" @click.prevent="handleSubmit()" type="primary" native-type="submit">
             {{ $t('save') }}
           </el-button>
-          <el-button v-if="type === 'sms' && values.provider !== 0" :disabled="perm(`config:sms:update`) || !values.testMobile?.trim()" @click="handleSendTestSms()">
+          <el-button v-if="type === 'sms' && values.provider !== 0" :disabled="perm('config:sms:update') || !values.testMobile?.trim()" @click="handleSendTestSms()">
             {{ $t('config.sms.op.testSend') }}
+          </el-button>
+          <el-button v-if="type === 'email'" :disabled="perm('config:email:update') || !values.testTo?.trim()" @click="handleSendTestEmail()">
+            {{ $t('config.email.op.testSend') }}
           </el-button>
         </div>
       </el-form>
@@ -445,15 +598,19 @@ import {
   queryConfigModel,
   queryConfig,
   queryConfigSms,
+  queryConfigEmail,
   queryUploadStorage,
   queryHtmlStorage,
   queryTemplateStorage,
   updateConfigBase,
   updateConfigCustoms,
   updateConfigUpload,
+  updateConfigRegister,
   updateConfigSecurity,
   updateConfigSms,
+  updateConfigEmail,
   sendTestSms,
+  sendTestEmail,
   updateUploadStorage,
   updateHtmlStorage,
   updateTemplateStorage,
@@ -476,8 +633,10 @@ const fields = computed(() => JSON.parse(model.value?.customs || '[]'));
 const types: string[] = [];
 if (hasPermission('config:base:update')) types.push('base');
 if (hasPermission('config:upload:update')) types.push('upload');
+if (hasPermission('config:register:update')) types.push('register');
 if (hasPermission('config:security:update') && (currentUser.epRank >= 1 || currentUser.epDisplay)) types.push('security');
 if (hasPermission('config:sms:update')) types.push('sms');
+if (hasPermission('config:email:update')) types.push('email');
 if (hasPermission('config:uploadStorage:update')) types.push('uploadStorage');
 if (hasPermission('config:htmlStorage:update')) types.push('htmlStorage');
 if (hasPermission('config:templateStorage:update')) types.push('templateStorage');
@@ -487,12 +646,16 @@ const type = ref<string>(types[0]);
 const tabClick = async (paneName?: string | number) => {
   if (paneName === 'upload') {
     values.value = config.value.upload;
+  } else if (paneName === 'register') {
+    values.value = config.value.register;
   } else if (paneName === 'security') {
     values.value = config.value.security;
   } else if (paneName === 'customs') {
     values.value = config.value.customs;
   } else if (paneName === 'sms') {
     values.value = await queryConfigSms();
+  } else if (paneName === 'email') {
+    values.value = await queryConfigEmail();
   } else if (paneName === 'uploadStorage') {
     values.value = await queryUploadStorage();
   } else if (paneName === 'htmlStorage') {
@@ -537,12 +700,16 @@ const handleSubmit = () => {
     try {
       if (type.value === 'upload') {
         await updateConfigUpload(values.value);
+      } else if (type.value === 'register') {
+        await updateConfigRegister(values.value);
       } else if (type.value === 'security') {
         await updateConfigSecurity(values.value);
       } else if (type.value === 'customs') {
         await updateConfigCustoms(values.value);
       } else if (type.value === 'sms') {
         await updateConfigSms(values.value);
+      } else if (type.value === 'email') {
+        await updateConfigEmail(values.value);
       } else if (type.value === 'uploadStorage') {
         await updateUploadStorage(values.value);
       } else if (type.value === 'htmlStorage') {
@@ -566,6 +733,23 @@ const handleSendTestSms = () => {
     buttonLoading.value = true;
     try {
       const { status, message } = await sendTestSms(values.value);
+      if (status === -1) {
+        ElMessageBox.alert(message);
+      } else {
+        ElMessage.success(t('success'));
+      }
+    } finally {
+      buttonLoading.value = false;
+    }
+    load();
+  });
+};
+const handleSendTestEmail = () => {
+  form.value.validate(async (valid: boolean) => {
+    if (!valid) return;
+    buttonLoading.value = true;
+    try {
+      const { status, message } = await sendTestEmail(values.value);
       if (status === -1) {
         ElMessageBox.alert(message);
       } else {

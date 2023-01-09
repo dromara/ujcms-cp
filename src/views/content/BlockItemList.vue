@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-aside width="180px" class="pr-3">
-      <el-tabs v-model="blockId" @tab-click="fetchData()" tab-position="left" stretch class="bg-white">
+      <el-tabs v-model="blockId" tab-position="left" stretch class="bg-white">
         <el-tab-pane v-for="block in blockList" :key="block.id" :name="String(block.id)" :label="block.name"></el-tab-pane>
       </el-tabs>
     </el-aside>
@@ -26,8 +26,8 @@
           ref="table"
           v-loading="loading"
           :data="data"
-          @selection-change="(rows) => (selection = rows)"
-          @row-dblclick="(row) => handleEdit(row.id)"
+          @selection-change="(rows: any) => (selection = rows)"
+          @row-dblclick="(row: any) => handleEdit(row.id)"
           @sort-change="handleSort"
         >
           <column-list name="blockItem">
@@ -35,19 +35,39 @@
             <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
             <el-table-column property="title" :label="$t('blockItem.title')" sortable="custom" min-width="200" show-overflow-tooltip></el-table-column>
             <el-table-column property="image" :label="$t('blockItem.image')">
-              <template #default="{ row }">
-                <el-image v-if="!!row.image" :src="row.image" fit="contain" :preview-src-list="[row.image, row.mobileImage]" style="width: 100px; height: 100px"></el-image>
+              <template #default="{ row, $index }">
+                <el-image
+                  v-if="!!row.image"
+                  :src="row.image"
+                  fit="contain"
+                  :preview-src-list="previewSrcList"
+                  :initial-index="$index"
+                  preview-teleported
+                  class="w-32 h-32"
+                ></el-image>
               </template>
             </el-table-column>
             <el-table-column property="mobileImage" :label="$t('blockItem.mobileImage')" display="none">
-              <template #default="{ row }">
+              <template #default="{ row, $index }">
                 <el-image
                   v-if="!!row.mobileImage"
                   :src="row.mobileImage"
                   fit="contain"
-                  :preview-src-list="[row.mobileImage, row.image]"
-                  style="width: 100px; height: 100px"
+                  :preview-src-list="mobilePreviewSrcList"
+                  :initial-index="$index"
+                  preview-teleported
+                  class="w-32 h-32"
                 ></el-image>
+              </template>
+            </el-table-column>
+            <el-table-column property="targetBlank" :label="$t('blockItem.targetBlank')" sortable="custom" width="120">
+              <template #default="{ row }">
+                <el-switch v-model="row.targetBlank" :disabled="perm('blockItem:update')" @change="(targetBlank: boolean) => handleUpdate({ ...row, targetBlank })" />
+              </template>
+            </el-table-column>
+            <el-table-column property="enabled" :label="$t('enable')" sortable="custom" width="100">
+              <template #default="{ row }">
+                <el-switch v-model="row.enabled" :disabled="perm('blockItem:update')" @change="(enabled: boolean) => handleUpdate({ ...row, enabled })" />
               </template>
             </el-table-column>
             <el-table-column :label="$t('table.action')">
@@ -73,14 +93,14 @@ export default { name: 'BlockItemList' };
 </script>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, watch, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Delete, Plus } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import { perm } from '@/store/useCurrentUser';
 import { moveList, toParams, resetParams } from '@/utils/common';
 import { queryBlockList } from '@/api/config';
-import { deleteBlockItem, queryBlockItemList, updateBlockItemOrder } from '@/api/content';
+import { deleteBlockItem, queryBlockItemList, updateBlockItem, updateBlockItemOrder } from '@/api/content';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import ListMove from '@/components/ListMove.vue';
@@ -100,6 +120,8 @@ const filtered = ref<boolean>(false);
 const blockList = ref<any[]>([]);
 const blockId = ref<string>();
 const block = computed(() => blockList.value.find((item) => item.id === Number(blockId.value)));
+const previewSrcList = computed(() => data.value.map((it) => it.image));
+const mobilePreviewSrcList = computed(() => data.value.map((it) => it.mobileImage));
 const fetchData = async () => {
   loading.value = true;
   try {
@@ -113,9 +135,11 @@ const fetchBlockList = async () => {
   blockList.value = await queryBlockList();
   blockId.value = String(blockList.value[0].id);
 };
+
+watch(blockId, () => fetchData());
+
 onMounted(async () => {
   await fetchBlockList();
-  fetchData();
 });
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
@@ -141,6 +165,11 @@ const handleAdd = () => {
 const handleEdit = (id: number) => {
   beanId.value = id;
   formVisible.value = true;
+};
+const handleUpdate = async (bean: any) => {
+  await updateBlockItem(bean);
+  fetchData();
+  ElMessage.success(t('success'));
 };
 const handleDelete = async (ids: number[]) => {
   await deleteBlockItem(ids);

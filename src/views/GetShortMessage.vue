@@ -11,7 +11,22 @@
   >
     <el-form ref="form" :model="bean" label-width="150px" label-position="right">
       <el-alert v-if="error" :title="error" type="error" class="mb-3" :closable="false" show-icon />
-      <el-form-item prop="mobile" :label="$t('mobile')" :rules="[{ required: true, message: () => $t('v.required') }]">
+      <el-form-item
+        prop="mobile"
+        :label="$t('mobile')"
+        :rules="[
+          { required: true, message: () => $t('v.required') },
+          {
+            asyncValidator: async (rule, value, callback) => {
+              if (await mobileNotExist(value)) {
+                callback($t('mobileNotExist'));
+              }
+              callback();
+            },
+            trigger: 'blur',
+          },
+        ]"
+      >
         <el-input v-model="bean.mobile" ref="focus" maxlength="30"></el-input>
       </el-form-item>
       <el-form-item
@@ -49,14 +64,15 @@ export default { name: 'GetShortMessage' };
 </script>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, toRefs, onMounted, watch } from 'vue';
 import { Picture } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { tryCaptcha, queryCaptcha, queryShortMessage } from '@/api/login';
+import { tryCaptcha, mobileNotExist, queryCaptcha, sendMobileMessage } from '@/api/login';
 
-defineProps({ modelValue: { type: Boolean, required: true } });
+const props = defineProps({ modelValue: { type: Boolean, required: true } });
 const emit = defineEmits({ 'update:modelValue': null, finish: null });
+const { modelValue: visible } = toRefs(props);
 const { t } = useI18n();
 const form = ref<any>();
 const focus = ref<any>();
@@ -73,8 +89,10 @@ const fetchCaptcha = async () => {
   captchaToken.value = token;
 };
 
-onMounted(async () => {
-  fetchCaptcha();
+watch(visible, () => {
+  if (visible.value) {
+    fetchCaptcha();
+  }
 });
 
 const handleSubmit = () => {
@@ -82,7 +100,8 @@ const handleSubmit = () => {
     if (!valid) return;
     buttonLoading.value = true;
     try {
-      const data = await queryShortMessage(captchaToken.value ?? '', bean.value.captcha, bean.value.mobile);
+      const data = await sendMobileMessage(captchaToken.value ?? '', bean.value.captcha, bean.value.mobile, 3);
+      console.log(data);
       // 登录失败，显示错误信息
       if (data.status !== 0) {
         error.value = data.message;
@@ -91,7 +110,7 @@ const handleSubmit = () => {
       error.value = undefined;
       form.value.resetFields();
       ElMessage.success(t('success'));
-      emit('finish', data.result.token);
+      emit('finish', data.result.shortMessageId);
       emit('update:modelValue', false);
     } finally {
       buttonLoading.value = false;

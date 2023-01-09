@@ -24,7 +24,7 @@
           node-key="id"
           highlight-current
           @node-click="
-            (node) => {
+            (node: any) => {
               channel = node;
               handleSearch();
             }
@@ -80,8 +80,8 @@
           ref="table"
           v-loading="tableLoading"
           :data="data"
-          @selection-change="(rows) => (selection = rows)"
-          @row-dblclick="(row) => handleEdit(row.id)"
+          @selection-change="(rows: any) => (selection = rows)"
+          @row-dblclick="(row: any) => handleEdit(row.id)"
           @sort-change="handleSort"
         >
           <column-list name="article">
@@ -90,7 +90,20 @@
             <el-table-column property="title" :label="$t('article.title')" min-width="280" sort-by="@articleExt-title" sortable="custom">
               <template #default="{ row }">
                 <el-link :href="row.url" :underline="false" target="_blank">{{ row.title }}</el-link>
-                <el-tag v-for="item in row.blockItemList" :key="item.id" @close="handleBlockItemDelete(item.id)" size="small" class="ml-1" closable>{{ item.block.name }}</el-tag>
+                <el-tag
+                  v-for="item in row.blockItemList"
+                  :key="item.id"
+                  @close="handleBlockItemDelete(item.id)"
+                  :type="item.enabled ? undefined : 'info'"
+                  size="small"
+                  class="ml-1"
+                  closable
+                >
+                  {{ item.block.name }}
+                </el-tag>
+                <el-tag v-if="row.sticky > 0" @close="cancelSticky(row.id)" type="danger" class="mx-1" effect="light" size="small" round :closable="!perm('article:sticky')">
+                  {{ row.sticky }}
+                </el-tag>
               </template>
             </el-table-column>
             <el-table-column property="channel.name" :label="$t('article.channel')" sortable="custom" show-overflow-tooltip></el-table-column>
@@ -98,7 +111,7 @@
             <el-table-column property="author" :label="$t('article.author')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
             <el-table-column property="editor" :label="$t('article.editor')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
             <el-table-column property="source" :label="$t('article.source')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
-            <el-table-column property="user.username" :label="$t('article.user')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
+            <el-table-column property="user.username" :label="$t('article.user')" sort-by="user-username" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
             <el-table-column property="created" :label="$t('article.created')" min-width="120" sortable="custom" display="none" show-overflow-tooltip>
               <template #default="{ row }">{{ dayjs(row.created).format('YYYY-MM-DD HH:mm') }}</template>
             </el-table-column>
@@ -187,11 +200,15 @@
                   <template #dropdown>
                     <div>
                       <el-dropdown-menu>
+                        <el-dropdown-item :disabled="perm('article:sticky')" @click="handleSticky(row.id, row.sticky)">
+                          <span class="text-xs">{{ $t('article.op.sticky') }}</span>
+                        </el-dropdown-item>
                         <el-dropdown-item
-                          v-for="item in blockList.filter((it) => it.enabled && it.recommendable)"
+                          v-for="(item, index) in blockList.filter((it) => it.enabled && it.recommendable)"
                           :key="item.id"
-                          @click="recommendTo(item.id, row.id, row.title, row.description)"
+                          @click="recommendTo(item.id, row)"
                           :disabled="row.blocks.findIndex((block: any) => block.id === item.id) >= 0"
+                          :divided="index === 0"
                         >
                           <span class="text-xs"> {{ `${$t('article.op.recommendTo')}: ${item.name}` }} </span>
                         </el-dropdown-item>
@@ -226,6 +243,8 @@
         :articleId="recommendArticleId"
         :title="recommendTitle"
         :description="recommendDescription"
+        :video="recommendVideo"
+        :images="recommendImages"
         @finished="fetchData"
       />
       <process-task-list :instanceId="instanceId" v-model="taskListVisible" />
@@ -239,15 +258,27 @@ export default { name: 'ArticleList' };
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Cpu, MoreFilled } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
+import * as htmlparser2 from 'htmlparser2';
+import * as domutils from 'domutils';
 import { perm, currentUser } from '@/store/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
 import { toTree } from '@/utils/tree';
 import { queryBlockList } from '@/api/config';
-import { deleteArticle, submitArticle, archiveArticle, offlineArticle, completelyDeleteArticle, queryArticlePage, queryChannelList, deleteBlockItem } from '@/api/content';
+import {
+  deleteArticle,
+  submitArticle,
+  archiveArticle,
+  offlineArticle,
+  completelyDeleteArticle,
+  stickyArticle,
+  queryArticlePage,
+  queryChannelList,
+  deleteBlockItem,
+} from '@/api/content';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import ArticleForm from './ArticleForm.vue';
@@ -273,6 +304,8 @@ const recommendBlockId = ref<number>();
 const recommendArticleId = ref<number>();
 const recommendTitle = ref<string>();
 const recommendDescription = ref<string>();
+const recommendVideo = ref<string>();
+const recommendImages = ref<string[]>();
 
 const channelTree = ref<any>();
 const channelTreeData = ref<any[]>([]);
@@ -394,12 +427,20 @@ const handleEdit = (id: number) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const recommendTo = (blockId: number, articleId: number, title: string, description: string) => {
+const recommendTo = (blockId: number, article: any) => {
   recommendVisible.value = true;
   recommendBlockId.value = blockId;
-  recommendArticleId.value = articleId;
-  recommendTitle.value = title;
-  recommendDescription.value = description;
+  recommendArticleId.value = article.id;
+  recommendTitle.value = article.title;
+  recommendDescription.value = article.description;
+  recommendVideo.value = article.video;
+  const dom = htmlparser2.parseDocument(article.text);
+  const imgs = domutils.getElementsByTagName('img', dom);
+  const urls = imgs.map((img: any) => domutils.getAttributeValue(img, 'src')).filter((src: string | undefined) => src != null) as string[];
+  recommendImages.value = [...(article.imageList?.map((img: any) => img.url) ?? []), ...urls];
+  if (article.image) {
+    recommendImages.value.push(article.image);
+  }
 };
 const handleBlockItemDelete = async (blockItemId: number) => {
   await deleteBlockItem([blockItemId]);
@@ -409,5 +450,22 @@ const handleBlockItemDelete = async (blockItemId: number) => {
 const handleTask = (id: string) => {
   instanceId.value = id;
   taskListVisible.value = true;
+};
+const handleSticky = async (id: number, sticky: number) => {
+  const { value } = await ElMessageBox.prompt(`${t('article.sticky')} (${t('article.sticky.tooltip')})`, {
+    confirmButtonText: t('ok'),
+    cancelButtonText: t('cancel'),
+    inputValue: String(sticky < 1 ? 1 : sticky),
+    inputPattern: /^\d{1,3}$/,
+    inputErrorMessage: t('article.error.sticky'),
+  });
+  await stickyArticle([id], Number(value));
+  fetchData();
+  ElMessage.success(t('success'));
+};
+const cancelSticky = async (id: number) => {
+  await stickyArticle([id], 0);
+  fetchData();
+  ElMessage.success(t('success'));
 };
 </script>

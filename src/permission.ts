@@ -1,5 +1,5 @@
 import NProgress from 'nprogress';
-import 'nprogress/nprogress.css';
+import 'nprogress/nprogress.css?inline';
 import { RouteLocationNormalized } from 'vue-router';
 import i18n from '@/i18n';
 import { getAccessToken } from '@/utils/auth';

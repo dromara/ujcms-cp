@@ -1,6 +1,6 @@
 import { reactive, readonly } from 'vue';
 import { RouteRecordRaw } from 'vue-router';
-import { Action, ElMessageBox, MessageBoxState, useRestoreActive } from 'element-plus';
+import { Action, ElMessageBox, MessageBoxState } from 'element-plus';
 import i18n from '@/i18n';
 import { sm2Encrypt } from '@/utils/sm';
 import { queryClientPublicKey } from '@/api/login';
@@ -30,6 +30,8 @@ export interface CurrentUser {
   permissions?: string[];
   grantPermissions?: string[];
   globalPermission: boolean;
+  allChannelPermission: boolean;
+  allArticlePermission: boolean;
   loginDate?: Date;
   loginIp?: string;
   epExcludes: string[];
@@ -38,7 +40,16 @@ export interface CurrentUser {
   epActivated: boolean;
 }
 
-const defaultUser: CurrentUser = { rank: 32767, globalPermission: false, epExcludes: [], epDisplay: false, epRank: 0, epActivated: false };
+const defaultUser: CurrentUser = {
+  rank: 32767,
+  globalPermission: false,
+  allChannelPermission: true,
+  allArticlePermission: true,
+  epExcludes: [],
+  epDisplay: false,
+  epRank: 0,
+  epActivated: false,
+};
 
 const state = reactive<CurrentUser>(defaultUser);
 
@@ -152,6 +163,7 @@ const runRefreshToken = async () => {
   setRefreshAt(now);
   const data = await accountRefreshToken({ refreshToken });
   if (data.status !== 0) {
+    removeRefreshToken();
     return;
   }
   const { result } = data;
@@ -180,6 +192,8 @@ export const fetchCurrentUser = async (): Promise<any> => {
       permissions: user.permissions,
       grantPermissions: user.grantPermissions,
       globalPermission: user.globalPermission,
+      allChannelPermission: user.allChannelPermission,
+      allArticlePermission: user.allArticlePermission,
       loginDate: user.loginDate,
       loginIp: user.loginIp,
       epExcludes: user.epExcludes,
@@ -189,6 +203,7 @@ export const fetchCurrentUser = async (): Promise<any> => {
     });
   } else {
     removeAccessToken();
+    removeRefreshToken();
   }
   return user;
 };

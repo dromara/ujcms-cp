@@ -122,6 +122,49 @@
               </el-alert>
             </template>
           </el-tab-pane>
+          <el-tab-pane v-if="currentUser.epRank >= 1 || currentUser.epDisplay" :label="$t('role.channelPermission')" name="channelPermission">
+            <template v-if="currentUser.epRank >= 1">
+              <el-form-item prop="allChannelPermission">
+                <template #label><label-tip message="role.allChannelPermission" help /></template>
+                <el-switch v-model="values.allChannelPermission"></el-switch>
+              </el-form-item>
+              <template v-if="!values.allChannelPermission">
+                <div class="border-t">
+                  <el-checkbox
+                    v-model="channelPermissionExpand"
+                    @change="(checked: any) => expandTree(checked, channelPermissionTree, channelData, 'id')"
+                    :label="$t('expand/collapse')"
+                  />
+                  <el-checkbox
+                    v-model="channelPermissionCheck"
+                    @change="
+                      (checked: any) => {
+                        checkTree(checked, channelPermissionTree, flatTree(channelData), 'id');
+                        handleChannelPermission();
+                      }
+                    "
+                    :label="$t('checkAll/uncheckAll')"
+                  />
+                </div>
+                <el-tree
+                  ref="channelPermissionTree"
+                  :data="channelData"
+                  node-key="id"
+                  @check="handleChannelPermission()"
+                  :props="{ label: 'name' }"
+                  class="border rounded"
+                  check-strictly
+                  default-expand-all
+                  show-checkbox
+                />
+              </template>
+            </template>
+            <template v-else>
+              <el-alert type="warning" :closable="false" :show-icon="true">
+                <template #title><span v-html="$t('error.enterprise.short')"></span></template>
+              </el-alert>
+            </template>
+          </el-tab-pane>
         </el-tabs>
       </el-form>
     </template>
@@ -148,9 +191,9 @@ import { ref, watch, computed, onMounted, toRefs, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { getPermsTreeData } from '@/data';
-import { toTree, disablePermissionTree } from '@/utils/tree';
+import { toTree, flatTree, disablePermissionTree } from '@/utils/tree';
 import { currentUser } from '@/store/useCurrentUser';
-import { queryRole, updateRolePermission, roleArticlePermissions } from '@/api/user';
+import { queryRole, updateRolePermission, roleArticlePermissions, roleChannelPermissions } from '@/api/user';
 import { queryChannelList } from '@/api/content';
 import LabelTip from '@/components/LabelTip.vue';
 
@@ -174,6 +217,9 @@ const grantPermissionTree = ref<any>();
 const articlePermissionExpand = ref<boolean>(true);
 const articlePermissionCheck = ref<boolean>(false);
 const articlePermissionTree = ref<any>();
+const channelPermissionExpand = ref<boolean>(true);
+const channelPermissionCheck = ref<boolean>(false);
+const channelPermissionTree = ref<any>();
 const permsData: any[] = getPermsTreeData();
 disablePermissionTree(permsData, currentUser.grantPermissions ?? []);
 const channelData = ref<any[]>([]);
@@ -197,6 +243,14 @@ const fetchArticlePermissions = async () => {
     });
   }
 };
+const fetchChannelPermissions = async () => {
+  if (beanId?.value != null) {
+    const channelPermissions = await roleChannelPermissions(beanId.value);
+    channelPermissions.forEach((key: number) => {
+      channelPermissionTree.value?.setChecked(key, true, false);
+    });
+  }
+};
 const fetchChannelData = async () => {
   channelData.value = toTree(await queryChannelList());
 };
@@ -206,6 +260,7 @@ watch(visible, async () => {
     // 要等待获取Role之后，再设置文章权限，否则切换不同角色时，文章权限无法正常赋值
     await fetchRole();
     fetchArticlePermissions();
+    fetchChannelPermissions();
   }
 });
 onMounted(() => {
@@ -220,6 +275,7 @@ const handleSubmit = () => {
       handlePermission();
       handleGrantPermission();
       handleArticlePermission();
+      handleChannelPermission();
       await updateRolePermission(values.value);
       emit('finished');
       emit('update:modelValue', false);
@@ -255,6 +311,11 @@ const handleGrantPermission = () => {
 const handleArticlePermission = () => {
   if (articlePermissionTree.value != null) {
     values.value.articlePermissions = [...articlePermissionTree.value.getCheckedNodes(), ...articlePermissionTree.value.getHalfCheckedNodes()].map((item) => item.id);
+  }
+};
+const handleChannelPermission = () => {
+  if (channelPermissionTree.value != null) {
+    values.value.channelPermissions = [...channelPermissionTree.value.getCheckedNodes(), ...channelPermissionTree.value.getHalfCheckedNodes()].map((item) => item.id);
   }
 };
 const getPermission = (checkedNodes: any[], halfCheckedNodes: any[]) =>

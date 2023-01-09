@@ -26,8 +26,8 @@
           ref="table"
           v-loading="loading"
           :data="data"
-          @selection-change="(rows) => (selection = rows)"
-          @row-dblclick="(row) => handleEdit(row.id)"
+          @selection-change="(rows: any) => (selection = rows)"
+          @row-dblclick="(row: any) => handleEdit(row.id)"
           @sort-change="handleSort"
         >
           <column-list name="dict">
@@ -40,11 +40,11 @@
                 <el-tag :type="row.enabled ? 'success' : 'info'" size="small">{{ $t(row.enabled ? 'yes' : 'no') }}</el-tag>
               </template>
             </el-table-column>
-          <el-table-column property="sys" :label="$t('dict.sys')" sortable="custom">
-            <template #default="{ row }">
-              <el-tag :type="row.sys ? 'success' : 'info'" size="small">{{ $t(row.sys ? 'yes' : 'no') }}</el-tag>
-            </template>
-          </el-table-column>
+            <el-table-column property="sys" :label="$t('dict.sys')" sortable="custom">
+              <template #default="{ row }">
+                <el-tag :type="row.sys ? 'success' : 'info'" size="small">{{ $t(row.sys ? 'yes' : 'no') }}</el-tag>
+              </template>
+            </el-table-column>
             <el-table-column :label="$t('table.action')">
               <template #default="{ row }">
                 <el-button type="primary" :disabled="perm('dict:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>

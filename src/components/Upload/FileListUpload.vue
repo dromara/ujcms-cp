@@ -5,10 +5,11 @@
       :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
       :accept="accept"
       :before-upload="beforeUpload"
-      :on-success="(res) => fileList.push({ name: res.name, url: res.url, length: res.size })"
-      :on-progress="(event, file) => (progressFile = file)"
+      :on-success="(res: any) => fileList.push({ name: res.name, url: res.url, length: res.size })"
+      :on-progress="(event: any, file: any) => (progressFile = file)"
       :on-error="onError"
       :show-file-list="false"
+      :disabled="disabled"
       multiple
       drag
     >

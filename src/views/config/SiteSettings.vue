@@ -49,12 +49,28 @@
             </el-col>
           </el-row>
         </template>
+        <template v-else-if="type === 'messageBoard'">
+          <el-row>
+            <el-col :span="12">
+              <el-form-item prop="enabled" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.messageBoard.enabled" /></template>
+                <el-switch v-model="values.enabled"></el-switch>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="loginRequired" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.messageBoard.loginRequired" /></template>
+                <el-switch v-model="values.loginRequired"></el-switch>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </template>
         <template v-else-if="type === 'customs'">
           <el-row>
             <el-col v-for="field in fields" :key="field.code" :span="field.double ? 12 : 24">
               <el-form-item :prop="field.code" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
                 <template #label><label-tip :label="field.name" /></template>
-                <field-item :field="field" v-model="values[field.code]"></field-item>
+                <field-item :field="field" v-model="values[field.code]" v-model:model-key="values[field.code + '_key']"></field-item>
               </el-form-item>
             </el-col>
           </el-row>
@@ -182,7 +198,15 @@ import { onMounted, ref, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { toTree } from '@/utils/tree';
-import { querySiteSettings, updateSiteBaseSettings, updateSiteWatermarkSettings, updateSiteCustomsSettings, queryCurrentSiteThemeList, queryModelList } from '@/api/config';
+import {
+  querySiteSettings,
+  updateSiteBaseSettings,
+  updateSiteWatermarkSettings,
+  updateSiteMessageBoardSettings,
+  updateSiteCustomsSettings,
+  queryCurrentSiteThemeList,
+  queryModelList,
+} from '@/api/config';
 import { queryOrgList } from '@/api/user';
 import { perm, hasPermission } from '@/store/useCurrentUser';
 import LabelTip from '@/components/LabelTip.vue';
@@ -207,12 +231,15 @@ const fields = computed(() => JSON.parse(model.value?.customs || '[]'));
 const types: string[] = [];
 if (hasPermission('siteSettings:base:update')) types.push('base');
 if (hasPermission('siteSettings:watermark:update')) types.push('watermark');
+if (hasPermission('siteSettings:messageBoard:update')) types.push('messageBoard');
 if (hasPermission('siteSettings:customs:update')) types.push('customs');
 const type = ref<string>(types[0]);
 
 const tabClick = (paneName?: string | number) => {
   if (paneName === 'watermark') {
     values.value = site.value.watermark;
+  } else if (paneName === 'messageBoard') {
+    values.value = site.value.messageBoard;
   } else if (paneName === 'customs') {
     values.value = site.value.customs;
   } else {
@@ -257,6 +284,8 @@ const handleSubmit = () => {
     try {
       if (type.value === 'watermark') {
         await updateSiteWatermarkSettings(values.value);
+      } else if (type.value === 'messageBoard') {
+        await updateSiteMessageBoardSettings(values.value);
       } else if (type.value === 'customs') {
         await updateSiteCustomsSettings(values.value);
       } else {

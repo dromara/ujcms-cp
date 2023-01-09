@@ -12,6 +12,10 @@
 .el-dialog__body {
   padding-top: 10px;
 }
+// drawer header 下边距太大，再加上drawer body的padding，内容被挤的太靠下。原32px改为4px。
+.el-drawer__header {
+  margin-bottom: 4px;
+}
 // Popconfirm 使用p的默认上下margin，但p的margin被tailwind默认样式设置为0。
 .el-popconfirm__main {
   margin-top: 14px;
