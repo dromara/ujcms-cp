@@ -20,22 +20,22 @@ import useResizeHandler from './composables/useResizeHandler';
 useResizeHandler();
 const showMask = computed(() => appState.sidebar);
 const classObj = computed(() => ({
-  expand: appState.sidebar,
-  collapse: !appState.sidebar,
+  sidebarExpand: appState.sidebar,
+  sidebarCollapse: !appState.sidebar,
 }));
 </script>
 
 <style lang="scss" scoped>
-.expand .sidebar {
+.sidebarExpand .sidebar {
   @apply w-sidebar;
 }
-.expand .main {
+.sidebarExpand .main {
   @apply ml-0 md:ml-sidebar;
 }
-.collapse .sidebar {
+.sidebarCollapse .sidebar {
   @apply w-0 md:w-sidebar-collapse;
 }
-.collapse .main {
+.sidebarCollapse .main {
   @apply ml-0 md:ml-sidebar-collapse;
 }
 </style>

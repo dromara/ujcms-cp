@@ -1,9 +1,9 @@
 <template>
-  <el-drawer :title="$t('permissionSettings')" :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" :size="576">
+  <el-drawer :title="$t('permissionSettings')" :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" :size="768">
     <template #default>
       <el-form ref="form" :model="values" :disabled="disabled" label-width="150px">
         <el-form-item prop="roleIds">
-          <template #label><label-tip message="user.role" /></template>
+          <template #label><label-tip message="user.role" help/></template>
           <el-checkbox-group v-model="values.roleIds">
             <el-checkbox v-for="item in roleList" :key="item.id" :label="item.id" :disabled="values.rank > item.rank">{{ `${item.name}(${item.rank})` }}</el-checkbox>
           </el-checkbox-group>

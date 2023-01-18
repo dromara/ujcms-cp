@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { computed, ref, toRefs, PropType } from 'vue';
 import Cropper from 'cropperjs';
-import 'cropperjs/dist/cropper.css?inline';
+import 'cropperjs/dist/cropper.css';
 import { cropImage, cropAvatar } from '@/api/config';
 
 const props = defineProps({

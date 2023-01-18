@@ -61,6 +61,7 @@
                 asyncValidator: async (rule:any, value:any, callback:any) => {
                   if (value !== bean.username && (await usernameExist(value))) {
                     callback($t('user.error.usernameExist'));
+                    return;
                   }
                   callback();
                 },
@@ -84,6 +85,7 @@
                 asyncValidator: async (rule:any, value:any, callback:any) => {
                   if (value !== bean.mobile && (await mobileExist(value))) {
                     callback($t('user.error.mobileExist'));
+                    return;
                   }
                   callback();
                 },
@@ -102,6 +104,7 @@
                 asyncValidator: async (rule:any, value:any, callback:any) => {
                   if (value !== bean.email && (await emailExist(value))) {
                     callback($t('user.error.emailExist'));
+                    return;
                   }
                   callback();
                 },

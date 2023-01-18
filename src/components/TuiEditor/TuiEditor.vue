@@ -22,12 +22,12 @@ import Prism from 'prismjs';
 import { addImageBlobHook, toggleFullScreen, clickOutside } from './utils';
 import '@toast-ui/editor/dist/i18n/zh-cn';
 import '@toast-ui/editor/dist/i18n/zh-tw';
-import '@toast-ui/editor/dist/toastui-editor.css?inline';
-import '@toast-ui/chart/dist/toastui-chart.css?inline';
-import 'prismjs/themes/prism.css?inline';
+import '@toast-ui/editor/dist/toastui-editor.css';
+import '@toast-ui/chart/dist/toastui-chart.css';
+import 'prismjs/themes/prism.css';
 import 'prismjs/components/prism-clojure.js';
-import '@toast-ui/editor-plugin-code-syntax-highlight/dist/toastui-editor-plugin-code-syntax-highlight.css?inline';
-import '@toast-ui/editor-plugin-table-merged-cell/dist/toastui-editor-plugin-table-merged-cell.css?inline';
+import '@toast-ui/editor-plugin-code-syntax-highlight/dist/toastui-editor-plugin-code-syntax-highlight.css';
+import '@toast-ui/editor-plugin-table-merged-cell/dist/toastui-editor-plugin-table-merged-cell.css';
 
 const props = defineProps({
   modelValue: { type: String, default: '' },

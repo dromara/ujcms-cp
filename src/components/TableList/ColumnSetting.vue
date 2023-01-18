@@ -3,7 +3,7 @@
     <el-tooltip :content="$t('table.columnsSetting')" placement="top">
       <el-icon class="cursor-pointer text-lg text-gray-regular" @click="visible = true"><Setting /></el-icon>
     </el-tooltip>
-    <el-drawer v-model="visible" :title="$t('table.columnsSetting')" :size="280">
+    <el-drawer v-model="visible" :title="$t('table.columnsSetting')" :size="375">
       <el-button @click="resetColumns" class="mb-1" round>{{ $t('reset') }}</el-button>
       <ul>
         <li v-for="(column, index) in settings" :key="column.title" :divided="index === 0">

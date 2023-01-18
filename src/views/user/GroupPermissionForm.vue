@@ -76,7 +76,6 @@ const accessPermissionCheck = ref<boolean>(false);
 const accessPermissionTree = ref<any>();
 const channelData = ref<any[]>([]);
 
-const roleList = ref<any[]>([]);
 const disabled = computed(() => currentUser.rank > bean.value.rank);
 const fetchGroup = async () => {
   if (beanId?.value != null) {
@@ -90,6 +89,7 @@ const fetchChannelData = async () => {
 const fetchAccessPermissions = async () => {
   if (beanId?.value != null) {
     const accessPermissions = await groupAccessPermissions(beanId.value);
+    accessPermissionTree.value?.setCheckedKeys([]);
     accessPermissions.forEach((key: number) => {
       accessPermissionTree.value?.setChecked(key, true, false);
     });

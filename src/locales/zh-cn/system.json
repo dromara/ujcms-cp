@@ -56,6 +56,7 @@
   "processModel.version": "版本",
   "processModel.createTime": "创建时间",
   "processModel.lastUpdateTime": "更新时间",
+  "processModel.error.key": "必须以字母开头，由字母、数字、中划线、下划线组成",
 
   "processInstance.op.task": "审核过程",
   "processInstance.name": "名称",

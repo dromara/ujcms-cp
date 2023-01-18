@@ -60,6 +60,7 @@ export function getPermsTreeData(): any[] {
           children: [
             { label: t('list'), key: 'article:page' },
             { label: t('add'), key: 'article:create', perms: ['article:create', 'article.submit', 'jodConvert:doc', 'jodConvert:library'] },
+            { label: t('view'), key: 'article:show', perms: ['article:show'] },
             { label: t('edit'), key: 'article:update', perms: ['article:update', 'article.submit', 'article:show', 'jodConvert:doc', 'jodConvert:library'] },
             { label: t('article.op.sticky'), key: 'article:sticky', perms: ['article:sticky'] },
             { label: t('article.op.submit'), key: 'article:submit', perms: ['article:submit'] },
@@ -348,7 +349,7 @@ export function getPermsTreeData(): any[] {
           children: [
             { label: t('list'), key: 'processModel:page' },
             { label: t('add'), key: 'processModel:create', perms: ['processModel:create'] },
-            { label: t('edit'), key: 'processModel:update', perms: ['processModel:update', 'processModel:show'] },
+            { label: t('edit'), key: 'processModel:update', perms: ['processModel:update', 'processModel:show', 'processModel:validate'] },
             { label: t('processModel.op.deploy'), key: 'processModel:deploy', perms: ['processModel:deploy'] },
             { label: t('delete'), key: 'processModel:delete', perms: ['processModel:delete', 'processDefinition:delete'] },
           ],

@@ -448,6 +448,7 @@
                     validator: (rule: any, value: any, callback: any) => {
                       if (value === 1 && currentUser.epRank < 1) {
                         callback($t('error.enterprise.short'));
+                        return;
                       }
                       callback();
                     },
@@ -457,7 +458,7 @@
                 <template #label><label-tip message="config.storage.type" /></template>
                 <el-select v-model="values.type" class="w-full">
                   <el-option
-                    v-for="n in [0, 1].filter((item) => item !== 1 || currentUser.epRank > 0 || currentUser.epDisplay)"
+                    v-for="n in [0, 1].filter((item) => item !== 1 || currentUser.epRank > 2 || currentUser.epDisplay)"
                     :key="n"
                     :value="n"
                     :label="$t(`config.storage.type.${n}`)"

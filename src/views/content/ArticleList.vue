@@ -193,6 +193,13 @@
                     <el-button type="primary" :disabled="perm('article:delete')" size="small" link>{{ $t('delete') }}</el-button>
                   </template>
                 </el-popconfirm>
+                <!--
+                <el-popconfirm :title="$t('confirmCompletelyDelete')" @confirm="handleExecute('completelyDelete', [row.id])">
+                  <template #reference>
+                    <el-button type="primary" :disabled="perm('article:completelyDelete')" size="small" link>{{ $t('completelyDelete') }}</el-button>
+                  </template>
+                </el-popconfirm>
+                 -->
                 <el-dropdown class="ml-2 align-middle">
                   <el-button type="primary" size="small" link>
                     <el-icon class="text-primary"><MoreFilled /></el-icon>
@@ -315,7 +322,7 @@ const channel = ref<any>();
 const instanceId = ref<string>();
 const taskListVisible = ref<boolean>(false);
 
-const batchActions = ['delete', 'submit', 'archive', 'offline', 'completelyDelete'];
+const batchActions = ['completelyDelete', 'delete', 'submit', 'archive', 'offline'];
 const batchAction = ref<string>(batchActions[0]);
 
 const selectable = (bean: any): boolean => {

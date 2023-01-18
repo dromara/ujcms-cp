@@ -51,6 +51,7 @@
                 asyncValidator: async (rule: any, value: any, callback: any) => {
                   if (value !== bean.alias && (await blockAliasExist(value, values.scope))) {
                     callback($t('block.error.aliasExist'));
+                    return;
                   }
                   callback();
                 },
@@ -70,6 +71,7 @@
                 asyncValidator: async (rule: any, value: any, callback: any) => {
                   if (value !== bean.scope && await blockScopeNotAllowed(values.scope)) {
                     callback($t('block.error.scopeNotAllowd'));
+                    return;
                   }
                   callback();
                 },

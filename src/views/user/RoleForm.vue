@@ -37,6 +37,7 @@
             validator: (rule, value, callback) => {
               if ([1, 2, 3].includes(value) && currentUser.epRank < 1) {
                 callback($t('error.enterprise.short'));
+                return;
               }
               callback();
             },
@@ -57,6 +58,7 @@
             asyncValidator: async (rule: any, value: any, callback: any) => {
               if (value !== bean.scope && await roleScopeNotAllowed(values.scope)) {
                 callback($t('role.error.scopeNotAllowd'));
+                return;
               }
               callback();
             },

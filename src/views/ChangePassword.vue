@@ -40,6 +40,7 @@
             validator: (rule:any, value:any, callback:any) => {
               if (value !== values.newPassword) {
                 callback($t('user.error.passwordNotMatch'));
+                return;
               }
               callback();
             },

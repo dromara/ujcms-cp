@@ -238,6 +238,7 @@ const fetchRole = async () => {
 const fetchArticlePermissions = async () => {
   if (beanId?.value != null) {
     const articlePermissions = await roleArticlePermissions(beanId.value);
+    articlePermissionTree.value?.setCheckedKeys([]);
     articlePermissions.forEach((key: number) => {
       articlePermissionTree.value?.setChecked(key, true, false);
     });
@@ -246,6 +247,7 @@ const fetchArticlePermissions = async () => {
 const fetchChannelPermissions = async () => {
   if (beanId?.value != null) {
     const channelPermissions = await roleChannelPermissions(beanId.value);
+    channelPermissionTree.value?.setCheckedKeys([]);
     channelPermissions.forEach((key: number) => {
       channelPermissionTree.value?.setChecked(key, true, false);
     });
@@ -257,8 +259,7 @@ const fetchChannelData = async () => {
 
 watch(visible, async () => {
   if (visible.value) {
-    // 要等待获取Role之后，再设置文章权限，否则切换不同角色时，文章权限无法正常赋值
-    await fetchRole();
+    fetchRole();
     fetchArticlePermissions();
     fetchChannelPermissions();
   }

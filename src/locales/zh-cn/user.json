@@ -59,7 +59,7 @@
   "user.group": "用户组",
   "user.org": "组织",
   "user.role": "角色",
-  "user.role.tooltip": "数值越小等级越高。用户只能被授予同等级或更低等级的角色",
+  "user.role.tooltip": "角色等级数值越小等级越高。用户只能被授予同等级或更低等级的角色",
   "user.origPassword": "原密码",
   "user.newPassword": "新密码",
   "user.plainPassword": "密码",

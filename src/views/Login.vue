@@ -25,6 +25,7 @@
             asyncValidator: async (rule, value, callback) => {
               if (captchaToken == null || !(await tryCaptcha(captchaToken, value))) {
                 callback($t('captchaIncorrect'));
+                return;
               }
               callback();
             },

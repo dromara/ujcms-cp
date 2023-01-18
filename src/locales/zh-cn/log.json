@@ -114,6 +114,7 @@
   "log.config": "全局设置",
   "log.config.updateBase": "修改全局基础设置",
   "log.config.updateUpload": "修改全局上传设置",
+  "log.config.updateRegister": "修改全局注册设置",
   "log.config.updateSecurity": "修改全局安全设置",
   "log.config.updateSms": "修改全局短信设置",
   "log.config.sendSms": "全局设置发送测试短信",

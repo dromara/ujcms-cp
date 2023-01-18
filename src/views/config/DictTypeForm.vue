@@ -30,6 +30,7 @@
             asyncValidator: async (rule: any, value: any, callback: any) => {
               if (value !== bean.alias && (await dictTypeAliasExist(value, values.scope))) {
                 callback($t('dictType.error.aliasExist'));
+                return;
               }
               callback();
             },
