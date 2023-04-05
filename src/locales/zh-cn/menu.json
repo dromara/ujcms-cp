@@ -1,12 +1,12 @@
 {
-  "menu.home": "首页",
+  "menu.homepage": "首页",
 
-  "menu.personal":"个人设置",
-  "menu.personal.password":"修改密码",
-  "menu.personal.machine.code":"许可请求码",
-  "menu.personal.machine.license":"许可证信息",
-  "menu.personal.homepage.environment":"系统信息",
-  "menu.personal.homepage.generatedKey":"密钥生成器",
+  "menu.personal": "个人设置",
+  "menu.personal.password": "修改密码",
+  "menu.personal.machine.code": "许可请求码",
+  "menu.personal.machine.license": "许可证信息",
+  "menu.personal.homepage.environment": "系统信息",
+  "menu.personal.homepage.generatedKey": "密钥生成器",
 
   "menu.content": "内容",
   "menu.content.article": "文章管理",
@@ -14,11 +14,17 @@
   "menu.content.channel": "栏目管理",
   "menu.content.blockItem": "区块管理",
   "menu.content.dict": "字典管理",
+  "menu.content.tag": "TAG管理",
   "menu.content.attachment": "附件管理",
   "menu.content.generator": "生成管理",
 
-  "menu.interaction" : "互动",
-  "menu.interaction.messageBoard" : "留言管理",
+  "menu.interaction": "互动",
+  "menu.interaction.messageBoard": "留言管理",
+
+  "menu.file": "文件",
+  "menu.file.webFileTemplate": "模板文件",
+  "menu.file.webFileUpload": "上传文件",
+  "menu.file.webFileHtml": "HTML文件",
 
   "menu.user": "用户",
   "menu.user.org": "组织管理",

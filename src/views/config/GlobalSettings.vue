@@ -1,16 +1,214 @@
+<script lang="ts">
+export default { name: 'GlobalSettings' };
+</script>
+
+<script setup lang="ts">
+import { onMounted, ref, computed } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+import { toTree } from '@/utils/tree';
+import { querySiteList } from '@/api/system';
+import {
+  queryConfigModel,
+  queryConfig,
+  queryConfigSms,
+  queryConfigEmail,
+  queryUploadStorage,
+  queryHtmlStorage,
+  queryTemplateStorage,
+  updateConfigBase,
+  updateConfigCustoms,
+  updateConfigUpload,
+  updateConfigRegister,
+  updateConfigSecurity,
+  updateConfigSms,
+  updateConfigEmail,
+  sendTestSms,
+  sendTestEmail,
+  updateUploadStorage,
+  updateHtmlStorage,
+  updateTemplateStorage,
+} from '@/api/config';
+import { perm, hasPermission, currentUser } from '@/store/useCurrentUser';
+import { initConfig, baseSettings } from '@/store/useConfig';
+import LabelTip from '@/components/LabelTip.vue';
+import FieldItem from '@/views/config/components/FieldItem.vue';
+
+const { t } = useI18n();
+const form = ref<any>();
+const config = ref<any>({});
+const values = ref<any>({});
+const loading = ref<boolean>(false);
+const buttonLoading = ref<boolean>(false);
+const siteList = ref<any[]>([]);
+const model = ref<any>();
+const fields = computed(() => JSON.parse(model.value?.customs || '[]'));
+
+const types: string[] = [];
+if (hasPermission('config:base:update')) types.push('base');
+if (hasPermission('config:upload:update')) types.push('upload');
+if (hasPermission('config:register:update')) types.push('register');
+if (hasPermission('config:security:update') && (currentUser.epRank >= 1 || currentUser.epDisplay)) types.push('security');
+if (hasPermission('config:sms:update')) types.push('sms');
+if (hasPermission('config:email:update')) types.push('email');
+if (hasPermission('config:uploadStorage:update')) types.push('uploadStorage');
+if (hasPermission('config:htmlStorage:update')) types.push('htmlStorage');
+if (hasPermission('config:templateStorage:update')) types.push('templateStorage');
+if (hasPermission('config:customs:update')) types.push('customs');
+const type = ref<string>(types[0]);
+
+const tabClick = async (paneName?: string | number) => {
+  if (paneName === 'upload') {
+    values.value = config.value.upload;
+  } else if (paneName === 'register') {
+    values.value = config.value.register;
+  } else if (paneName === 'security') {
+    values.value = config.value.security;
+  } else if (paneName === 'customs') {
+    values.value = config.value.customs;
+  } else if (paneName === 'sms') {
+    values.value = await queryConfigSms();
+  } else if (paneName === 'email') {
+    values.value = await queryConfigEmail();
+  } else if (paneName === 'uploadStorage') {
+    values.value = await queryUploadStorage();
+  } else if (paneName === 'htmlStorage') {
+    values.value = await queryHtmlStorage();
+  } else if (paneName === 'templateStorage') {
+    values.value = await queryTemplateStorage();
+  } else {
+    values.value = config.value;
+  }
+};
+
+const fetchConfigModel = async () => {
+  model.value = await queryConfigModel();
+};
+const fetchConfig = async () => {
+  config.value = await queryConfig();
+  tabClick(type.value);
+};
+const fetchSiteList = async () => {
+  siteList.value = toTree(await querySiteList());
+};
+onMounted(async () => {
+  loading.value = true;
+  try {
+    await Promise.all([fetchConfig(), fetchConfigModel(), fetchSiteList()]);
+  } finally {
+    loading.value = false;
+  }
+});
+const load = async () => {
+  loading.value = true;
+  try {
+    await fetchConfig();
+  } finally {
+    loading.value = false;
+  }
+};
+const handleSubmit = () => {
+  form.value.validate(async (valid: boolean) => {
+    if (!valid) return;
+    buttonLoading.value = true;
+    try {
+      if (type.value === 'upload') {
+        await updateConfigUpload(values.value);
+      } else if (type.value === 'register') {
+        await updateConfigRegister(values.value);
+      } else if (type.value === 'security') {
+        await updateConfigSecurity(values.value);
+      } else if (type.value === 'customs') {
+        await updateConfigCustoms(values.value);
+      } else if (type.value === 'sms') {
+        await updateConfigSms(values.value);
+      } else if (type.value === 'email') {
+        await updateConfigEmail(values.value);
+      } else if (type.value === 'uploadStorage') {
+        await updateUploadStorage(values.value);
+      } else if (type.value === 'htmlStorage') {
+        await updateHtmlStorage(values.value);
+      } else if (type.value === 'templateStorage') {
+        await updateTemplateStorage(values.value);
+      } else {
+        await updateConfigBase(values.value);
+      }
+      initConfig();
+      ElMessage.success(t('success'));
+    } finally {
+      buttonLoading.value = false;
+    }
+    load();
+  });
+};
+const handleSendTestSms = () => {
+  form.value.validate(async (valid: boolean) => {
+    if (!valid) return;
+    buttonLoading.value = true;
+    try {
+      const { status, message } = await sendTestSms(values.value);
+      if (status === -1) {
+        ElMessageBox.alert(message);
+      } else {
+        ElMessage.success(t('success'));
+      }
+    } finally {
+      buttonLoading.value = false;
+    }
+    load();
+  });
+};
+const handleSendTestEmail = () => {
+  form.value.validate(async (valid: boolean) => {
+    if (!valid) return;
+    buttonLoading.value = true;
+    try {
+      const { status, message } = await sendTestEmail(values.value);
+      if (status === -1) {
+        ElMessageBox.alert(message);
+      } else {
+        ElMessage.success(t('success'));
+      }
+    } finally {
+      buttonLoading.value = false;
+    }
+    load();
+  });
+};
+const invalidExtension = (extensions: string) => {
+  const blacklist = baseSettings.uploadsExtensionBlacklist.split(',');
+  const extensionList = extensions.split(',');
+  return blacklist.findIndex((item) => extensionList.includes(item)) >= 0;
+};
+</script>
+
 <template>
   <el-container>
     <el-aside width="180px" class="pr-3">
-      <el-tabs v-model="type" @tab-click="({ paneName }: any) => tabClick(paneName)" tab-position="left" stretch class="bg-white">
+      <el-tabs v-model="type" tab-position="left" stretch class="bg-white" @tab-click="({ paneName }: any) => tabClick(paneName)">
         <el-tab-pane v-for="tp in types" :key="tp" :name="tp" :label="$t(`config.settings.${tp}`)"></el-tab-pane>
       </el-tabs>
     </el-aside>
     <el-main class="p-3 app-block">
-      <el-form ref="form" :model="values" v-loading="loading" label-width="160px">
+      <el-form ref="form" v-loading="loading" :model="values" label-width="160px">
         <template v-if="type === 'upload'">
           <el-row>
             <el-col :span="12">
-              <el-form-item prop="imageTypes" :rules="{ required: true, message: () => $t('v.required') }">
+              <el-form-item
+                prop="imageTypes"
+                :rules="[
+                  { required: true, message: () => $t('v.required') },
+                  {
+                    validator: (rule:any, value:any, callback:any) => {
+                      if (invalidExtension(value)) {
+                        callback($t('config.upload.error.extensionNotAllowd'));
+                        return;
+                      }
+                      callback();
+                    },
+                  }
+                ]"
+              >
                 <template #label><label-tip message="config.upload.imageTypes" help /></template>
                 <el-input v-model="values.imageTypes" maxlength="255"></el-input>
               </el-form-item>
@@ -22,7 +220,21 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="videoTypes" :rules="{ required: true, message: () => $t('v.required') }">
+              <el-form-item
+                prop="videoTypes"
+                :rules="[
+                  { required: true, message: () => $t('v.required') },
+                  {
+                    validator: (rule:any, value:any, callback:any) => {
+                      if (invalidExtension(value)) {
+                        callback($t('config.upload.error.extensionNotAllowd'));
+                        return;
+                      }
+                      callback();
+                    },
+                  }
+                ]"
+              >
                 <template #label><label-tip message="config.upload.videoTypes" help /></template>
                 <el-input v-model="values.videoTypes" maxlength="255"></el-input>
               </el-form-item>
@@ -34,7 +246,21 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="audioTypes" :rules="{ required: true, message: () => $t('v.required') }">
+              <el-form-item
+                prop="audioTypes"
+                :rules="[
+                  { required: true, message: () => $t('v.required') },
+                  {
+                    validator: (rule:any, value:any, callback:any) => {
+                      if (invalidExtension(value)) {
+                        callback($t('config.upload.error.extensionNotAllowd'));
+                        return;
+                      }
+                      callback();
+                    },
+                  }
+                ]"
+              >
                 <template #label><label-tip message="config.upload.audioTypes" help /></template>
                 <el-input v-model="values.audioTypes" maxlength="255"></el-input>
               </el-form-item>
@@ -46,7 +272,21 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="libraryTypes" :rules="{ required: true, message: () => $t('v.required') }">
+              <el-form-item
+                prop="libraryTypes"
+                :rules="[
+                  { required: true, message: () => $t('v.required') },
+                  {
+                    validator: (rule:any, value:any, callback:any) => {
+                      if (invalidExtension(value)) {
+                        callback($t('config.upload.error.extensionNotAllowd'));
+                        return;
+                      }
+                      callback();
+                    },
+                  }
+                ]"
+              >
                 <template #label><label-tip message="config.upload.libraryTypes" help /></template>
                 <el-input v-model="values.libraryTypes" maxlength="255"></el-input>
               </el-form-item>
@@ -58,7 +298,21 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="docTypes" :rules="{ required: true, message: () => $t('v.required') }">
+              <el-form-item
+                prop="docTypes"
+                :rules="[
+                  { required: true, message: () => $t('v.required') },
+                  {
+                    validator: (rule:any, value:any, callback:any) => {
+                      if (invalidExtension(value)) {
+                        callback($t('config.upload.error.extensionNotAllowd'));
+                        return;
+                      }
+                      callback();
+                    },
+                  }
+                ]"
+              >
                 <template #label><label-tip message="config.upload.docTypes" help /></template>
                 <el-input v-model="values.docTypes" maxlength="255"></el-input>
               </el-form-item>
@@ -70,7 +324,21 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item prop="fileTypes" :rules="{ required: true, message: () => $t('v.required') }">
+              <el-form-item
+                prop="fileTypes"
+                :rules="[
+                  { required: true, message: () => $t('v.required') },
+                  {
+                    validator: (rule:any, value:any, callback:any) => {
+                      if (invalidExtension(value)) {
+                        callback($t('config.upload.error.extensionNotAllowd'));
+                        return;
+                      }
+                      callback();
+                    },
+                  }
+                ]"
+              >
                 <template #label><label-tip message="config.upload.fileTypes" help /></template>
                 <el-input v-model="values.fileTypes" maxlength="255"></el-input>
               </el-form-item>
@@ -157,6 +425,7 @@
         </template>
         <template v-else-if="type === 'security' && currentUser.epRank < 1">
           <el-alert type="warning" :closable="false" :show-icon="true">
+            <!-- eslint-disable-next-line vue/no-v-html -->
             <template #title><span v-html="$t('error.enterprise')"></span></template>
           </el-alert>
         </template>
@@ -446,7 +715,7 @@
                   { required: true, message: () => $t('v.required') },
                   {
                     validator: (rule: any, value: any, callback: any) => {
-                      if (value === 1 && currentUser.epRank < 1) {
+                      if (value !== 0 && currentUser.epRank < 1) {
                         callback($t('error.enterprise.short'));
                         return;
                       }
@@ -458,7 +727,7 @@
                 <template #label><label-tip message="config.storage.type" /></template>
                 <el-select v-model="values.type" class="w-full">
                   <el-option
-                    v-for="n in [0, 1].filter((item) => item !== 1 || currentUser.epRank > 2 || currentUser.epDisplay)"
+                    v-for="n in [0, 1, 10].filter((item) => item === 0 || currentUser.epRank > 2 || currentUser.epDisplay)"
                     :key="n"
                     :value="n"
                     :label="$t(`config.storage.type.${n}`)"
@@ -479,6 +748,52 @@
               </el-form-item>
             </el-col>
             <template v-if="values.type === 1">
+              <el-col :span="12">
+                <el-form-item prop="hostname" :rules="{ required: true, message: () => $t('v.required') }">
+                  <template #label><label-tip message="config.storage.hostname" /></template>
+                  <el-input v-model="values.hostname" maxlength="160" :disabled="currentUser.epRank < 1"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item prop="port" :rules="{ type: 'number', min: 0, max: 65535, message: () => $t('v.range', { min: 0, max: 65535 }) }">
+                  <template #label><label-tip message="config.storage.port" help /></template>
+                  <el-input v-model.number="values.port" :disabled="currentUser.epRank < 1"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item prop="username" :rules="{ required: true, message: () => $t('v.required') }">
+                  <template #label><label-tip message="config.storage.username" /></template>
+                  <el-input v-model="values.username" maxlength="50" :disabled="currentUser.epRank < 1"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item prop="password" :rules="{ required: true, message: () => $t('v.required') }">
+                  <template #label><label-tip message="config.storage.password" /></template>
+                  <el-input v-model="values.password" type="password" show-password maxlength="160" :disabled="currentUser.epRank < 1"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item prop="encoding">
+                  <template #label><label-tip message="config.storage.encoding" help /></template>
+                  <el-input v-model="values.encoding" maxlength="50" :disabled="currentUser.epRank < 1"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item prop="passive">
+                  <template #label><label-tip message="config.storage.passive" help /></template>
+                  <el-switch v-model="values.passive" :disabled="currentUser.epRank < 1" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="24">
+                <el-form-item prop="encryption" :rules="{ required: true, message: () => $t('v.required') }">
+                  <template #label><label-tip message="config.storage.encryption" /></template>
+                  <el-select v-model="values.encryption" class="w-full">
+                    <el-option v-for="n in [0, 1, 2]" :key="n" :label="$t(`config.storage.encryption.${n}`)" :value="n" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </template>
+            <template v-if="values.type === 10">
               <el-col :span="24">
                 <el-form-item prop="endpoint" :rules="{ required: true, message: () => $t('v.required') }">
                   <template #label><label-tip message="config.storage.endpoint" /></template>
@@ -517,7 +832,7 @@
             <el-col v-for="field in fields" :key="field.code" :span="field.double ? 12 : 24">
               <el-form-item :prop="field.code" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
                 <template #label><label-tip :label="field.name" /></template>
-                <field-item :field="field" v-model="values[field.code]" v-model:model-key="values[field.code + '_key']"></field-item>
+                <field-item v-model="values[field.code]" v-model:model-key="values[field.code + '_key']" :field="field"></field-item>
               </el-form-item>
             </el-col>
           </el-row>
@@ -553,7 +868,7 @@
                 <el-tree-select
                   v-model="values.defaultSiteId"
                   :data="siteList"
-                  nodeKey="id"
+                  node-key="id"
                   :props="{ label: 'name' }"
                   class="w-full"
                   :render-after-expand="false"
@@ -570,13 +885,13 @@
           </el-row>
         </template>
         <div v-if="type !== 'security' || currentUser.epRank > 1" v-loading="buttonLoading">
-          <el-button :disabled="perm(`config:${type}:update`)" @click.prevent="handleSubmit()" type="primary" native-type="submit">
+          <el-button :disabled="perm(`config:${type}:update`)" type="primary" native-type="submit" @click.prevent="() => handleSubmit()">
             {{ $t('save') }}
           </el-button>
-          <el-button v-if="type === 'sms' && values.provider !== 0" :disabled="perm('config:sms:update') || !values.testMobile?.trim()" @click="handleSendTestSms()">
+          <el-button v-if="type === 'sms' && values.provider !== 0" :disabled="perm('config:sms:update') || !values.testMobile?.trim()" @click="() => handleSendTestSms()">
             {{ $t('config.sms.op.testSend') }}
           </el-button>
-          <el-button v-if="type === 'email'" :disabled="perm('config:email:update') || !values.testTo?.trim()" @click="handleSendTestEmail()">
+          <el-button v-if="type === 'email'" :disabled="perm('config:email:update') || !values.testTo?.trim()" @click="() => handleSendTestEmail()">
             {{ $t('config.email.op.testSend') }}
           </el-button>
         </div>
@@ -584,185 +899,6 @@
     </el-main>
   </el-container>
 </template>
-
-<script lang="ts">
-export default { name: 'GlobalSettings' };
-</script>
-
-<script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { useI18n } from 'vue-i18n';
-import { toTree } from '@/utils/tree';
-import { querySiteList } from '@/api/system';
-import {
-  queryConfigModel,
-  queryConfig,
-  queryConfigSms,
-  queryConfigEmail,
-  queryUploadStorage,
-  queryHtmlStorage,
-  queryTemplateStorage,
-  updateConfigBase,
-  updateConfigCustoms,
-  updateConfigUpload,
-  updateConfigRegister,
-  updateConfigSecurity,
-  updateConfigSms,
-  updateConfigEmail,
-  sendTestSms,
-  sendTestEmail,
-  updateUploadStorage,
-  updateHtmlStorage,
-  updateTemplateStorage,
-} from '@/api/config';
-import { perm, hasPermission, currentUser } from '@/store/useCurrentUser';
-import { initConfig } from '@/store/useConfig';
-import LabelTip from '@/components/LabelTip.vue';
-import FieldItem from '@/views/config/components/FieldItem.vue';
-
-const { t } = useI18n();
-const form = ref<any>();
-const config = ref<any>({});
-const values = ref<any>({});
-const loading = ref<boolean>(false);
-const buttonLoading = ref<boolean>(false);
-const siteList = ref<any[]>([]);
-const model = ref<any>();
-const fields = computed(() => JSON.parse(model.value?.customs || '[]'));
-
-const types: string[] = [];
-if (hasPermission('config:base:update')) types.push('base');
-if (hasPermission('config:upload:update')) types.push('upload');
-if (hasPermission('config:register:update')) types.push('register');
-if (hasPermission('config:security:update') && (currentUser.epRank >= 1 || currentUser.epDisplay)) types.push('security');
-if (hasPermission('config:sms:update')) types.push('sms');
-if (hasPermission('config:email:update')) types.push('email');
-if (hasPermission('config:uploadStorage:update')) types.push('uploadStorage');
-if (hasPermission('config:htmlStorage:update')) types.push('htmlStorage');
-if (hasPermission('config:templateStorage:update')) types.push('templateStorage');
-if (hasPermission('config:customs:update')) types.push('customs');
-const type = ref<string>(types[0]);
-
-const tabClick = async (paneName?: string | number) => {
-  if (paneName === 'upload') {
-    values.value = config.value.upload;
-  } else if (paneName === 'register') {
-    values.value = config.value.register;
-  } else if (paneName === 'security') {
-    values.value = config.value.security;
-  } else if (paneName === 'customs') {
-    values.value = config.value.customs;
-  } else if (paneName === 'sms') {
-    values.value = await queryConfigSms();
-  } else if (paneName === 'email') {
-    values.value = await queryConfigEmail();
-  } else if (paneName === 'uploadStorage') {
-    values.value = await queryUploadStorage();
-  } else if (paneName === 'htmlStorage') {
-    values.value = await queryHtmlStorage();
-  } else if (paneName === 'templateStorage') {
-    values.value = await queryTemplateStorage();
-  } else {
-    values.value = config.value;
-  }
-};
-
-const fetchConfigModel = async () => {
-  model.value = await queryConfigModel();
-};
-const fetchConfig = async () => {
-  config.value = await queryConfig();
-  tabClick(type.value);
-};
-const fetchSiteList = async () => {
-  siteList.value = toTree(await querySiteList());
-};
-onMounted(async () => {
-  loading.value = true;
-  try {
-    await Promise.all([fetchConfig(), fetchConfigModel(), fetchSiteList()]);
-  } finally {
-    loading.value = false;
-  }
-});
-const load = async () => {
-  loading.value = true;
-  try {
-    await fetchConfig();
-  } finally {
-    loading.value = false;
-  }
-};
-const handleSubmit = () => {
-  form.value.validate(async (valid: boolean) => {
-    if (!valid) return;
-    buttonLoading.value = true;
-    try {
-      if (type.value === 'upload') {
-        await updateConfigUpload(values.value);
-      } else if (type.value === 'register') {
-        await updateConfigRegister(values.value);
-      } else if (type.value === 'security') {
-        await updateConfigSecurity(values.value);
-      } else if (type.value === 'customs') {
-        await updateConfigCustoms(values.value);
-      } else if (type.value === 'sms') {
-        await updateConfigSms(values.value);
-      } else if (type.value === 'email') {
-        await updateConfigEmail(values.value);
-      } else if (type.value === 'uploadStorage') {
-        await updateUploadStorage(values.value);
-      } else if (type.value === 'htmlStorage') {
-        await updateHtmlStorage(values.value);
-      } else if (type.value === 'templateStorage') {
-        await updateTemplateStorage(values.value);
-      } else {
-        await updateConfigBase(values.value);
-      }
-      initConfig();
-      ElMessage.success(t('success'));
-    } finally {
-      buttonLoading.value = false;
-    }
-    load();
-  });
-};
-const handleSendTestSms = () => {
-  form.value.validate(async (valid: boolean) => {
-    if (!valid) return;
-    buttonLoading.value = true;
-    try {
-      const { status, message } = await sendTestSms(values.value);
-      if (status === -1) {
-        ElMessageBox.alert(message);
-      } else {
-        ElMessage.success(t('success'));
-      }
-    } finally {
-      buttonLoading.value = false;
-    }
-    load();
-  });
-};
-const handleSendTestEmail = () => {
-  form.value.validate(async (valid: boolean) => {
-    if (!valid) return;
-    buttonLoading.value = true;
-    try {
-      const { status, message } = await sendTestEmail(values.value);
-      if (status === -1) {
-        ElMessageBox.alert(message);
-      } else {
-        ElMessage.success(t('success'));
-      }
-    } finally {
-      buttonLoading.value = false;
-    }
-    load();
-  });
-};
-</script>
 
 <style lang="scss" scoped>
 .el-tabs {

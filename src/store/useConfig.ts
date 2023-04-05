@@ -3,6 +3,8 @@ import { queryConfig } from '@/api/login';
 
 export interface BaseSettings {
   uploadUrlPrefix: string;
+  filesExtensionBlacklist: string;
+  uploadsExtensionBlacklist: string;
 }
 
 export interface UploadSettings {
@@ -43,6 +45,8 @@ export interface Config {
 const state = reactive<Config>({
   base: {
     uploadUrlPrefix: '/uploads',
+    filesExtensionBlacklist: 'exe,com,bat,jsp,jspx,asp,aspx,php',
+    uploadsExtensionBlacklist: 'exe,com,bat,jsp,jspx,asp,aspx,php,html,htm,xhtml,xml,shtml,shtm',
   },
   upload: {
     imageTypes: 'jpg,jpeg,png,gif',
@@ -63,7 +67,7 @@ const state = reactive<Config>({
     passwordMinLength: 0,
     passwordMaxLength: 64,
     passwordStrength: 0,
-    passwordPattern: ".*",
+    passwordPattern: '.*',
     ssrfList: [],
   },
   register: {

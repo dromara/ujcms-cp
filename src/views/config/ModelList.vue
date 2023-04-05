@@ -1,62 +1,3 @@
-<template>
-  <div>
-    <div class="mb-3">
-      <query-form :params="params" @search="handleSearch" @reset="handleReset">
-        <query-item :label="$t('model.name')" name="Q_Contains_name"></query-item>
-      </query-form>
-    </div>
-    <div>
-      <el-button type="primary" :disabled="perm('model:create')" :icon="Plus" @click="handleAdd()">{{ $t('add') }}</el-button>
-      <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
-        <template #reference>
-          <el-button :disabled="selection.length <= 0 || perm('model:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
-        </template>
-      </el-popconfirm>
-      <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" class="ml-2" />
-      <column-setting name="model" class="ml-2" />
-    </div>
-    <el-radio-group v-model="modelType" @change="fetchData()" class="mt-3">
-      <!-- ['article', 'channel', 'user', 'site', 'global'] -->
-      <el-radio-button v-for="n in ['article', 'channel', 'site', 'global']" :key="n" :label="n">{{ $t(`model.type.${n}`) }}</el-radio-button>
-    </el-radio-group>
-    <div class="app-block">
-      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
-        <column-list name="model">
-          <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
-          <el-table-column property="name" :label="$t('model.name')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="type" :label="$t('model.type')" sortable="custom" :formatter="(row) => $t(`model.type.${row.type}`)" />
-          <el-table-column property="scope" :label="$t('model.scope')" sortable="custom">
-            <template #default="{row}">
-              <el-tag v-if="row.scope===2" type="success" size="small">{{ $t(`model.scope.${row.scope}`) }}</el-tag>
-              <el-tag v-else type="info" size="small">{{ $t(`model.scope.${row.scope}`) }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('table.action')">
-            <template #default="{ row }">
-              <el-button type="primary" :disabled="perm('model:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
-              <el-button type="primary" v-if="!['global', 'site'].includes(row.type)" :disabled="perm('model:update')" @click="handleSystemFields(row.id)" size="small" link>
-                {{ $t('model.fun.systemFields') }}
-              </el-button>
-              <el-button type="primary" :disabled="perm('model:update')" @click="handleCustomFields(row.id)" size="small" link>
-                {{ $t('model.fun.customFields') }}
-              </el-button>
-              <el-popconfirm v-if="deletable(row)" :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
-                <template #reference>
-                  <el-button type="primary" :disabled="perm('model:delete')" size="small" link>{{ $t('delete') }}</el-button>
-                </template>
-              </el-popconfirm>
-            </template>
-          </el-table-column>
-        </column-list>
-      </el-table>
-    </div>
-    <model-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" :modelType="modelType" @finished="fetchData" />
-    <model-system-fields v-model="systemFieldsVisible" :beanId="beanId" />
-    <model-custom-fields v-model="customFieldsVisible" :beanId="beanId" />
-  </div>
-</template>
-
 <script lang="ts">
 export default { name: 'ModelList' };
 </script>
@@ -144,3 +85,62 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
 };
 const deletable = (bean: any) => bean.id > 10;
 </script>
+
+<template>
+  <div>
+    <div class="mb-3">
+      <query-form :params="params" @search="handleSearch" @reset="handleReset">
+        <query-item :label="$t('model.name')" name="Q_Contains_name"></query-item>
+      </query-form>
+    </div>
+    <div>
+      <el-button type="primary" :disabled="perm('model:create')" :icon="Plus" @click="() => handleAdd()">{{ $t('add') }}</el-button>
+      <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete(selection.map((row) => row.id))">
+        <template #reference>
+          <el-button :disabled="selection.length <= 0 || perm('model:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
+        </template>
+      </el-popconfirm>
+      <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" class="ml-2" @move="(type) => move(selection, type)" />
+      <column-setting name="model" class="ml-2" />
+    </div>
+    <el-radio-group v-model="modelType" class="mt-3" @change="() => fetchData()">
+      <!-- ['article', 'channel', 'user', 'site', 'global'] -->
+      <el-radio-button v-for="n in ['article', 'channel', 'site', 'global']" :key="n" :label="n">{{ $t(`model.type.${n}`) }}</el-radio-button>
+    </el-radio-group>
+    <div class="app-block">
+      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
+        <column-list name="model">
+          <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
+          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="name" :label="$t('model.name')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="type" :label="$t('model.type')" sortable="custom" :formatter="(row) => $t(`model.type.${row.type}`)" />
+          <el-table-column property="scope" :label="$t('model.scope')" sortable="custom">
+            <template #default="{ row }">
+              <el-tag v-if="row.scope === 2" type="success" size="small">{{ $t(`model.scope.${row.scope}`) }}</el-tag>
+              <el-tag v-else type="info" size="small">{{ $t(`model.scope.${row.scope}`) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('table.action')">
+            <template #default="{ row }">
+              <el-button type="primary" :disabled="perm('model:update')" size="small" link @click="() => handleEdit(row.id)">{{ $t('edit') }}</el-button>
+              <el-button v-if="!['global', 'site'].includes(row.type)" type="primary" :disabled="perm('model:update')" size="small" link @click="() => handleSystemFields(row.id)">
+                {{ $t('model.fun.systemFields') }}
+              </el-button>
+              <el-button type="primary" :disabled="perm('model:update')" size="small" link @click="() => handleCustomFields(row.id)">
+                {{ $t('model.fun.customFields') }}
+              </el-button>
+              <el-popconfirm v-if="deletable(row)" :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
+                <template #reference>
+                  <el-button type="primary" :disabled="perm('model:delete')" size="small" link>{{ $t('delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
+        </column-list>
+      </el-table>
+    </div>
+    <model-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" :model-type="modelType" @finished="fetchData" />
+    <model-system-fields v-model="systemFieldsVisible" :bean-id="beanId" />
+    <model-custom-fields v-model="customFieldsVisible" :bean-id="beanId" />
+  </div>
+</template>

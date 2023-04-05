@@ -1,9 +1,3 @@
-<template>
-  <div>
-    <textarea :id="elementId" ref="element"></textarea>
-  </div>
-</template>
-
 <script lang="ts">
 import { defineComponent, ref, toRefs, watch, onMounted, onBeforeUnmount, onActivated, onDeactivated, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -60,18 +54,19 @@ import 'tinymce/plugins/visualchars';
 import { isTextarea, uuid, initEditor } from './utils';
 
 export default defineComponent({
-  name: 'Tinymce',
+  name: 'TinymceEditor',
   props: {
-    id: String,
+    id: { type: String, default: null },
     modelValue: { type: String, default: '' },
     disabled: { type: Boolean, default: false },
-    inline: Boolean,
-    init: Object,
-    modelEvents: [String, Array],
-    plugins: { type: [String, Array] as PropType<string | string[]> },
-    toolbar: [String, Array],
+    inline: { type: Boolean },
+    init: { type: Object, default: null },
+    modelEvents: { type: [String, Array], default: null },
+    plugins: { type: [String, Array] as PropType<string | string[]>, default: null },
+    toolbar: { type: [String, Array], default: null },
     outputFormat: {
-      type: String,
+      type: String as PropType<'html' | 'text'>,
+      default: 'html',
       validator: (prop: string) => prop === 'html' || prop === 'text',
     },
   },
@@ -373,3 +368,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<template>
+  <div>
+    <textarea :id="elementId" ref="element"></textarea>
+  </div>
+</template>

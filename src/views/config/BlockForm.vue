@@ -1,44 +1,64 @@
+<script lang="ts">
+export default { name: 'BlockForm' };
+</script>
+
+<script setup lang="ts">
+import { ref, PropType } from 'vue';
+import { queryBlock, createBlock, updateBlock, deleteBlock, blockAliasExist, blockScopeNotAllowed } from '@/api/config';
+import DialogForm from '@/components/DialogForm.vue';
+import LabelTip from '@/components/LabelTip.vue';
+
+defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null }, beanIds: { type: Array as PropType<number[]>, required: true } });
+defineEmits({ 'update:modelValue': null, finished: null });
+const focus = ref<any>();
+const values = ref<any>({});
+</script>
+
 <template>
   <dialog-form
-    :name="$t('menu.config.block')"
-    :queryBean="queryBlock"
-    :createBean="createBlock"
-    :updateBean="updateBlock"
-    :deleteBean="deleteBlock"
-    :beanId="beanId"
-    :beanIds="beanIds"
-    :focus="focus"
-    :initValues="(): any => ({
-      scope: 0,
-      withLinkUrl: true,
-      linkUrlRequired: true,
-      withSubtitle: false,
-      subtitleRequired: false,
-      withDescription: false,
-      descriptionRequired: false,
-      withImage: false,
-      imageRequired: false,
-      imageWidth: 300,
-      imageHeight: 200,
-      withMobileImage: false,
-      mobileImageRequired: false,
-      mobileImageWidth: 300,
-      mobileImageHeight: 200,
-      enabled: true,
-      recommendable: true,
-    })"
-    :toValues="(bean: any) => ({ ...bean })"
-    perms="block"
     v-model:values="values"
+    :name="$t('menu.config.block')"
+    :query-bean="queryBlock"
+    :create-bean="createBlock"
+    :update-bean="updateBlock"
+    :delete-bean="deleteBlock"
+    :bean-id="beanId"
+    :bean-ids="beanIds"
+    :focus="focus"
+    :init-values="
+      () => ({
+        scope: 0,
+        withLinkUrl: true,
+        linkUrlRequired: true,
+        withSubtitle: false,
+        subtitleRequired: false,
+        withDescription: false,
+        descriptionRequired: false,
+        withImage: false,
+        imageRequired: false,
+        imageWidth: 300,
+        imageHeight: 200,
+        withMobileImage: false,
+        mobileImageRequired: false,
+        mobileImageWidth: 300,
+        mobileImageHeight: 200,
+        withVideo: false,
+        videoRequired: false,
+        enabled: true,
+        recommendable: true,
+      })
+    "
+    :to-values="(bean: any) => ({ ...bean })"
+    perms="block"
     :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    @finished="$emit('finished')"
+    @update:model-value="(event) => $emit('update:modelValue', event)"
+    @finished="() => $emit('finished')"
   >
     <template #default="{ bean }">
       <el-row>
         <el-col :span="24">
           <el-form-item prop="name" :label="$t('block.name')" :rules="{ required: true, message: () => $t('v.required') }">
-            <el-input v-model="values.name" ref="focus" maxlength="50"></el-input>
+            <el-input ref="focus" v-model="values.name" maxlength="50"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="24">
@@ -47,6 +67,7 @@
             :label="$t('block.alias')"
             :rules="[
               { required: true, message: () => $t('v.required') },
+              { pattern: /^[\u4E00-\u9FA5\w-]*$/, message: () => $t('block.error.aliasPattern') },
               {
                 asyncValidator: async (rule: any, value: any, callback: any) => {
                   if (value !== bean.alias && (await blockAliasExist(value, values.scope))) {
@@ -123,12 +144,12 @@
             <el-switch v-model="values.imageRequired"></el-switch>
           </el-form-item>
         </el-col>
-        <el-col :span="12" v-if="values.withImage">
+        <el-col v-if="values.withImage" :span="12">
           <el-form-item prop="imageWidth" :label="$t('block.imageWidth')" :rules="{ required: true, message: () => $t('v.required') }">
             <el-input-number v-model="values.imageWidth" :min="0" :max="65535"></el-input-number>
           </el-form-item>
         </el-col>
-        <el-col :span="12" v-if="values.withImage">
+        <el-col v-if="values.withImage" :span="12">
           <el-form-item prop="imageHeight" :label="$t('block.imageHeight')" :rules="{ required: true, message: () => $t('v.required') }">
             <el-input-number v-model="values.imageHeight" :min="0" :max="65535"></el-input-number>
           </el-form-item>
@@ -143,12 +164,12 @@
             <el-switch v-model="values.mobileImageRequired"></el-switch>
           </el-form-item>
         </el-col>
-        <el-col :span="12" v-if="values.withMobileImage">
+        <el-col v-if="values.withMobileImage" :span="12">
           <el-form-item prop="mobileImageWidth" :label="$t('block.mobileImageWidth')" :rules="{ required: true, message: () => $t('v.required') }">
             <el-input-number v-model="values.mobileImageWidth" :min="16" :max="65535"></el-input-number>
           </el-form-item>
         </el-col>
-        <el-col :span="12" v-if="values.withMobileImage">
+        <el-col v-if="values.withMobileImage" :span="12">
           <el-form-item prop="mobileImageHeight" :label="$t('block.mobileImageHeight')" :rules="{ required: true, message: () => $t('v.required') }">
             <el-input-number v-model="values.mobileImageHeight" :min="16" :max="65535"></el-input-number>
           </el-form-item>
@@ -178,19 +199,3 @@
     </template>
   </dialog-form>
 </template>
-
-<script lang="ts">
-export default { name: 'BlockForm' };
-</script>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import { queryBlock, createBlock, updateBlock, deleteBlock, blockAliasExist, blockScopeNotAllowed } from '@/api/config';
-import DialogForm from '@/components/DialogForm.vue';
-import LabelTip from '@/components/LabelTip.vue';
-
-defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true } });
-defineEmits({ 'update:modelValue': null, finished: null });
-const focus = ref<any>();
-const values = ref<any>({});
-</script>

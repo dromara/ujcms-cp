@@ -1,93 +1,3 @@
-<template>
-  <el-container>
-    <el-aside width="180px" class="pr-3">
-      <el-tabs v-model="blockId" tab-position="left" stretch class="bg-white">
-        <el-tab-pane v-for="block in blockList" :key="block.id" :name="String(block.id)" :label="block.name"></el-tab-pane>
-      </el-tabs>
-    </el-aside>
-    <el-main class="p-0">
-      <div class="mb-3">
-        <query-form :params="params" @search="handleSearch" @reset="handleReset">
-          <query-item :label="$t('blockItem.title')" name="Q_Contains_title"></query-item>
-        </query-form>
-      </div>
-      <div>
-        <el-button type="primary" :disabled="!block?.enabled || perm('blockItem:create')" :icon="Plus" @click="handleAdd()">{{ $t('add') }}</el-button>
-        <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
-          <template #reference>
-            <el-button :disabled="selection.length <= 0 || perm('blockItem:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
-          </template>
-        </el-popconfirm>
-        <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" class="ml-2" />
-        <column-setting name="blockItem" class="ml-2" />
-      </div>
-      <div class="app-block mt-3">
-        <el-table
-          ref="table"
-          v-loading="loading"
-          :data="data"
-          @selection-change="(rows: any) => (selection = rows)"
-          @row-dblclick="(row: any) => handleEdit(row.id)"
-          @sort-change="handleSort"
-        >
-          <column-list name="blockItem">
-            <el-table-column type="selection" width="45"></el-table-column>
-            <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
-            <el-table-column property="title" :label="$t('blockItem.title')" sortable="custom" min-width="200" show-overflow-tooltip></el-table-column>
-            <el-table-column property="image" :label="$t('blockItem.image')">
-              <template #default="{ row, $index }">
-                <el-image
-                  v-if="!!row.image"
-                  :src="row.image"
-                  fit="contain"
-                  :preview-src-list="previewSrcList"
-                  :initial-index="$index"
-                  preview-teleported
-                  class="w-32 h-32"
-                ></el-image>
-              </template>
-            </el-table-column>
-            <el-table-column property="mobileImage" :label="$t('blockItem.mobileImage')" display="none">
-              <template #default="{ row, $index }">
-                <el-image
-                  v-if="!!row.mobileImage"
-                  :src="row.mobileImage"
-                  fit="contain"
-                  :preview-src-list="mobilePreviewSrcList"
-                  :initial-index="$index"
-                  preview-teleported
-                  class="w-32 h-32"
-                ></el-image>
-              </template>
-            </el-table-column>
-            <el-table-column property="targetBlank" :label="$t('blockItem.targetBlank')" sortable="custom" width="120">
-              <template #default="{ row }">
-                <el-switch v-model="row.targetBlank" :disabled="perm('blockItem:update')" @change="(targetBlank: boolean) => handleUpdate({ ...row, targetBlank })" />
-              </template>
-            </el-table-column>
-            <el-table-column property="enabled" :label="$t('enable')" sortable="custom" width="100">
-              <template #default="{ row }">
-                <el-switch v-model="row.enabled" :disabled="perm('blockItem:update')" @change="(enabled: boolean) => handleUpdate({ ...row, enabled })" />
-              </template>
-            </el-table-column>
-            <el-table-column :label="$t('table.action')">
-              <template #default="{ row }">
-                <el-button type="primary" :disabled="perm('blockItem:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
-                <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
-                  <template #reference>
-                    <el-button type="primary" :disabled="perm('blockItem:delete')" size="small" link>{{ $t('delete') }}</el-button>
-                  </template>
-                </el-popconfirm>
-              </template>
-            </el-table-column>
-          </column-list>
-        </el-table>
-      </div>
-      <block-item-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" :blockId="Number(blockId)" @finished="fetchData" />
-    </el-main>
-  </el-container>
-</template>
-
 <script lang="ts">
 export default { name: 'BlockItemList' };
 </script>
@@ -181,6 +91,96 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
   await updateBlockItemOrder(list.map((item) => item.id));
 };
 </script>
+
+<template>
+  <el-container>
+    <el-aside width="180px" class="pr-3">
+      <el-tabs v-model="blockId" tab-position="left" stretch class="bg-white">
+        <el-tab-pane v-for="item in blockList" :key="item.id" :name="String(item.id)" :label="item.name"></el-tab-pane>
+      </el-tabs>
+    </el-aside>
+    <el-main class="p-0">
+      <div class="mb-3">
+        <query-form :params="params" @search="handleSearch" @reset="handleReset">
+          <query-item :label="$t('blockItem.title')" name="Q_Contains_title"></query-item>
+        </query-form>
+      </div>
+      <div>
+        <el-button type="primary" :disabled="!block?.enabled || perm('blockItem:create')" :icon="Plus" @click="() => handleAdd()">{{ $t('add') }}</el-button>
+        <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete(selection.map((row) => row.id))">
+          <template #reference>
+            <el-button :disabled="selection.length <= 0 || perm('blockItem:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
+          </template>
+        </el-popconfirm>
+        <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" class="ml-2" @move="(type) => move(selection, type)" />
+        <column-setting name="blockItem" class="ml-2" />
+      </div>
+      <div class="app-block mt-3">
+        <el-table
+          ref="table"
+          v-loading="loading"
+          :data="data"
+          @selection-change="(rows: any) => (selection = rows)"
+          @row-dblclick="(row: any) => handleEdit(row.id)"
+          @sort-change="handleSort"
+        >
+          <column-list name="blockItem">
+            <el-table-column type="selection" width="45"></el-table-column>
+            <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+            <el-table-column property="title" :label="$t('blockItem.title')" sortable="custom" min-width="200" show-overflow-tooltip></el-table-column>
+            <el-table-column property="image" :label="$t('blockItem.image')">
+              <template #default="{ row, $index }">
+                <el-image
+                  v-if="!!row.image"
+                  :src="row.image"
+                  fit="contain"
+                  :preview-src-list="previewSrcList"
+                  :initial-index="$index"
+                  preview-teleported
+                  class="w-32 h-32"
+                ></el-image>
+              </template>
+            </el-table-column>
+            <el-table-column property="mobileImage" :label="$t('blockItem.mobileImage')" display="none">
+              <template #default="{ row, $index }">
+                <el-image
+                  v-if="!!row.mobileImage"
+                  :src="row.mobileImage"
+                  fit="contain"
+                  :preview-src-list="mobilePreviewSrcList"
+                  :initial-index="$index"
+                  preview-teleported
+                  class="w-32 h-32"
+                ></el-image>
+              </template>
+            </el-table-column>
+            <el-table-column property="targetBlank" :label="$t('blockItem.targetBlank')" sortable="custom" width="120">
+              <template #default="{ row }">
+                <el-switch v-model="row.targetBlank" :disabled="perm('blockItem:update')" @change="(targetBlank) => handleUpdate({ ...row, targetBlank })" />
+              </template>
+            </el-table-column>
+            <el-table-column property="enabled" :label="$t('enable')" sortable="custom" width="100">
+              <template #default="{ row }">
+                <el-switch v-model="row.enabled" :disabled="perm('blockItem:update')" @change="(enabled) => handleUpdate({ ...row, enabled })" />
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('table.action')">
+              <template #default="{ row }">
+                <el-button type="primary" :disabled="perm('blockItem:update')" size="small" link @click="() => handleEdit(row.id)">{{ $t('edit') }}</el-button>
+                <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
+                  <template #reference>
+                    <el-button type="primary" :disabled="perm('blockItem:delete')" size="small" link>{{ $t('delete') }}</el-button>
+                  </template>
+                </el-popconfirm>
+              </template>
+            </el-table-column>
+          </column-list>
+        </el-table>
+      </div>
+      <block-item-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" :block-id="Number(blockId)" @finished="fetchData" />
+    </el-main>
+  </el-container>
+</template>
 
 <style lang="scss" scoped>
 .el-tabs {

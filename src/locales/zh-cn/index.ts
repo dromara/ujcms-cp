@@ -1,6 +1,7 @@
 import menu from './menu.json';
 import common from './common.json';
 import content from './content.json';
+import file from './file.json';
 import interaction from './interaction.json';
 import homepage from './homepage.json';
 import user from './user.json';
@@ -13,6 +14,7 @@ export default {
   ...common,
   ...content,
   ...interaction,
+  ...file,
   ...homepage,
   ...user,
   ...config,

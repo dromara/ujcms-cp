@@ -1,6 +1,32 @@
+<script lang="ts">
+export default { name: 'MachineLicense' };
+</script>
+
+<script setup lang="ts">
+import { toRefs, watch, ref } from 'vue';
+import dayjs from 'dayjs';
+import { queryMachineLicense } from '@/api/personal';
+
+const props = defineProps({ modelValue: { type: Boolean, required: true } });
+defineEmits({ 'update:modelValue': null });
+const { modelValue: visible } = toRefs(props);
+const loading = ref<boolean>(false);
+const values = ref<any>({});
+watch(visible, async () => {
+  if (visible.value) {
+    loading.value = true;
+    try {
+      values.value = await queryMachineLicense();
+    } finally {
+      loading.value = false;
+    }
+  }
+});
+</script>
+
 <template>
-  <el-dialog :title="$t('menu.personal.machine.license')" :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)">
-    <el-form :model="values" v-loading="loading" label-width="150px" label-position="right">
+  <el-dialog :title="$t('menu.personal.machine.license')" :model-value="modelValue" @update:model-value="(event) => $emit('update:modelValue', event)">
+    <el-form v-loading="loading" :model="values" label-width="150px" label-position="right">
       <el-form-item :label="$t('license.activated')">
         <el-tag v-if="values.activated" type="success">{{ $t('license.activated.true') }}</el-tag>
         <el-tag v-else type="danger">{{ $t('license.activated.false') }}</el-tag>
@@ -37,29 +63,3 @@
     </el-form>
   </el-dialog>
 </template>
-
-<script lang="ts">
-export default { name: 'MachineLicense' };
-</script>
-
-<script setup lang="ts">
-import { toRefs, watch, ref } from 'vue';
-import dayjs from 'dayjs';
-import { queryMachineLicense } from '@/api/personal';
-
-const props = defineProps({ modelValue: { type: Boolean, required: true } });
-defineEmits({ 'update:modelValue': null });
-const { modelValue: visible } = toRefs(props);
-const loading = ref<boolean>(false);
-const values = ref<any>({});
-watch(visible, async () => {
-  if (visible.value) {
-    loading.value = true;
-    try {
-      values.value = await queryMachineLicense();
-    } finally {
-      loading.value = false;
-    }
-  }
-});
-</script>

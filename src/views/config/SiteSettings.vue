@@ -1,194 +1,3 @@
-<template>
-  <el-container>
-    <el-aside width="180px" class="pr-3">
-      <el-tabs v-model="type" @tab-click="({ paneName }) => tabClick(paneName)" tab-position="left" stretch class="bg-white">
-        <el-tab-pane v-for="tp in types" :key="tp" :name="tp" :label="$t(`site.settings.${tp}`)"></el-tab-pane>
-      </el-tabs>
-    </el-aside>
-    <el-main class="p-3 app-block">
-      <el-form ref="form" :model="values" v-loading="loading" label-width="150px">
-        <template v-if="type === 'watermark'">
-          <el-row>
-            <el-col :span="24">
-              <el-form-item prop="enabled" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.watermark.enabled" help /></template>
-                <el-switch v-model="values.enabled"></el-switch>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="overlay" :label="$t('site.watermark.overlay')" :rules="values.enabled ? { required: true, message: () => $t('v.required') } : {}">
-                <image-upload v-model="values.overlay"></image-upload>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="position" :label="$t('site.watermark.position')" :rules="{ required: true, message: () => $t('v.required') }">
-                <el-radio-group v-model="values.position">
-                  <div class="watermark-position">
-                    <el-radio v-for="n in 9" :key="n" :label="n" :title="$t(`site.watermark.position.${n}`)"><span></span></el-radio>
-                  </div>
-                </el-radio-group>
-              </el-form-item>
-            </el-col>
-            <el-col :span="24">
-              <el-form-item prop="dissolve" :label="$t('site.watermark.dissolve')" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.watermark.dissolve" help /></template>
-                <el-slider v-model="values.dissolve" :min="0" :max="100" show-input></el-slider>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="minWidth" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.watermark.minWidth" help /></template>
-                <el-input v-model.number="values.minWidth" :min="1" :max="65535"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="minHeight" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.watermark.minHeight" help /></template>
-                <el-input v-model.number="values.minHeight" :min="1" :max="65535"></el-input>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </template>
-        <template v-else-if="type === 'messageBoard'">
-          <el-row>
-            <el-col :span="12">
-              <el-form-item prop="enabled" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.messageBoard.enabled" /></template>
-                <el-switch v-model="values.enabled"></el-switch>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="loginRequired" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.messageBoard.loginRequired" /></template>
-                <el-switch v-model="values.loginRequired"></el-switch>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </template>
-        <template v-else-if="type === 'customs'">
-          <el-row>
-            <el-col v-for="field in fields" :key="field.code" :span="field.double ? 12 : 24">
-              <el-form-item :prop="field.code" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
-                <template #label><label-tip :label="field.name" /></template>
-                <field-item :field="field" v-model="values[field.code]" v-model:model-key="values[field.code + '_key']"></field-item>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </template>
-        <template v-else>
-          <el-row>
-            <el-col :span="12">
-              <el-form-item prop="name" :label="$t('site.name')" :rules="{ required: true, message: () => $t('v.required') }">
-                <el-input v-model="values.name" ref="focus" maxlength="50"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="protocol" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.protocol" help /></template>
-                <el-select v-model="values.protocol" class="w-full">
-                  <el-option v-for="item in ['http', 'https']" :key="item" :label="item" :value="item"></el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item
-                prop="domain"
-                :rules="[
-                  { required: true, message: () => $t('v.required') },
-                  { pattern: /^[a-z0-9-.]*$/, message: () => $t('site.error.domainPattern') },
-                  { pattern: /^(?!(uploads|templates|WEB-INF|cp)$).*/i, message: () => $t('site.error.excludesPattern') },
-                ]"
-              >
-                <template #label><label-tip message="site.domain" help /></template>
-                <el-input v-model="values.domain" maxlength="50"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item
-                prop="subDir"
-                :rules="[
-                  { pattern: /^[\w-]*$/, message: () => $t('site.error.subDirPattern') },
-                  { pattern: /^(?!(uploads|templates|WEB-INF|cp)$).*/i, message: () => $t('site.error.excludesPattern') },
-                ]"
-              >
-                <template #label><label-tip message="site.subDir" help /></template>
-                <el-input v-model="values.subDir" maxlength="50"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="theme" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.theme" help /></template>
-                <el-select v-model="values.theme" class="w-full">
-                  <el-option v-for="item in themeList" :key="item" :label="item" :value="item"></el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="mobileTheme" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.mobileTheme" help /></template>
-                <el-select v-model="values.mobileTheme" class="w-full">
-                  <el-option v-for="item in themeList" :key="item" :label="item" :value="item"></el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="modelId" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.model" help /></template>
-                <el-select v-model="values.modelId" class="w-full">
-                  <el-option v-for="item in modelList" :key="item.id" :label="item.name" :value="item.id"></el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="24">
-              <el-form-item prop="logo">
-                <template #label><label-tip message="site.logo" help /></template>
-                <image-upload v-model="values.logo"></image-upload>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="seoTitle">
-                <template #label><label-tip message="site.seoTitle" help /></template>
-                <el-input v-model="values.seoTitle" maxlength="150"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="seoKeywords">
-                <template #label><label-tip message="site.seoKeywords" help /></template>
-                <el-input v-model="values.seoKeywords" maxlength="150"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="24">
-              <el-form-item prop="seoDescription">
-                <template #label><label-tip message="site.seoDescription" help /></template>
-                <el-input v-model="values.seoDescription" type="textarea" :rows="3" maxlength="1000"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="pageSize" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="site.pageSize" help /></template>
-                <el-input-number v-model="values.pageSize" :min="1" :max="200"></el-input-number>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item prop="status">
-                <template #label><label-tip message="site.status" help /></template>
-                <el-radio-group v-model="values.status">
-                  <el-radio v-for="n in [0, 1]" :key="n" :label="n">{{ $t(`site.status.${n}`) }}</el-radio>
-                </el-radio-group>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </template>
-        <div>
-          <el-button :disabled="perm(`siteSettings:${type}:update`)" :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" native-type="submit">
-            {{ $t('save') }}
-          </el-button>
-        </div>
-      </el-form>
-    </el-main>
-  </el-container>
-</template>
-
 <script lang="ts">
 export default { name: 'SiteSettings' };
 </script>
@@ -299,6 +108,197 @@ const handleSubmit = () => {
   });
 };
 </script>
+
+<template>
+  <el-container>
+    <el-aside width="180px" class="pr-3">
+      <el-tabs v-model="type" tab-position="left" stretch class="bg-white" @tab-click="({ paneName }) => tabClick(paneName)">
+        <el-tab-pane v-for="tp in types" :key="tp" :name="tp" :label="$t(`site.settings.${tp}`)"></el-tab-pane>
+      </el-tabs>
+    </el-aside>
+    <el-main class="p-3 app-block">
+      <el-form ref="form" v-loading="loading" :model="values" label-width="150px">
+        <template v-if="type === 'watermark'">
+          <el-row>
+            <el-col :span="24">
+              <el-form-item prop="enabled" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.watermark.enabled" help /></template>
+                <el-switch v-model="values.enabled"></el-switch>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="overlay" :label="$t('site.watermark.overlay')" :rules="values.enabled ? { required: true, message: () => $t('v.required') } : {}">
+                <image-upload v-model="values.overlay"></image-upload>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="position" :label="$t('site.watermark.position')" :rules="{ required: true, message: () => $t('v.required') }">
+                <el-radio-group v-model="values.position">
+                  <div class="watermark-position">
+                    <el-radio v-for="n in 9" :key="n" :label="n" :title="$t(`site.watermark.position.${n}`)"><span></span></el-radio>
+                  </div>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item prop="dissolve" :label="$t('site.watermark.dissolve')" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.watermark.dissolve" help /></template>
+                <el-slider v-model="values.dissolve" :min="0" :max="100" show-input></el-slider>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="minWidth" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.watermark.minWidth" help /></template>
+                <el-input v-model.number="values.minWidth" :min="1" :max="65535"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="minHeight" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.watermark.minHeight" help /></template>
+                <el-input v-model.number="values.minHeight" :min="1" :max="65535"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </template>
+        <template v-else-if="type === 'messageBoard'">
+          <el-row>
+            <el-col :span="12">
+              <el-form-item prop="enabled" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.messageBoard.enabled" /></template>
+                <el-switch v-model="values.enabled"></el-switch>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="loginRequired" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.messageBoard.loginRequired" /></template>
+                <el-switch v-model="values.loginRequired"></el-switch>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </template>
+        <template v-else-if="type === 'customs'">
+          <el-row>
+            <el-col v-for="field in fields" :key="field.code" :span="field.double ? 12 : 24">
+              <el-form-item :prop="field.code" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
+                <template #label><label-tip :label="field.name" /></template>
+                <field-item v-model="values[field.code]" v-model:model-key="values[field.code + '_key']" :field="field"></field-item>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </template>
+        <template v-else>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item prop="name" :label="$t('site.name')" :rules="{ required: true, message: () => $t('v.required') }">
+                <el-input ref="focus" v-model="values.name" maxlength="50"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="protocol" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.protocol" help /></template>
+                <el-select v-model="values.protocol" class="w-full">
+                  <el-option v-for="item in ['http', 'https']" :key="item" :label="item" :value="item"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item
+                prop="domain"
+                :rules="[
+                  { required: true, message: () => $t('v.required') },
+                  { pattern: /^[a-z0-9-.]*$/, message: () => $t('site.error.domainPattern') },
+                  { pattern: /^(?!(uploads|templates|WEB-INF|cp)$).*/i, message: () => $t('site.error.excludesPattern') },
+                ]"
+              >
+                <template #label><label-tip message="site.domain" help /></template>
+                <el-input v-model="values.domain" maxlength="50"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item
+                prop="subDir"
+                :rules="[
+                  { pattern: /^[\w-]*$/, message: () => $t('site.error.subDirPattern') },
+                  { pattern: /^(?!(uploads|templates|WEB-INF|cp)$).*/i, message: () => $t('site.error.excludesPattern') },
+                ]"
+              >
+                <template #label><label-tip message="site.subDir" help /></template>
+                <el-input v-model="values.subDir" maxlength="50"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="theme" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.theme" help /></template>
+                <el-select v-model="values.theme" class="w-full">
+                  <el-option v-for="item in themeList" :key="item" :label="item" :value="item"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="mobileTheme" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.mobileTheme" help /></template>
+                <el-select v-model="values.mobileTheme" class="w-full">
+                  <el-option v-for="item in themeList" :key="item" :label="item" :value="item"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="modelId" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.model" help /></template>
+                <el-select v-model="values.modelId" class="w-full">
+                  <el-option v-for="item in modelList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item prop="logo">
+                <template #label><label-tip message="site.logo" help /></template>
+                <image-upload v-model="values.logo"></image-upload>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="seoTitle">
+                <template #label><label-tip message="site.seoTitle" help /></template>
+                <el-input v-model="values.seoTitle" maxlength="150"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="seoKeywords">
+                <template #label><label-tip message="site.seoKeywords" help /></template>
+                <el-input v-model="values.seoKeywords" maxlength="150"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item prop="seoDescription">
+                <template #label><label-tip message="site.seoDescription" help /></template>
+                <el-input v-model="values.seoDescription" type="textarea" :rows="3" maxlength="1000"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="pageSize" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="site.pageSize" help /></template>
+                <el-input-number v-model="values.pageSize" :min="1" :max="200"></el-input-number>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="status">
+                <template #label><label-tip message="site.status" help /></template>
+                <el-radio-group v-model="values.status">
+                  <el-radio v-for="n in [0, 1]" :key="n" :label="n">{{ $t(`site.status.${n}`) }}</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </template>
+        <div>
+          <el-button :disabled="perm(`siteSettings:${type}:update`)" :loading="buttonLoading" type="primary" native-type="submit" @click.prevent="handleSubmit">
+            {{ $t('save') }}
+          </el-button>
+        </div>
+      </el-form>
+    </el-main>
+  </el-container>
+</template>
 
 <style lang="scss" scoped>
 .el-tabs {

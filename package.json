@@ -1,16 +1,21 @@
 {
   "name": "ujcms-cp",
-  "version": "5.5.2",
+  "version": "6.0.2",
   "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "lint": "eslint src/**/*.{vue,ts,tsx} --fix",
+    "prettier": "prettier --write src/**/*.{json,js,ts,tsx,css,scss,vue,html,md}",
+    "lint-staged": "lint-staged",
+    "prepare": "husky install",
     "plop": "plop"
   },
   "dependencies": {
     "@bpmn-io/properties-panel": "^0.14.0",
-    "@element-plus/icons-vue": "^2.0.10",
+    "@codemirror/lang-html": "^6.4.2",
+    "@element-plus/icons-vue": "^2.1.0",
     "@toast-ui/editor": "^3.1.4",
     "@toast-ui/editor-plugin-chart": "^3.0.1",
     "@toast-ui/editor-plugin-code-syntax-highlight": "^3.0.0",
@@ -21,13 +26,15 @@
     "axios": "^0.25.0",
     "bpmn-js": "^9.1.0",
     "bpmn-js-properties-panel": "^1.1.1",
+    "codemirror": "^6.0.1",
     "core-js": "^3.21.0",
     "cropperjs": "^1.5.12",
     "crypto-js": "^4.1.1",
     "dayjs": "^1.10.7",
     "domutils": "^3.0.1",
-    "element-plus": "^2.2.19",
+    "element-plus": "^2.2.36",
     "entities": "^4.3.0",
+    "file-saver": "^2.0.5",
     "htmlparser2": "^8.0.1",
     "js-cookie": "^3.0.1",
     "lodash": "^4.17.21",
@@ -35,42 +42,44 @@
     "path-to-regexp": "^6.2.0",
     "sm-crypto": "^0.3.7",
     "tinymce": "~5.9.2",
-    "vue": "^3.2.41",
+    "vue": "^3.2.47",
+    "vue-codemirror": "^6.1.1",
     "vue-i18n": "^9.2.2",
-    "vue-router": "^4.0.12",
+    "vue-router": "^4.1.6",
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
-    "@intlify/vite-plugin-vue-i18n": "^6.0.3",
+    "@intlify/unplugin-vue-i18n": "^0.9.2",
     "@types/crypto-js": "^4.1.1",
+    "@types/file-saver": "^2.0.5",
     "@types/js-cookie": "^3.0.1",
     "@types/lodash": "^4.14.178",
     "@types/node": "^17.0.16",
     "@types/nprogress": "^0.2.0",
     "@types/prismjs": "^1.26.0",
     "@types/sm-crypto": "^0.3.0",
-    "@typescript-eslint/eslint-plugin": "^4.33.0",
-    "@typescript-eslint/parser": "^4.33.0",
-    "@vitejs/plugin-legacy": "^3.0.1",
-    "@vitejs/plugin-vue": "^4.0.0",
-    "@vue/eslint-config-prettier": "^6.0.0",
-    "@vue/eslint-config-typescript": "^7.0.0",
-    "autoprefixer": "^10.4.2",
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-import-resolver-alias": "^1.1.2",
-    "eslint-plugin-import": "^2.25.4",
-    "eslint-plugin-prettier": "^3.4.1",
-    "eslint-plugin-vue": "^7.20.0",
+    "@typescript-eslint/eslint-plugin": "^5.55.0",
+    "@typescript-eslint/parser": "^5.55.0",
+    "@vitejs/plugin-legacy": "^4.0.2",
+    "@vitejs/plugin-vue": "^4.1.0",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^8.36.0",
+    "eslint-config-prettier": "^8.7.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-vue": "^9.9.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.0",
+    "mockjs": "^1.1.0",
     "plop": "^3.0.5",
     "postcss": "^8.4.6",
-    "prettier": "^2.7.1",
+    "prettier": "^2.8.4",
     "sass": "^1.49.7",
-    "tailwindcss": "^3.2.4",
-    "terser": "^5.16.1",
-    "typescript": "^4.4.4",
-    "vite": "^4.0.3",
-    "vue-tsc": "^1.0.11"
+    "tailwindcss": "^3.2.7",
+    "terser": "^5.16.6",
+    "typescript": "^4.9.5",
+    "vite": "^4.0.4",
+    "vite-plugin-mock": "^2.9.6",
+    "vue-tsc": "^1.2.0"
   },
   "prettier": {
     "printWidth": 180,
@@ -78,12 +87,34 @@
     "trailingComma": "all",
     "arrowParens": "always"
   },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.vue": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "{!(package)*.json,.!(browserslist)*rc}": [
+      "prettier --write--parser json"
+    ],
+    "package.json": [
+      "prettier --write"
+    ],
+    "*.{scss,html}": [
+      "prettier --write"
+    ],
+    "*.md": [
+      "prettier --write"
+    ]
+  },
   "browserslist": [
     "> 1%",
     "last 2 versions",
     "not dead"
   ],
   "engines": {
-    "node": ">=12.14"
+    "node": ">=14.18"
   }
 }

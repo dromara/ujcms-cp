@@ -1,3 +1,47 @@
+<script lang="ts" setup>
+import { ref, toRefs, watchEffect } from 'vue';
+import { queryDictTypeList } from '@/api/config';
+import { queryDictList } from '@/api/content';
+import LabelTip from '@/components/LabelTip.vue';
+
+const props = defineProps({ selected: { type: Object, required: true } });
+const { selected: field } = toRefs(props);
+const dictTypeList = ref<any[]>([]);
+const dictList = ref<any[]>([]);
+watchEffect(async () => {
+  if (field.value.type === 'date' && !field.value.dateType) {
+    field.value.dateType = 'date';
+  }
+  if (field.value.type === 'switch' && !field.value.inactiveValue) {
+    field.value.inactiveValue = '0';
+  }
+  if (field.value.type === 'switch' && !field.value.activeValue) {
+    field.value.activeValue = '1';
+  }
+  if (['radio', 'checkbox'].includes(field.value.type) && !field.value.checkStyle) {
+    field.value.checkStyle = 'default';
+  }
+  if (['checkbox', 'multipleSelect'].includes(field.value.type) && !field.value.defaultValue) {
+    field.value.defaultValue = [];
+  }
+  if (['checkbox', 'multipleSelect'].includes(field.value.type)) {
+    field.value.multiple = true;
+  }
+  if (['radio', 'checkbox', 'select', 'multipleSelect'].includes(field.value.type)) {
+    dictTypeList.value = await queryDictTypeList();
+  }
+});
+watchEffect(async () => {
+  if (field.value.dictTypeId != null) {
+    dictList.value = await queryDictList({ typeId: field.value.dictTypeId });
+  }
+});
+const dictTypeChange = async () => {
+  field.value.defaultValue = field.value.multiple ? [] : undefined;
+  field.value.defaultValueKey = field.value.multiple ? [] : undefined;
+};
+</script>
+
 <!--
       { label: '单行文本', type: 'text' },
       { label: '多行文本', type: 'textarea' },
@@ -114,14 +158,14 @@
   </template>
   <template v-if="['radio', 'checkbox', 'select', 'multipleSelect'].includes(field.type)">
     <el-form-item prop="dictTypeId" :label="$t('model.field.dictType')" :rules="{ required: true, message: () => $t('v.required') }">
-      <el-select v-model="field.dictTypeId" @change="(typeId) => dictTypeChange()" class="w-full">
+      <el-select v-model="field.dictTypeId" class="w-full" @change="(typeId) => dictTypeChange()">
         <el-option v-for="item in dictTypeList" :key="item.id" :value="item.id" :label="`${item.name}(${item.alias})`"></el-option>
       </el-select>
     </el-form-item>
   </template>
   <template v-if="['radio', 'select'].includes(field.type)">
     <el-form-item prop="defaultValue" :label="$t('model.field.defaultValue')">
-      <el-select v-model="field.defaultValueKey" @change="(val) => (field.defaultValue = dictList.find((item) => item.value === val)?.name)" clearable class="w-full">
+      <el-select v-model="field.defaultValueKey" clearable class="w-full" @change="(val) => (field.defaultValue = dictList.find((item) => item.value === val)?.name)">
         <el-option v-for="item in dictList" :key="item.id" :value="item.value" :label="item.name"></el-option>
       </el-select>
     </el-form-item>
@@ -130,10 +174,10 @@
     <el-form-item prop="defaultValue" :label="$t('model.field.defaultValue')">
       <el-select
         v-model="field.defaultValueKey"
-        @change="(val) => (field.defaultValue = dictList.filter((item) => val.indexOf(item.value) !== -1).map((item) => item.name))"
         clearable
         class="w-full"
         multiple
+        @change="(val) => (field.defaultValue = dictList.filter((item) => val.indexOf(item.value) !== -1).map((item) => item.name))"
       >
         <el-option v-for="item in dictList" :key="item.id" :value="item.value" :label="item.name"></el-option>
       </el-select>
@@ -171,47 +215,3 @@
     </el-form-item>
   </template>
 </template>
-
-<script lang="ts" setup>
-import { ref, toRefs, watchEffect } from 'vue';
-import { queryDictTypeList } from '@/api/config';
-import { queryDictList } from '@/api/content';
-import LabelTip from '@/components/LabelTip.vue';
-
-const props = defineProps({ selected: { type: Object, required: true } });
-const { selected: field } = toRefs(props);
-const dictTypeList = ref<any[]>([]);
-const dictList = ref<any[]>([]);
-watchEffect(async () => {
-  if (field.value.type === 'date' && !field.value.dateType) {
-    field.value.dateType = 'date';
-  }
-  if (field.value.type === 'switch' && !field.value.inactiveValue) {
-    field.value.inactiveValue = '0';
-  }
-  if (field.value.type === 'switch' && !field.value.activeValue) {
-    field.value.activeValue = '1';
-  }
-  if (['radio', 'checkbox'].includes(field.value.type) && !field.value.checkStyle) {
-    field.value.checkStyle = 'default';
-  }
-  if (['checkbox', 'multipleSelect'].includes(field.value.type) && !field.value.defaultValue) {
-    field.value.defaultValue = [];
-  }
-  if (['checkbox', 'multipleSelect'].includes(field.value.type)) {
-    field.value.multiple = true;
-  }
-  if (['radio', 'checkbox', 'select', 'multipleSelect'].includes(field.value.type)) {
-    dictTypeList.value = await queryDictTypeList();
-  }
-});
-watchEffect(async () => {
-  if (field.value.dictTypeId != null) {
-    dictList.value = await queryDictList({ typeId: field.value.dictTypeId });
-  }
-});
-const dictTypeChange = async () => {
-  field.value.defaultValue = field.value.multiple ? [] : undefined;
-  field.value.defaultValueKey = field.value.multiple ? [] : undefined;
-};
-</script>

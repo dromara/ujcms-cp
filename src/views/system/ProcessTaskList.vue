@@ -1,43 +1,3 @@
-<template>
-  <el-dialog :title="$t('processInstance.op.task')" @opened="handlerOpen()" width="98%" :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)">
-    <div ref="bpmnContainer" class="w-full"></div>
-    <el-table :data="taskData" v-loading="loading">
-      <!-- <el-table-column prop="id" label="ID" show-overflow-tooltip /> -->
-      <el-table-column prop="name" :label="$t('processModel.name')" />
-      <el-table-column prop="assignee" :label="$t('processActivity.assignee')" />
-      <el-table-column property="created" :label="$t('processInstance.started')">
-        <template #default="{ row }">{{ dayjs(row.created).format('YYYY-MM-DD HH:mm') }}</template>
-      </el-table-column>
-      <el-table-column property="endDate" :label="$t('processInstance.ended')">
-        <template #default="{ row }">{{ row.endDate ? dayjs(row.endDate).format('YYYY-MM-DD HH:mm') : undefined }}</template>
-      </el-table-column>
-      <el-table-column prop="duration" :label="$t('processActivity.durationInMillis')">
-        <template #default="{ row }">{{ row.duration ? Math.floor(row.duration / 100 / 60 / 60) / 10 + ' H' : undefined }}</template>
-      </el-table-column>
-    </el-table>
-    <p class="mt-4 text-lg">审核历史</p>
-    <el-table :data="processData" v-loading="loading">
-      <!-- <el-table-column prop="id" label="ID" show-overflow-tooltip /> -->
-      <el-table-column prop="assignee" :label="$t('processInstance.assignee')" />
-      <el-table-column prop="status" :label="$t('processInstance.status')">
-        <template #default="{ row }">
-          <el-tag v-if="row.status === 'complete'" type="success" size="small">{{ $t(`processInstance.status.${row.status}`) }}</el-tag>
-          <el-tag v-else-if="row.status === 'reject'" type="danger" size="small">{{ $t(`processInstance.status.${row.status}`) }}</el-tag>
-          <el-tag v-else-if="row.status === 'cancel'" type="info" size="small">{{ $t(`processInstance.status.${row.status}`) }}</el-tag>
-          <el-tag v-else type="warning" size="small">{{ $t(`processInstance.status.${row.status}`) }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="opinion" :label="$t('processInstance.opinion')" />
-      <el-table-column property="started" :label="$t('processInstance.started')">
-        <template #default="{ row }">{{ dayjs(row.started).format('YYYY-MM-DD HH:mm') }}</template>
-      </el-table-column>
-      <el-table-column property="ended" :label="$t('processInstance.ended')">
-        <template #default="{ row }">{{ row.ended ? dayjs(row.ended).format('YYYY-MM-DD HH:mm') : undefined }}</template>
-      </el-table-column>
-    </el-table>
-  </el-dialog>
-</template>
-
 <script setup lang="ts">
 import { toRefs, ref, markRaw } from 'vue';
 import dayjs from 'dayjs';
@@ -47,10 +7,10 @@ import defaultBpmnXml from '@/components/bpmnjs/customTranslate/defaultBpmnXml';
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
-  instanceId: { type: String },
+  instanceId: { type: String, default: null },
 });
 defineEmits({ 'update:modelValue': null });
-const { instanceId, modelValue: visible } = toRefs(props);
+const { instanceId } = toRefs(props);
 
 const taskData = ref<any[]>([]);
 const processData = ref<any[]>([]);
@@ -91,6 +51,52 @@ const handlerOpen = async () => {
   fetchData();
 };
 </script>
+
+<template>
+  <el-dialog
+    :title="$t('processInstance.op.task')"
+    width="98%"
+    :model-value="modelValue"
+    @opened="() => handlerOpen()"
+    @update:model-value="(event) => $emit('update:modelValue', event)"
+  >
+    <div ref="bpmnContainer" class="w-full"></div>
+    <el-table v-loading="loading" :data="taskData">
+      <!-- <el-table-column prop="id" label="ID" show-overflow-tooltip /> -->
+      <el-table-column prop="name" :label="$t('processModel.name')" />
+      <el-table-column prop="assignee" :label="$t('processActivity.assignee')" />
+      <el-table-column property="created" :label="$t('processInstance.started')">
+        <template #default="{ row }">{{ dayjs(row.created).format('YYYY-MM-DD HH:mm') }}</template>
+      </el-table-column>
+      <el-table-column property="endDate" :label="$t('processInstance.ended')">
+        <template #default="{ row }">{{ row.endDate ? dayjs(row.endDate).format('YYYY-MM-DD HH:mm') : undefined }}</template>
+      </el-table-column>
+      <el-table-column prop="duration" :label="$t('processActivity.durationInMillis')">
+        <template #default="{ row }">{{ row.duration ? Math.floor(row.duration / 100 / 60 / 60) / 10 + ' H' : undefined }}</template>
+      </el-table-column>
+    </el-table>
+    <p class="mt-4 text-lg">{{ $t('processInstance.history') }}</p>
+    <el-table v-loading="loading" :data="processData">
+      <!-- <el-table-column prop="id" label="ID" show-overflow-tooltip /> -->
+      <el-table-column prop="assignee" :label="$t('processInstance.assignee')" />
+      <el-table-column prop="status" :label="$t('processInstance.status')">
+        <template #default="{ row }">
+          <el-tag v-if="row.status === 'complete'" type="success" size="small">{{ $t(`processInstance.status.${row.status}`) }}</el-tag>
+          <el-tag v-else-if="row.status === 'reject'" type="danger" size="small">{{ $t(`processInstance.status.${row.status}`) }}</el-tag>
+          <el-tag v-else-if="row.status === 'cancel'" type="info" size="small">{{ $t(`processInstance.status.${row.status}`) }}</el-tag>
+          <el-tag v-else type="warning" size="small">{{ $t(`processInstance.status.${row.status}`) }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="opinion" :label="$t('processInstance.opinion')" />
+      <el-table-column property="started" :label="$t('processInstance.started')">
+        <template #default="{ row }">{{ dayjs(row.started).format('YYYY-MM-DD HH:mm') }}</template>
+      </el-table-column>
+      <el-table-column property="ended" :label="$t('processInstance.ended')">
+        <template #default="{ row }">{{ row.ended ? dayjs(row.ended).format('YYYY-MM-DD HH:mm') : undefined }}</template>
+      </el-table-column>
+    </el-table>
+  </el-dialog>
+</template>
 
 <style lang="scss" scoped>
 :deep(.highlight:not(.djs-connection) .djs-visual > :nth-child(1)) {

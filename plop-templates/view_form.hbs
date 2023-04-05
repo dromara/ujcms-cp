@@ -1,42 +1,42 @@
-<template>
-  <dialog-form
-    :name="$t('menu.{{camelCase path}}.{{camelCase name}}')"
-    :queryBean="query{{pascalCase name}}"
-    :createBean="create{{pascalCase name}}"
-    :updateBean="update{{pascalCase name}}"
-    :deleteBean="delete{{pascalCase name}}"
-    :beanId="beanId"
-    :beanIds="beanIds"
-    :focus="focus"
-    :initValues="(): any => ({})"
-    :toValues="(bean) => ({ ...bean })"
-    perms="{{camelCase name}}"
-    v-model:values="values"
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    @finished="$emit('finished')"
-  >
-    <template #default="{ bean }">
-      <el-form-item prop="name" :rules="{ required: true, message: () => $t('v.required') }">
-        <template #label><label-tip message="{{camelCase name}}.name" /></template>
-        <el-input v-model="values.name" ref="focus" maxlength="50"></el-input>
-      </el-form-item>
-    </template>
-  </dialog-form>
-</template>
-
 <script lang="ts">
 export default { name: '{{pascalCase name}}Form' };
 </script>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, PropType } from 'vue';
 import { query{{pascalCase name}}, create{{pascalCase name}}, update{{pascalCase name}}, delete{{pascalCase name}} } from '@/api/{{kebabCase path}}';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 
-defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true } });
+defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null }, beanIds: { type: Array as PropType<number[]>, required: true } });
 defineEmits({ 'update:modelValue': null, finished: null });
 const focus = ref<any>();
 const values = ref<any>({});
 </script>
+
+<template>
+  <dialog-form
+    v-model:values="values"
+    :name="$t('menu.{{camelCase path}}.{{camelCase name}}')"
+    :query-bean="query{{pascalCase name}}"
+    :create-bean="create{{pascalCase name}}"
+    :update-bean="update{{pascalCase name}}"
+    :delete-bean="delete{{pascalCase name}}"
+    :bean-id="beanId"
+    :bean-ids="beanIds"
+    :focus="focus"
+    :init-values="(): any => ({})"
+    :to-values="(bean) => ({ ...bean })"
+    :model-value="modelValue"
+    perms="{{camelCase name}}"
+    @update:model-value="(event) => $emit('update:modelValue', event)"
+    @finished="() => $emit('finished')"
+  >
+    <template #default="{ bean }">
+      <el-form-item prop="name" :rules="{ required: true, message: () => $t('v.required') }">
+        <template #label><label-tip message="{{camelCase name}}.name" /></template>
+        <el-input ref="focus" v-model="values.name" maxlength="50"></el-input>
+      </el-form-item>
+    </template>
+  </dialog-form>
+</template>

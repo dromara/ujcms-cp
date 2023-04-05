@@ -17,7 +17,6 @@ declare module '@/components/bpmnjs/descriptors/flowable';
 declare module '@/components/bpmnjs/palette';
 declare module '@/components/bpmnjs/context-pad';
 
-
 interface ImportMetaEnv {
   readonly VITE_BASE_API: string;
   readonly VITE_PUBLIC_PATH: string;

@@ -1,45 +1,3 @@
-<template>
-  <el-upload
-    :action="type === 'avatar' ? avatarUploadUrl : imageUploadUrl"
-    :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
-    :accept="accept"
-    :before-upload="beforeUpload"
-    :data="data"
-    :show-file-list="false"
-    :on-success="(res: any) => ((src = res.url), (cropperVisible = mode === 'manual'))"
-    :on-error="onError"
-    :on-progress="(event: any, file: any) => (progressFile = file)"
-    :disabled="disabled"
-    :drag="!src"
-  >
-    <!--
-    // 用于测试上传进度条
-    action="https://jsonplaceholder.typicode.com/posts/"
-     -->
-    <div v-if="src" class="full-flex-center rounded-border relative hover:border-opacity-0">
-      <img :src="src" class="max-w-full max-h-full block" />
-      <div class="full-flex-center absolute rounded-md cursor-default bg-black bg-opacity-50 opacity-0 hover:opacity-100 space-x-4" @click.stop>
-        <el-icon class="image-action" @click="cropperVisible = true" :title="$t('cropImage')"><Crop /></el-icon>
-        <el-icon class="image-action" @click="previewVisible = true" :title="$t('previewImage')"><View /></el-icon>
-        <el-icon class="image-action" @click="src = undefined" :title="$t('deleteImage')"><Delete /></el-icon>
-      </div>
-    </div>
-    <el-progress v-else-if="progressFile.status === 'uploading'" type="circle" :percentage="parseInt(progressFile.percentage, 10)" />
-    <div v-else class="el-upload--picture-card">
-      <el-icon><Plus /></el-icon>
-    </div>
-  </el-upload>
-  <div>
-    <el-dialog v-model="previewVisible" top="5vh" :width="768" append-to-body destroy-on-close>
-      <el-input v-model="src">
-        <template #prepend>URL</template>
-      </el-input>
-      <img :src="src" alt="" class="mt-1 border border-gray-300" />
-    </el-dialog>
-  </div>
-  <image-cropper v-model="cropperVisible" :type="type" :src="src" :width="width" :height="height" @success="onCropSuccess" />
-</template>
-
 <script setup lang="ts">
 import { computed, ref, toRefs, PropType } from 'vue';
 import { ElMessage, useFormItem } from 'element-plus';
@@ -56,10 +14,10 @@ import ImageCropper from './ImageCropper.vue';
 
 const props = defineProps({
   modelValue: { type: String, default: null },
-  fileAccept: { type: String },
-  fileMaxSize: { type: Number },
-  width: { type: Number },
-  height: { type: Number },
+  fileAccept: { type: String, default: null },
+  fileMaxSize: { type: Number, default: null },
+  width: { type: Number, default: null },
+  height: { type: Number, default: null },
   /**
    * none: 原图上传, cut: 自动裁剪, resize: 自动压缩, manual: 手动裁剪
    */
@@ -93,18 +51,18 @@ const src = computed({
 const resizable = computed(() => ['cut', 'resize'].includes(mode.value));
 const data = computed(() => {
   const params: any = { resizeMode: mode.value === 'cut' ? 'cut' : 'normal' };
-  if (width?.value != null) {
+  if (width.value != null) {
     // 为0不限制，为空则依然受全局图片宽高限制
     params.maxWidth = resizable.value ? width.value : 0;
   }
-  if (height?.value != null) {
+  if (height.value != null) {
     // 为0不限制，为空则依然受全局图片宽高限制
     params.maxHeight = resizable.value ? height.value : 0;
   }
   return params;
 });
-const accept = computed(() => fileAccept?.value ?? uploadSettings.imageInputAccept);
-const maxSize = computed(() => fileMaxSize?.value ?? uploadSettings.imageLimitByte);
+const accept = computed(() => fileAccept.value ?? uploadSettings.imageInputAccept);
+const maxSize = computed(() => fileMaxSize.value ?? uploadSettings.imageLimitByte);
 const beforeUpload = (file: any) => {
   if (maxSize.value > 0 && file.size > maxSize.value) {
     ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024} MB` }));
@@ -120,6 +78,48 @@ const onCropSuccess = (url: string) => {
   emit('cropSuccess', url);
 };
 </script>
+
+<template>
+  <el-upload
+    :action="type === 'avatar' ? avatarUploadUrl : imageUploadUrl"
+    :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
+    :accept="accept"
+    :before-upload="beforeUpload"
+    :data="data"
+    :show-file-list="false"
+    :on-success="(res: any) => ((src = res.url), (cropperVisible = mode === 'manual'))"
+    :on-error="onError"
+    :on-progress="(event: any, file: any) => (progressFile = file)"
+    :disabled="disabled"
+    :drag="!src"
+  >
+    <!--
+    // 用于测试上传进度条
+    action="https://jsonplaceholder.typicode.com/posts/"
+     -->
+    <div v-if="src" class="full-flex-center rounded-border relative hover:border-opacity-0">
+      <img :src="src" class="max-w-full max-h-full block" />
+      <div class="full-flex-center absolute rounded-md cursor-default bg-black bg-opacity-50 opacity-0 hover:opacity-100 space-x-4" @click.stop>
+        <el-icon class="image-action" :title="$t('cropImage')" @click="() => (cropperVisible = true)"><Crop /></el-icon>
+        <el-icon class="image-action" :title="$t('previewImage')" @click="() => (previewVisible = true)"><View /></el-icon>
+        <el-icon class="image-action" :title="$t('deleteImage')" @click="() => (src = undefined)"><Delete /></el-icon>
+      </div>
+    </div>
+    <el-progress v-else-if="progressFile.status === 'uploading'" type="circle" :percentage="parseInt(progressFile.percentage, 10)" />
+    <div v-else class="el-upload--picture-card">
+      <el-icon><Plus /></el-icon>
+    </div>
+  </el-upload>
+  <div>
+    <el-dialog v-model="previewVisible" top="5vh" :width="768" append-to-body destroy-on-close>
+      <el-input v-model="src">
+        <template #prepend>URL</template>
+      </el-input>
+      <img :src="src" alt="" class="mt-1 border border-gray-300" />
+    </el-dialog>
+  </div>
+  <image-cropper v-model="cropperVisible" :type="type" :src="src" :width="width" :height="height" @success="onCropSuccess" />
+</template>
 
 <style lang="scss" scoped>
 :deep(.el-dialog__headerbtn) {

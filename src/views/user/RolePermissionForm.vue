@@ -1,187 +1,3 @@
-<template>
-  <el-drawer :title="$t('permissionSettings')" :with-header="false" :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" :size="576">
-    <template #default>
-      <el-form ref="form" :model="values" :disabled="disabled" label-width="150px">
-        <el-tabs v-model="tabName">
-          <el-tab-pane :label="$t('role.permission')" name="permission">
-            <el-alert :title="$t('role.permission.tooltip')" type="info" :closable="false" show-icon />
-            <el-form-item prop="allPermission">
-              <template #label><label-tip message="role.allPermission" /></template>
-              <el-switch v-model="values.allPermission"></el-switch>
-            </el-form-item>
-            <template v-if="!values.allPermission">
-              <div class="border-t">
-                <el-checkbox
-                  v-model="permissionExpand"
-                  @change="(checked: any) => expandTree(checked, permissionTree, permsData)"
-                  :disabled="false"
-                  :label="$t('expand/collapse')"
-                />
-                <el-checkbox
-                  v-model="permissionCheck"
-                  @change="
-                  (checked: any) => {
-                    checkTree(checked, permissionTree, permsData);
-                    handlePermission();
-                  }
-                "
-                  :label="$t('checkAll/uncheckAll')"
-                />
-              </div>
-              <el-tree ref="permissionTree" :data="permsData" node-key="key" @check="handlePermission()" class="border rounded" default-expand-all show-checkbox />
-            </template>
-          </el-tab-pane>
-          <el-tab-pane v-if="currentUser.epRank >= 1 || currentUser.epDisplay" :label="$t('role.grantPermission')" name="grantPermission">
-            <template v-if="currentUser.epRank >= 1">
-              <el-alert :title="$t('role.grantPermission.tooltip')" type="info" :closable="false" show-icon />
-              <el-form-item prop="allGrantPermission" class="mt-3">
-                <template #label><label-tip message="role.allGrantPermission" /></template>
-                <el-switch v-model="values.allGrantPermission"></el-switch>
-              </el-form-item>
-              <template v-if="!values.allGrantPermission">
-                <div class="border-t">
-                  <el-checkbox v-model="grantPermissionExpand" @change="(checked: any) => expandTree(checked, grantPermissionTree, permsData)" :label="$t('expand/collapse')" />
-                  <el-checkbox
-                    v-model="grantPermissionCheck"
-                    @change="
-                  (checked: any) => {
-                    checkTree(checked, grantPermissionTree, permsData);
-                    handleGrantPermission();
-                  }
-                "
-                    :label="$t('checkAll/uncheckAll')"
-                  />
-                </div>
-                <el-tree ref="grantPermissionTree" :data="permsData" node-key="key" @check="handleGrantPermission()" class="border rounded" default-expand-all show-checkbox />
-              </template>
-            </template>
-            <template v-else>
-              <el-alert type="warning" :closable="false" :show-icon="true">
-                <template #title><span v-html="$t('error.enterprise.short')"></span></template>
-              </el-alert>
-            </template>
-          </el-tab-pane>
-          <el-tab-pane v-if="currentUser.epRank >= 1 || currentUser.epDisplay" :label="$t('role.dataPermission')" name="dataPermission">
-            <template v-if="currentUser.epRank >= 1">
-              <el-form-item prop="globalPermission" :rules="{ required: true, message: () => $t('v.required') }">
-                <template #label><label-tip message="role.globalPermission" help /></template>
-                <el-switch v-model="values.globalPermission" :disabled="!currentUser.globalPermission"></el-switch>
-              </el-form-item>
-              <el-form-item prop="dataScope" :rules="[{ required: true, message: () => $t('v.required') }]">
-                <template #label><label-tip message="role.dataScope" help /></template>
-                <el-select v-model="values.dataScope">
-                  <el-option v-for="item in [1, 2, 3]" :key="item" :label="$t(`role.dataScope.${item}`)" :value="item" />
-                </el-select>
-              </el-form-item>
-            </template>
-            <template v-else>
-              <el-alert type="warning" :closable="false" :show-icon="true">
-                <template #title><span v-html="$t('error.enterprise.short')"></span></template>
-              </el-alert>
-            </template>
-          </el-tab-pane>
-          <el-tab-pane v-if="currentUser.epRank >= 1 || currentUser.epDisplay" :label="$t('role.articlePermission')" name="articlePermission">
-            <template v-if="currentUser.epRank >= 1">
-              <el-form-item prop="allArticlePermission">
-                <template #label><label-tip message="role.allArticlePermission" help /></template>
-                <el-switch v-model="values.allArticlePermission"></el-switch>
-              </el-form-item>
-              <template v-if="!values.allArticlePermission">
-                <div class="border-t">
-                  <el-checkbox
-                    v-model="articlePermissionExpand"
-                    @change="(checked: any) => expandTree(checked, articlePermissionTree, channelData, 'id')"
-                    :label="$t('expand/collapse')"
-                  />
-                  <el-checkbox
-                    v-model="articlePermissionCheck"
-                    @change="
-                    (checked: any) => {
-                      checkTree(checked, articlePermissionTree, channelData, 'id');
-                      handleArticlePermission();
-                    }
-                  "
-                    :label="$t('checkAll/uncheckAll')"
-                  />
-                </div>
-                <el-tree
-                  ref="articlePermissionTree"
-                  :data="channelData"
-                  node-key="id"
-                  @check="handleArticlePermission()"
-                  :props="{ label: 'name' }"
-                  class="border rounded"
-                  default-expand-all
-                  show-checkbox
-                />
-              </template>
-            </template>
-            <template v-else>
-              <el-alert type="warning" :closable="false" :show-icon="true">
-                <template #title><span v-html="$t('error.enterprise.short')"></span></template>
-              </el-alert>
-            </template>
-          </el-tab-pane>
-          <el-tab-pane v-if="currentUser.epRank >= 1 || currentUser.epDisplay" :label="$t('role.channelPermission')" name="channelPermission">
-            <template v-if="currentUser.epRank >= 1">
-              <el-form-item prop="allChannelPermission">
-                <template #label><label-tip message="role.allChannelPermission" help /></template>
-                <el-switch v-model="values.allChannelPermission"></el-switch>
-              </el-form-item>
-              <template v-if="!values.allChannelPermission">
-                <div class="border-t">
-                  <el-checkbox
-                    v-model="channelPermissionExpand"
-                    @change="(checked: any) => expandTree(checked, channelPermissionTree, channelData, 'id')"
-                    :label="$t('expand/collapse')"
-                  />
-                  <el-checkbox
-                    v-model="channelPermissionCheck"
-                    @change="
-                      (checked: any) => {
-                        checkTree(checked, channelPermissionTree, flatTree(channelData), 'id');
-                        handleChannelPermission();
-                      }
-                    "
-                    :label="$t('checkAll/uncheckAll')"
-                  />
-                </div>
-                <el-tree
-                  ref="channelPermissionTree"
-                  :data="channelData"
-                  node-key="id"
-                  @check="handleChannelPermission()"
-                  :props="{ label: 'name' }"
-                  class="border rounded"
-                  check-strictly
-                  default-expand-all
-                  show-checkbox
-                />
-              </template>
-            </template>
-            <template v-else>
-              <el-alert type="warning" :closable="false" :show-icon="true">
-                <template #title><span v-html="$t('error.enterprise.short')"></span></template>
-              </el-alert>
-            </template>
-          </el-tab-pane>
-        </el-tabs>
-      </el-form>
-    </template>
-    <template #footer>
-      <div class="flex justify-between items-center">
-        <div>
-          <el-tag>{{ values?.name }}</el-tag>
-        </div>
-        <div>
-          <el-button @click="$emit('update:modelValue', false)">{{ $t('cancel') }}</el-button>
-          <el-button type="primary" @click="handleSubmit()" :loading="buttonLoading" :disabled="disabled">{{ $t('save') }}</el-button>
-        </div>
-      </div>
-    </template>
-  </el-drawer>
-</template>
-
 <script lang="ts">
 export default { name: 'RolePermissionForm' };
 </script>
@@ -197,7 +13,7 @@ import { queryRole, updateRolePermission, roleArticlePermissions, roleChannelPer
 import { queryChannelList } from '@/api/content';
 import LabelTip from '@/components/LabelTip.vue';
 
-const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number } });
+const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null } });
 const emit = defineEmits({ 'update:modelValue': null, finished: null });
 
 const { beanId, modelValue: visible } = toRefs(props);
@@ -225,7 +41,7 @@ disablePermissionTree(permsData, currentUser.grantPermissions ?? []);
 const channelData = ref<any[]>([]);
 const disabled = computed(() => (bean.value.global && !currentUser.globalPermission) || currentUser.rank > bean.value.rank);
 const fetchRole = async () => {
-  if (beanId?.value != null) {
+  if (beanId.value != null) {
     bean.value = await queryRole(beanId.value);
     values.value = { ...bean.value };
     // 树组件先加载好，再赋值
@@ -236,7 +52,7 @@ const fetchRole = async () => {
   }
 };
 const fetchArticlePermissions = async () => {
-  if (beanId?.value != null) {
+  if (beanId.value != null) {
     const articlePermissions = await roleArticlePermissions(beanId.value);
     articlePermissionTree.value?.setCheckedKeys([]);
     articlePermissions.forEach((key: number) => {
@@ -245,7 +61,7 @@ const fetchArticlePermissions = async () => {
   }
 };
 const fetchChannelPermissions = async () => {
-  if (beanId?.value != null) {
+  if (beanId.value != null) {
     const channelPermissions = await roleChannelPermissions(beanId.value);
     channelPermissionTree.value?.setCheckedKeys([]);
     channelPermissions.forEach((key: number) => {
@@ -325,3 +141,196 @@ const getPermission = (checkedNodes: any[], halfCheckedNodes: any[]) =>
     .map((item) => item.perms?.join(','))
     .join(',');
 </script>
+
+<template>
+  <!-- eslint-disable vue/no-v-html -->
+  <el-drawer :title="$t('permissionSettings')" :with-header="false" :model-value="modelValue" :size="576" @update:model-value="(event) => $emit('update:modelValue', event)">
+    <template #default>
+      <el-form ref="form" :model="values" :disabled="disabled" label-width="150px">
+        <el-tabs v-model="tabName">
+          <el-tab-pane :label="$t('role.permission')" name="permission">
+            <el-alert :title="$t('role.permission.tooltip')" type="info" :closable="false" show-icon />
+            <el-form-item prop="allPermission">
+              <template #label><label-tip message="role.allPermission" /></template>
+              <el-switch v-model="values.allPermission"></el-switch>
+            </el-form-item>
+            <template v-if="!values.allPermission">
+              <div class="border-t">
+                <el-checkbox
+                  v-model="permissionExpand"
+                  :disabled="false"
+                  :label="$t('expand/collapse')"
+                  @change="(checked: any) => expandTree(checked, permissionTree, permsData)"
+                />
+                <el-checkbox
+                  v-model="permissionCheck"
+                  :label="$t('checkAll/uncheckAll')"
+                  @change="
+                  (checked: any) => {
+                    checkTree(checked, permissionTree, permsData);
+                    handlePermission();
+                  }
+                "
+                />
+              </div>
+              <el-tree ref="permissionTree" :data="permsData" node-key="key" class="border rounded" default-expand-all show-checkbox @check="() => handlePermission()" />
+            </template>
+          </el-tab-pane>
+          <el-tab-pane v-if="currentUser.epRank >= 1 || currentUser.epDisplay" :label="$t('role.grantPermission')" name="grantPermission">
+            <template v-if="currentUser.epRank >= 1">
+              <el-alert :title="$t('role.grantPermission.tooltip')" type="info" :closable="false" show-icon />
+              <el-form-item prop="allGrantPermission" class="mt-3">
+                <template #label><label-tip message="role.allGrantPermission" /></template>
+                <el-switch v-model="values.allGrantPermission"></el-switch>
+              </el-form-item>
+              <template v-if="!values.allGrantPermission">
+                <div class="border-t">
+                  <el-checkbox v-model="grantPermissionExpand" :label="$t('expand/collapse')" @change="(checked: any) => expandTree(checked, grantPermissionTree, permsData)" />
+                  <el-checkbox
+                    v-model="grantPermissionCheck"
+                    :label="$t('checkAll/uncheckAll')"
+                    @change="
+                  (checked: any) => {
+                    checkTree(checked, grantPermissionTree, permsData);
+                    handleGrantPermission();
+                  }
+                "
+                  />
+                </div>
+                <el-tree
+                  ref="grantPermissionTree"
+                  :data="permsData"
+                  node-key="key"
+                  class="border rounded"
+                  default-expand-all
+                  show-checkbox
+                  @check="() => handleGrantPermission()"
+                />
+              </template>
+            </template>
+            <template v-else>
+              <el-alert type="warning" :closable="false" :show-icon="true">
+                <template #title><span v-html="$t('error.enterprise.short')"></span></template>
+              </el-alert>
+            </template>
+          </el-tab-pane>
+          <el-tab-pane v-if="currentUser.epRank >= 1 || currentUser.epDisplay" :label="$t('role.dataPermission')" name="dataPermission">
+            <template v-if="currentUser.epRank >= 1">
+              <el-form-item prop="globalPermission" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="role.globalPermission" help /></template>
+                <el-switch v-model="values.globalPermission" :disabled="!currentUser.globalPermission"></el-switch>
+              </el-form-item>
+              <el-form-item prop="dataScope" :rules="[{ required: true, message: () => $t('v.required') }]">
+                <template #label><label-tip message="role.dataScope" help /></template>
+                <el-select v-model="values.dataScope">
+                  <el-option v-for="item in [1, 2, 3]" :key="item" :label="$t(`role.dataScope.${item}`)" :value="item" />
+                </el-select>
+              </el-form-item>
+            </template>
+            <template v-else>
+              <el-alert type="warning" :closable="false" :show-icon="true">
+                <template #title><span v-html="$t('error.enterprise.short')"></span></template>
+              </el-alert>
+            </template>
+          </el-tab-pane>
+          <el-tab-pane v-if="currentUser.epRank >= 1 || currentUser.epDisplay" :label="$t('role.articlePermission')" name="articlePermission">
+            <template v-if="currentUser.epRank >= 1">
+              <el-form-item prop="allArticlePermission">
+                <template #label><label-tip message="role.allArticlePermission" help /></template>
+                <el-switch v-model="values.allArticlePermission"></el-switch>
+              </el-form-item>
+              <template v-if="!values.allArticlePermission">
+                <div class="border-t">
+                  <el-checkbox
+                    v-model="articlePermissionExpand"
+                    :label="$t('expand/collapse')"
+                    @change="(checked: any) => expandTree(checked, articlePermissionTree, channelData, 'id')"
+                  />
+                  <el-checkbox
+                    v-model="articlePermissionCheck"
+                    :label="$t('checkAll/uncheckAll')"
+                    @change="
+                    (checked: any) => {
+                      checkTree(checked, articlePermissionTree, channelData, 'id');
+                      handleArticlePermission();
+                    }
+                  "
+                  />
+                </div>
+                <el-tree
+                  ref="articlePermissionTree"
+                  :data="channelData"
+                  node-key="id"
+                  :props="{ label: 'name' }"
+                  class="border rounded"
+                  default-expand-all
+                  show-checkbox
+                  @check="() => handleArticlePermission()"
+                />
+              </template>
+            </template>
+            <template v-else>
+              <el-alert type="warning" :closable="false" :show-icon="true">
+                <template #title><span v-html="$t('error.enterprise.short')"></span></template>
+              </el-alert>
+            </template>
+          </el-tab-pane>
+          <el-tab-pane v-if="currentUser.epRank >= 1 || currentUser.epDisplay" :label="$t('role.channelPermission')" name="channelPermission">
+            <template v-if="currentUser.epRank >= 1">
+              <el-form-item prop="allChannelPermission">
+                <template #label><label-tip message="role.allChannelPermission" help /></template>
+                <el-switch v-model="values.allChannelPermission"></el-switch>
+              </el-form-item>
+              <template v-if="!values.allChannelPermission">
+                <div class="border-t">
+                  <el-checkbox
+                    v-model="channelPermissionExpand"
+                    :label="$t('expand/collapse')"
+                    @change="(checked: any) => expandTree(checked, channelPermissionTree, channelData, 'id')"
+                  />
+                  <el-checkbox
+                    v-model="channelPermissionCheck"
+                    :label="$t('checkAll/uncheckAll')"
+                    @change="
+                      (checked: any) => {
+                        checkTree(checked, channelPermissionTree, flatTree(channelData), 'id');
+                        handleChannelPermission();
+                      }
+                    "
+                  />
+                </div>
+                <el-tree
+                  ref="channelPermissionTree"
+                  :data="channelData"
+                  node-key="id"
+                  :props="{ label: 'name' }"
+                  class="border rounded"
+                  check-strictly
+                  default-expand-all
+                  show-checkbox
+                  @check="() => handleChannelPermission()"
+                />
+              </template>
+            </template>
+            <template v-else>
+              <el-alert type="warning" :closable="false" :show-icon="true">
+                <template #title><span v-html="$t('error.enterprise.short')"></span></template>
+              </el-alert>
+            </template>
+          </el-tab-pane>
+        </el-tabs>
+      </el-form>
+    </template>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <div>
+          <el-tag>{{ values?.name }}</el-tag>
+        </div>
+        <div>
+          <el-button @click="() => $emit('update:modelValue', false)">{{ $t('cancel') }}</el-button>
+          <el-button type="primary" :loading="buttonLoading" :disabled="disabled" @click="() => handleSubmit()">{{ $t('save') }}</el-button>
+        </div>
+      </div>
+    </template>
+  </el-drawer>
+</template>

@@ -1,6 +1,6 @@
 import FlowableContextPadProvider from './FlowableContextPadProvider';
 
 export default {
-  __init__: [ 'contextPadProvider' ],
-  contextPadProvider: [ 'type', FlowableContextPadProvider ]
+  __init__: ['contextPadProvider'],
+  contextPadProvider: ['type', FlowableContextPadProvider],
 };

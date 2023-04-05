@@ -1,27 +1,3 @@
-<template>
-  <el-upload
-    :action="action"
-    :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
-    :accept="accept"
-    :before-upload="beforeUpload"
-    :on-success="onSuccess"
-    :on-progress="(event, file) => (progressFile = file)"
-    :on-error="onError"
-    :show-file-list="false"
-    :disabled="disabled"
-    :multiple="multiple"
-    drag
-  >
-    <!--
-    // 用于测试上传进度条
-    action="https://jsonplaceholder.typicode.com/posts/"
-    -->
-    {{ button ?? $t('clickOrDragToUpload') }}
-    <!-- <el-button type="primary" :disabled="disabled">{{ button ?? $t('clickToUpload') }}</el-button> -->
-  </el-upload>
-  <el-progress v-if="progressFile.status === 'uploading'" :percentage="parseInt(progressFile.percentage, 10)"></el-progress>
-</template>
-
 <script setup lang="ts">
 import { ref, toRefs, computed, PropType } from 'vue';
 import { ElMessage, UploadFile, UploadFiles } from 'element-plus';
@@ -34,17 +10,18 @@ import { imageUploadUrl, videoUploadUrl, audioUploadUrl, docUploadUrl, fileUploa
 
 const props = defineProps({
   type: {
-    type: String as PropType<'image' | 'video' | 'audio' | 'library' | 'doc' | 'file'>,
+    type: String as PropType<'image' | 'video' | 'audio' | 'library' | 'doc' | 'file' | 'any'>,
     default: 'file',
-    validator: (value: string) => ['image', 'video', 'audio', 'library', 'doc', 'file'].includes(value),
+    validator: (value: string) => ['image', 'video', 'audio', 'library', 'doc', 'file', 'any'].includes(value),
   },
-  button: { type: String },
-  uploadAction: { type: String },
-  fileAccept: { type: String },
-  fileMaxSize: { type: Number },
+  button: { type: String, default: null },
+  data: { type: Object as PropType<Record<string, any>>, default: null },
+  uploadAction: { type: String, default: null },
+  fileAccept: { type: String, default: null },
+  fileMaxSize: { type: Number, default: null },
   multiple: { type: Boolean },
   disabled: { type: Boolean, default: false },
-  onSuccess: Function as PropType<((response: any, uploadFile: UploadFile, uploadFiles: UploadFiles) => void) | undefined>,
+  onSuccess: { type: Function as PropType<((response: any, uploadFile: UploadFile, uploadFiles: UploadFiles) => void) | undefined>, default: null },
 });
 
 const { type, uploadAction, fileAccept, fileMaxSize } = toRefs(props);
@@ -88,6 +65,8 @@ const accept = computed(() => {
       return uploadSettings.docInputAccept;
     case 'file':
       return uploadSettings.fileInputAccept;
+    case 'any':
+      return undefined;
     default:
       throw new Error(`Type not support: ${type.value}`);
   }
@@ -110,7 +89,7 @@ const maxSize = computed(() => {
     case 'file':
       return uploadSettings.fileLimitByte;
     default:
-      throw new Error(`Type not support: ${type.value}`);
+      return 0;
   }
 });
 const beforeUpload = (file: any) => {
@@ -124,6 +103,35 @@ const onError = (error: Error) => {
   handleError(JSON.parse(error.message));
 };
 </script>
+
+<template>
+  <div>
+    <el-upload
+      :action="action"
+      :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
+      :data="data"
+      :accept="accept"
+      :before-upload="beforeUpload"
+      :on-success="onSuccess"
+      :on-progress="(event, file) => (progressFile = file)"
+      :on-error="onError"
+      :show-file-list="false"
+      :disabled="disabled"
+      :multiple="multiple"
+      drag
+    >
+      <!--
+      // 用于测试上传进度条
+      action="https://jsonplaceholder.typicode.com/posts/"
+      -->
+      <slot>
+        <span>{{ button ?? $t('clickOrDragToUpload') }}</span>
+        <!-- <el-button type="primary" :disabled="disabled">{{ button ?? $t('clickOrDragToUpload') }}</el-button> -->
+      </slot>
+    </el-upload>
+    <el-progress v-if="progressFile.status === 'uploading'" :percentage="parseInt(progressFile.percentage, 10)"></el-progress>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 :deep(.el-upload-dragger) {

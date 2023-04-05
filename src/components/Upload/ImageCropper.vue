@@ -1,14 +1,3 @@
-<template>
-  <el-dialog :title="$t('imageCrop')" v-model="visible" @closed="destroyCropper()" top="5vh" :width="768" destroy-on-close append-to-body>
-    <div class="text-center">
-      <img ref="imgRef" @load="initCropper()" :src="src" alt="" class="inline" style="max-height: 410px" />
-    </div>
-    <div class="text-right">
-      <el-button @click.prevent="handleSubmit()" type="primary" native-type="submit" class="mt-4">{{ $t('save') }}</el-button>
-    </div>
-  </el-dialog>
-</template>
-
 <script setup lang="ts">
 import { computed, ref, toRefs, PropType } from 'vue';
 import Cropper from 'cropperjs';
@@ -22,10 +11,10 @@ const props = defineProps({
    */
   type: { type: String as PropType<'image' | 'avatar'>, default: 'image' },
   src: { type: String, default: null },
-  width: { type: Number },
-  height: { type: Number },
-  thumbnailWidth: { type: Number },
-  thumbnailHeight: { type: Number },
+  width: { type: Number, default: null },
+  height: { type: Number, default: null },
+  thumbnailWidth: { type: Number, default: null },
+  thumbnailHeight: { type: Number, default: null },
 });
 const emit = defineEmits({ 'update:modelValue': null, success: null });
 
@@ -76,6 +65,17 @@ const handleSubmit = async () => {
   }
 };
 </script>
+
+<template>
+  <el-dialog v-model="visible" :title="$t('imageCrop')" top="5vh" :width="768" destroy-on-close append-to-body @closed="() => destroyCropper()">
+    <div class="text-center">
+      <img ref="imgRef" :src="src" alt="" class="inline" style="max-height: 410px" @load="() => initCropper()" />
+    </div>
+    <div class="text-right">
+      <el-button type="primary" native-type="submit" class="mt-4" @click.prevent="() => handleSubmit()">{{ $t('save') }}</el-button>
+    </div>
+  </el-dialog>
+</template>
 
 <style lang="scss" scoped>
 /* Ensure the size of the image fit the container perfectly */

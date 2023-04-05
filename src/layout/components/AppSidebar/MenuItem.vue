@@ -1,21 +1,3 @@
-<template>
-  <template v-if="isShow">
-    <el-sub-menu v-if="subMenu" :index="resolvePath(path)" popper-append-to-body>
-      <template #title>
-        <el-icon v-if="icon"><component :is="icon"></component></el-icon>
-        <span>{{ $t(title) }}</span>
-      </template>
-      <menu-item v-for="item in route.children.filter((item:any) => isShowMenu(item))" :key="item.path" :route="item" :base-path="resolvePath(item.path)" />
-    </el-sub-menu>
-    <el-menu-item v-else :index="resolvePath(path)" @click="handleClick">
-      <el-icon v-if="icon"><component :is="icon"></component></el-icon>
-      <template #title>
-        <span>{{ $t(title) }}</span>
-      </template>
-    </el-menu-item>
-  </template>
-</template>
-
 <script setup lang="ts">
 import { computed, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
@@ -52,3 +34,21 @@ const handleClick = () => {
   }
 };
 </script>
+
+<template>
+  <template v-if="isShow">
+    <el-sub-menu v-if="subMenu" :index="resolvePath(path)">
+      <template #title>
+        <el-icon v-if="icon"><component :is="icon"></component></el-icon>
+        <span>{{ $t(title) }}</span>
+      </template>
+      <menu-item v-for="item in route.children.filter((item:any) => isShowMenu(item))" :key="item.path" :route="item" :base-path="resolvePath(item.path)" />
+    </el-sub-menu>
+    <el-menu-item v-else :index="resolvePath(path)" @click="handleClick">
+      <el-icon v-if="icon"><component :is="icon"></component></el-icon>
+      <template #title>
+        <span>{{ $t(title) }}</span>
+      </template>
+    </el-menu-item>
+  </template>
+</template>

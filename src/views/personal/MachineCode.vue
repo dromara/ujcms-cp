@@ -1,10 +1,3 @@
-<template>
-  <el-dialog :title="$t('menu.personal.machine.code')" :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" :width="820" top="5vh">
-    <!-- <pre><code class="whitespace-pre-wrap">{{ machineCode }}</code></pre> -->
-    <el-input :model-value="machineCode" autosize :readonly="true" v-loading="loading" type="textarea" />
-  </el-dialog>
-</template>
-
 <script lang="ts">
 export default { name: 'MachineCode' };
 </script>
@@ -14,6 +7,7 @@ import { toRefs, watch, ref } from 'vue';
 import { queryMachineCode } from '@/api/personal';
 
 const props = defineProps({ modelValue: { type: Boolean, required: true } });
+defineEmits({ 'update:modelValue': null });
 const { modelValue: visible } = toRefs(props);
 const loading = ref<boolean>(false);
 const machineCode = ref<string>();
@@ -29,3 +23,10 @@ const unwatch = watch(visible, async () => {
   }
 });
 </script>
+
+<template>
+  <el-dialog :title="$t('menu.personal.machine.code')" :model-value="modelValue" :width="820" top="5vh" @update:model-value="(event) => $emit('update:modelValue', event)">
+    <!-- <pre><code class="whitespace-pre-wrap">{{ machineCode }}</code></pre> -->
+    <el-input v-loading="loading" :model-value="machineCode" autosize :readonly="true" type="textarea" />
+  </el-dialog>
+</template>

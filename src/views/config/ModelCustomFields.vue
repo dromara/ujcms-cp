@@ -1,70 +1,3 @@
-<template>
-  <div class="dialog-full">
-    <el-dialog :title="$t('model.fun.customFields')" :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" destroy-on-close fullscreen>
-      <el-container class="border-t" style="height: calc(100vh - 65px)">
-        <el-aside width="240px">
-          <el-scrollbar class="h-full">
-            <draggable :list="components" :group="{ name: 'components', pull: 'clone', put: false }" :sort="false" :clone="clone" @end="onEnd" item-key="label">
-              <template #item="{ element }">
-                <div class="drag-component">{{ element.label }}</div>
-              </template>
-            </draggable>
-          </el-scrollbar>
-        </el-aside>
-        <el-container class="border-r border-l">
-          <el-header height="auto" class="px-2 py-1">
-            <el-button :loading="buttonLoading" @click.prevent="handleSubmit" type="primary">{{ $t('save') }}</el-button>
-          </el-header>
-          <el-main class="border-t p-0">
-            <el-scrollbar class="drawing-board h-full p-2">
-              <el-form :model="drawingFormData" label-width="150px" class="h-full">
-                <draggable
-                  :list="customs"
-                  class="min-h-full content-start mx-0"
-                  tag="el-row"
-                  :component-data="{ gutter: 8 }"
-                  :animation="250"
-                  @start="drag = true"
-                  @end="drag = false"
-                  group="components"
-                  item-key="code"
-                >
-                  <template #item="{ element: field }">
-                    <el-col :span="field.double ? 12 : 24" class="relative">
-                      <el-form-item :prop="field.code" :required="field.required" class="mb-0 py-3">
-                        <template #label><label-tip :label="field.name" /></template>
-                        <field-item :field="field" v-model="field.defaultValue" v-model:model-key="field.defaultValueKey"></field-item>
-                      </el-form-item>
-                      <div
-                        :class="['drag-mask', !drag && selected !== field ? 'hover:opacity-10' : null, selected === field ? 'drag-mask-selected' : null]"
-                        @click="changeSelected(field)"
-                      ></div>
-                      <div :class="['drag-close', selected !== field ? 'hidden' : null]" @click="deleteElement(field)">
-                        <el-icon class="text-danger"><circle-close /></el-icon>
-                      </div>
-                    </el-col>
-                  </template>
-                </draggable>
-              </el-form>
-            </el-scrollbar>
-          </el-main>
-        </el-container>
-        <el-aside class="right-panel w-64">
-          <el-scrollbar class="h-full pt-0.5 pb-3">
-            <el-tabs v-model="currentTab" stretch>
-              <el-tab-pane :label="$t('model.attribute')" name="attribute" class="px-2">
-                <el-form :model="selected" ref="selectedForm">
-                  <field-attribute v-if="selected" :selected="selected" />
-                </el-form>
-              </el-tab-pane>
-            </el-tabs>
-          </el-scrollbar>
-        </el-aside>
-      </el-container>
-    </el-dialog>
-  </div>
-</template>
-
 <script lang="ts">
 export default { name: 'ModelCustomFields' };
 </script>
@@ -82,7 +15,7 @@ import LabelTip from '@/components/LabelTip.vue';
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { type: Number },
+  beanId: { type: Number, default: null },
 });
 const emit = defineEmits({ 'update:modelValue': null });
 
@@ -179,6 +112,73 @@ const handleSubmit = async () => {
   }
 };
 </script>
+
+<template>
+  <div class="dialog-full">
+    <el-dialog :title="$t('model.fun.customFields')" :model-value="modelValue" destroy-on-close fullscreen @update:model-value="(event) => $emit('update:modelValue', event)">
+      <el-container class="border-t" style="height: calc(100vh - 65px)">
+        <el-aside width="240px">
+          <el-scrollbar class="h-full">
+            <draggable :list="components" :group="{ name: 'components', pull: 'clone', put: false }" :sort="false" :clone="clone" item-key="label" @end="onEnd">
+              <template #item="{ element }">
+                <div class="drag-component">{{ element.label }}</div>
+              </template>
+            </draggable>
+          </el-scrollbar>
+        </el-aside>
+        <el-container class="border-r border-l">
+          <el-header height="auto" class="px-2 py-1">
+            <el-button :loading="buttonLoading" type="primary" @click.prevent="handleSubmit">{{ $t('save') }}</el-button>
+          </el-header>
+          <el-main class="border-t p-0">
+            <el-scrollbar class="drawing-board h-full p-2">
+              <el-form :model="drawingFormData" label-width="150px" class="h-full">
+                <draggable
+                  :list="customs"
+                  class="min-h-full content-start mx-0"
+                  tag="el-row"
+                  :component-data="{ gutter: 8 }"
+                  :animation="250"
+                  group="components"
+                  item-key="code"
+                  @start="() => (drag = true)"
+                  @end="() => (drag = false)"
+                >
+                  <template #item="{ element: field }">
+                    <el-col :span="field.double ? 12 : 24" class="relative">
+                      <el-form-item :prop="field.code" :required="field.required" class="mb-0 py-3">
+                        <template #label><label-tip :label="field.name" /></template>
+                        <field-item v-model="field.defaultValue" v-model:model-key="field.defaultValueKey" :field="field"></field-item>
+                      </el-form-item>
+                      <div
+                        :class="['drag-mask', !drag && selected !== field ? 'hover:opacity-10' : null, selected === field ? 'drag-mask-selected' : null]"
+                        @click="() => changeSelected(field)"
+                      ></div>
+                      <div :class="['drag-close', selected !== field ? 'hidden' : null]" @click="() => deleteElement(field)">
+                        <el-icon class="text-danger"><circle-close /></el-icon>
+                      </div>
+                    </el-col>
+                  </template>
+                </draggable>
+              </el-form>
+            </el-scrollbar>
+          </el-main>
+        </el-container>
+        <el-aside class="right-panel w-64">
+          <el-scrollbar class="h-full pt-0.5 pb-3">
+            <el-tabs v-model="currentTab" stretch>
+              <el-tab-pane :label="$t('model.attribute')" name="attribute" class="px-2">
+                <el-form ref="selectedForm" :model="selected">
+                  <field-attribute v-if="selected" :selected="selected" />
+                </el-form>
+              </el-tab-pane>
+            </el-tabs>
+          </el-scrollbar>
+        </el-aside>
+      </el-container>
+    </el-dialog>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 .drag-component {

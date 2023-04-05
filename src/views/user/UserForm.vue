@@ -1,23 +1,70 @@
+<script lang="ts">
+export default { name: 'UserForm' };
+</script>
+
+<script setup lang="ts">
+import { onMounted, ref, toRefs, watch, PropType } from 'vue';
+import { registerSettings } from '@/store/useConfig';
+import { currentUser } from '@/store/useCurrentUser';
+import { queryUser, createUser, updateUser, deleteUser, usernameExist, emailExist, mobileExist, queryGroupList, queryOrgList } from '@/api/user';
+import { toTree } from '@/utils/tree';
+import DialogForm from '@/components/DialogForm.vue';
+import LabelTip from '@/components/LabelTip.vue';
+import { ImageUpload } from '@/components/Upload';
+
+const props = defineProps({
+  modelValue: { type: Boolean, required: true },
+  beanId: { type: Number, default: null },
+  beanIds: { type: Array as PropType<number[]>, required: true },
+  org: { type: Object, default: null },
+  showGlobalData: { type: Boolean, required: true },
+});
+const { showGlobalData, modelValue: visible } = toRefs(props);
+defineEmits({ 'update:modelValue': null, finished: null });
+
+const focus = ref<any>();
+const values = ref<any>({});
+const groupList = ref<any[]>([]);
+const orgList = ref<any[]>([]);
+
+const fetchGroupList = async () => {
+  groupList.value = await queryGroupList();
+};
+const fetchOrgList = async () => {
+  orgList.value = toTree(await queryOrgList({ current: !showGlobalData.value }));
+};
+
+onMounted(() => {
+  fetchGroupList();
+});
+
+watch(visible, () => {
+  if (visible.value) {
+    fetchOrgList();
+  }
+});
+</script>
+
 <template>
   <dialog-form
-    :name="$t('menu.user.user')"
-    :queryBean="queryUser"
-    :createBean="createUser"
-    :updateBean="updateUser"
-    :deleteBean="deleteUser"
-    :beanId="beanId"
-    :beanIds="beanIds"
-    :focus="focus"
-    :initValues="(): any => ({orgId:org?.id, gender: 'm', roleIds: [] })"
-    :toValues="(bean: any) => ({ ...bean })"
-    :disableDelete="(bean: any) => bean.id <= 1"
-    :disableEdit="(bean) => currentUser.rank > bean.rank"
-    perms="user"
     v-model:values="values"
+    :name="$t('menu.user.user')"
+    :query-bean="queryUser"
+    :create-bean="createUser"
+    :update-bean="updateUser"
+    :delete-bean="deleteUser"
+    :bean-id="beanId"
+    :bean-ids="beanIds"
+    :focus="focus"
+    :init-values="(): any => ({orgId:org?.id, gender: 'm', roleIds: [] })"
+    :to-values="(bean: any) => ({ ...bean })"
+    :disable-delete="(bean: any) => bean.id <= 1"
+    :disable-edit="(bean) => currentUser.rank > bean.rank"
+    perms="user"
     :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    @finished="$emit('finished')"
     large
+    @update:model-value="(event) => $emit('update:modelValue', event)"
+    @finished="() => $emit('finished')"
   >
     <template #header-status="{ isEdit }">
       <template v-if="isEdit">
@@ -35,7 +82,7 @@
             <el-tree-select
               v-model="values.orgId"
               :data="orgList"
-              nodeKey="id"
+              node-key="id"
               :default-expanded-keys="orgList.map((item) => item.id)"
               :props="{ label: 'name' }"
               :render-after-expand="false"
@@ -68,7 +115,7 @@
               },
             ]"
           >
-            <el-input v-model="values.username" ref="focus" maxlength="50"></el-input>
+            <el-input ref="focus" v-model="values.username" maxlength="50"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -152,25 +199,25 @@
             <el-avatar v-if="values.mediumAvatar != null" :src="values.mediumAvatar" :size="100" class="ml-2" />
           </el-form-item>
         </el-col>
-        <el-col :span="12" v-if="isEdit">
+        <el-col v-if="isEdit" :span="12">
           <el-form-item prop="created" :label="$t('user.created')">
             <template #label><label-tip message="user.created" /></template>
             <el-date-picker v-model="values.created" type="datetime" disabled></el-date-picker>
           </el-form-item>
         </el-col>
-        <el-col :span="12" v-if="isEdit">
+        <el-col v-if="isEdit" :span="12">
           <el-form-item prop="loginDate">
             <template #label><label-tip message="user.loginDate" /></template>
             <el-date-picker v-model="values.loginDate" type="datetime" disabled></el-date-picker>
           </el-form-item>
         </el-col>
-        <el-col :span="12" v-if="isEdit">
+        <el-col v-if="isEdit" :span="12">
           <el-form-item prop="loginIp">
             <template #label><label-tip message="user.loginIp" /></template>
             <el-input v-model="values.loginIp" disabled></el-input>
           </el-form-item>
         </el-col>
-        <el-col :span="12" v-if="isEdit">
+        <el-col v-if="isEdit" :span="12">
           <el-form-item prop="loginCount">
             <template #label><label-tip message="user.loginCount" /></template>
             <el-input v-model="values.loginCount" disabled></el-input>
@@ -180,50 +227,3 @@
     </template>
   </dialog-form>
 </template>
-
-<script lang="ts">
-export default { name: 'UserForm' };
-</script>
-
-<script setup lang="ts">
-import { onMounted, ref, toRefs, watch } from 'vue';
-import { registerSettings } from '@/store/useConfig';
-import { currentUser } from '@/store/useCurrentUser';
-import { queryUser, createUser, updateUser, deleteUser, usernameExist, emailExist, mobileExist, queryGroupList, queryOrgList } from '@/api/user';
-import { toTree } from '@/utils/tree';
-import DialogForm from '@/components/DialogForm.vue';
-import LabelTip from '@/components/LabelTip.vue';
-import { ImageUpload } from '@/components/Upload';
-
-const props = defineProps({
-  modelValue: { type: Boolean, required: true },
-  beanId: { required: true },
-  beanIds: { type: Array, required: true },
-  org: null,
-  showGlobalData: { type: Boolean, required: true },
-});
-const { showGlobalData, modelValue: visible } = toRefs(props);
-defineEmits({ 'update:modelValue': null, finished: null });
-
-const focus = ref<any>();
-const values = ref<any>({});
-const groupList = ref<any[]>([]);
-const orgList = ref<any[]>([]);
-
-const fetchGroupList = async () => {
-  groupList.value = await queryGroupList();
-};
-const fetchOrgList = async () => {
-  orgList.value = toTree(await queryOrgList({ current: !showGlobalData.value }));
-};
-
-onMounted(() => {
-  fetchGroupList();
-});
-
-watch(visible, () => {
-  if (visible.value) {
-    fetchOrgList();
-  }
-});
-</script>

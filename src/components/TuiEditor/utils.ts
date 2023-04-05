@@ -40,9 +40,9 @@ export const addImageBlobHook = (blob: Blob | File, callback: any): void => {
   const xhr = new XMLHttpRequest();
   xhr.open('POST', imageUploadUrl);
 
-  xhr.upload.onprogress = (e) => {
-    // (e.loaded / e.total) * 100
-  };
+  // xhr.upload.onprogress = (e) => {
+  //   (e.loaded / e.total) * 100;
+  // };
 
   xhr.onload = () => {
     if (xhr.status === 403) {

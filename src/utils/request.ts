@@ -5,29 +5,31 @@ import { ElMessageBox } from 'element-plus';
 import i18n from '@/i18n';
 import { getAuthHeaders, removeAccessToken, removeRefreshToken, setAccessAt } from '@/utils/auth';
 import { getSiteHeaders, removeSessionSiteId } from '@/utils/common';
-import { appState, setMessageBoxDisplay } from '@/store/useAppState';
+import { appState } from '@/store/useAppState';
 
 const {
   global: { t },
 } = i18n;
 const showMessageBox = () => {
   if (!appState.loginBoxDisplay && !appState.messageBoxDisplay) {
-    setMessageBoxDisplay(true);
-    ElMessageBox.confirm(t('confirmLogin'), {
-      cancelButtonText: t('cancel'),
-      confirmButtonText: t('loginAgain'),
-      type: 'warning',
-      callback: (action: string) => {
-        if (action === 'cancel' || action === 'close') {
-          setMessageBoxDisplay(false);
-          return;
-        }
-        if (action === 'confirm') {
-          // 未登录。刷新页面以触发登录。无法直接使用router，会导致其它函数不可用的奇怪问题。
-          window.location.reload();
-        }
-      },
-    });
+    window.location.reload();
+    // session超时会自动显示登录界面，应该不需要保留在原页面的提示框
+    // setMessageBoxDisplay(true);
+    // ElMessageBox.confirm(t('confirmLogin'), {
+    //   cancelButtonText: t('cancel'),
+    //   confirmButtonText: t('loginAgain'),
+    //   type: 'warning',
+    //   callback: (action: string) => {
+    //     if (action === 'cancel' || action === 'close') {
+    //       setMessageBoxDisplay(false);
+    //       return;
+    //     }
+    //     if (action === 'confirm') {
+    //       // 未登录。刷新页面以触发登录。无法直接使用router，会导致其它函数不可用的奇怪问题。
+    //       window.location.reload();
+    //     }
+    //   },
+    // });
   }
 };
 

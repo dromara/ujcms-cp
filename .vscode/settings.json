@@ -1,0 +1,5 @@
+{
+  // 防止 tailwindcss 的 @apply 出现警告
+  "scss.lint.unknownAtRules": "ignore",
+  "css.lint.unknownAtRules": "ignore"
+}

@@ -1,71 +1,3 @@
-<template>
-  <div>
-    <div class="mb-3">
-      <query-form :params="params" @search="handleSearch" @reset="handleReset">
-        <query-item :label="$t('task.name')" name="Q_Contains_name"></query-item>
-      </query-form>
-    </div>
-    <div>
-      <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
-        <template #reference>
-          <el-button :disabled="selection.length <= 0 || perm('task:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
-        </template>
-      </el-popconfirm>
-      <column-setting name="task" class="ml-2" />
-    </div>
-    <div class="app-block mt-3">
-      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
-        <column-list name="task">
-          <el-table-column type="selection" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
-          <el-table-column property="name" :label="$t('task.name')" sortable="custom" min-width="150" show-overflow-tooltip></el-table-column>
-          <el-table-column property="beginDate" :label="$t('task.beginDate')" sortable="custom" width="170">
-            <template #default="{ row }">{{ dayjs(row.beginDate).format('YYYY-MM-DD HH:mm:ss') }}</template>
-          </el-table-column>
-          <el-table-column property="endDate" :label="$t('task.endDate')" sortable="custom" width="170" display="none">
-            <template #default="{ row }">{{ dayjs(row.endDate).format('YYYY-MM-DD HH:mm:ss') }}</template>
-          </el-table-column>
-          <el-table-column property="current" :label="$t('task.current')" min-width="70" align="right"></el-table-column>
-          <el-table-column property="processedIn" :label="$t('task.processedIn')" min-width="70" align="right"></el-table-column>
-          <el-table-column property="user.username" :label="$t('task.user')" sort-by="user-username" sortable="custom" min-width="80" align="right"></el-table-column>
-          <el-table-column property="status" :label="$t('task.status')" sortable="custom" width="80" show-overflow-tooltip>
-            <template #default="{ row }">
-              <el-tag v-if="row.status === 0" type="info" size="small">{{ $t(`task.status.${row.status}`) }}</el-tag>
-              <el-tag v-if="row.status === 1" size="small">{{ $t(`task.status.${row.status}`) }}</el-tag>
-              <el-tag v-if="row.status === 2" type="danger" size="small">{{ $t(`task.status.${row.status}`) }}</el-tag>
-              <el-tag v-if="row.status === 3" type="warning" size="small">{{ $t(`task.status.${row.status}`) }}</el-tag>
-              <el-tag v-if="row.status === 4" type="success" size="small">{{ $t(`task.status.${row.status}`) }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('table.action')">
-            <template #default="{ row }">
-              <el-button type="primary" :disabled="perm('task:show')" @click="handleEdit(row.id)" size="small" link>{{ $t('detail') }}</el-button>
-              <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
-                <template #reference>
-                  <el-button type="primary" :disabled="perm('task:delete')" size="small" link>{{ $t('delete') }}</el-button>
-                </template>
-              </el-popconfirm>
-            </template>
-          </el-table-column>
-        </column-list>
-      </el-table>
-      <el-pagination
-        v-model:currentPage="currentPage"
-        v-model:pageSize="pageSize"
-        :total="total"
-        :page-sizes="pageSizes"
-        :layout="pageLayout"
-        @size-change="fetchData()"
-        @current-change="fetchData()"
-        small
-        background
-        class="px-3 py-2 justify-end"
-      ></el-pagination>
-    </div>
-    <task-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" />
-  </div>
-</template>
-
 <script lang="ts">
 export default { name: 'TaskList' };
 </script>
@@ -136,3 +68,71 @@ const handleDelete = async (ids: number[]) => {
 // 方便包含页面重新加载列表
 defineExpose({ fetchData });
 </script>
+
+<template>
+  <div>
+    <div class="mb-3">
+      <query-form :params="params" @search="handleSearch" @reset="handleReset">
+        <query-item :label="$t('task.name')" name="Q_Contains_name"></query-item>
+      </query-form>
+    </div>
+    <div>
+      <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete(selection.map((row) => row.id))">
+        <template #reference>
+          <el-button :disabled="selection.length <= 0 || perm('task:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
+        </template>
+      </el-popconfirm>
+      <column-setting name="task" class="ml-2" />
+    </div>
+    <div class="app-block mt-3">
+      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
+        <column-list name="task">
+          <el-table-column type="selection" width="45"></el-table-column>
+          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="name" :label="$t('task.name')" sortable="custom" min-width="150" show-overflow-tooltip></el-table-column>
+          <el-table-column property="beginDate" :label="$t('task.beginDate')" sortable="custom" width="170">
+            <template #default="{ row }">{{ dayjs(row.beginDate).format('YYYY-MM-DD HH:mm:ss') }}</template>
+          </el-table-column>
+          <el-table-column property="endDate" :label="$t('task.endDate')" sortable="custom" width="170" display="none">
+            <template #default="{ row }">{{ dayjs(row.endDate).format('YYYY-MM-DD HH:mm:ss') }}</template>
+          </el-table-column>
+          <el-table-column property="current" :label="$t('task.current')" min-width="70" align="right"></el-table-column>
+          <el-table-column property="processedIn" :label="$t('task.processedIn')" min-width="70" align="right"></el-table-column>
+          <el-table-column property="user.username" :label="$t('task.user')" sort-by="user-username" sortable="custom" min-width="80" align="right"></el-table-column>
+          <el-table-column property="status" :label="$t('task.status')" sortable="custom" width="80" show-overflow-tooltip>
+            <template #default="{ row }">
+              <el-tag v-if="row.status === 0" type="info" size="small">{{ $t(`task.status.${row.status}`) }}</el-tag>
+              <el-tag v-if="row.status === 1" size="small">{{ $t(`task.status.${row.status}`) }}</el-tag>
+              <el-tag v-if="row.status === 2" type="danger" size="small">{{ $t(`task.status.${row.status}`) }}</el-tag>
+              <el-tag v-if="row.status === 3" type="warning" size="small">{{ $t(`task.status.${row.status}`) }}</el-tag>
+              <el-tag v-if="row.status === 4" type="success" size="small">{{ $t(`task.status.${row.status}`) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('table.action')">
+            <template #default="{ row }">
+              <el-button type="primary" :disabled="perm('task:show')" size="small" link @click="() => handleEdit(row.id)">{{ $t('detail') }}</el-button>
+              <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
+                <template #reference>
+                  <el-button type="primary" :disabled="perm('task:delete')" size="small" link>{{ $t('delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
+        </column-list>
+      </el-table>
+      <el-pagination
+        v-model:currentPage="currentPage"
+        v-model:pageSize="pageSize"
+        :total="total"
+        :page-sizes="pageSizes"
+        :layout="pageLayout"
+        small
+        background
+        class="px-3 py-2 justify-end"
+        @size-change="() => fetchData()"
+        @current-change="() => fetchData()"
+      ></el-pagination>
+    </div>
+    <task-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" @finished="fetchData" />
+  </div>
+</template>

@@ -1,10 +1,3 @@
-<template>
-  <el-dialog :title="$t('menu.personal.homepage.generatedKey')" :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" :width="820">
-    <el-input :model-value="values" autosize :readonly="true" v-loading="loading" type="textarea" />
-    <el-button class="mt-2" @click.prevent="fetchHomepageGeneratedKey" v-loading="loading" type="primary">{{ $t('refresh') }}</el-button>
-  </el-dialog>
-</template>
-
 <script lang="ts">
 export default { name: 'HomepageEnvironment' };
 </script>
@@ -34,3 +27,10 @@ watch(visible, async () => {
   }
 });
 </script>
+
+<template>
+  <el-dialog :title="$t('menu.personal.homepage.generatedKey')" :model-value="modelValue" :width="820" @update:model-value="(event) => $emit('update:modelValue', event)">
+    <el-input v-loading="loading" :model-value="values" autosize :readonly="true" type="textarea" />
+    <el-button v-loading="loading" class="mt-2" type="primary" @click.prevent="fetchHomepageGeneratedKey">{{ $t('refresh') }}</el-button>
+  </el-dialog>
+</template>

@@ -1,52 +1,3 @@
-<template>
-  <el-drawer :title="$t('permissionSettings')" :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" :size="414">
-    <template #default>
-      <el-form ref="form" :model="values" :disabled="disabled" label-width="150px">
-        <el-form-item prop="allAccessPermission">
-          <template #label><label-tip message="group.allAccessPermission" help /></template>
-          <el-switch v-model="values.allAccessPermission"></el-switch>
-        </el-form-item>
-        <template v-if="!values.allAccessPermission">
-          <div class="border-t">
-            <el-checkbox v-model="accessPermissionExpand" @change="(checked: any) => expandTree(checked, accessPermissionTree, channelData, 'id')" :label="$t('expand/collapse')" />
-            <el-checkbox
-              v-model="accessPermissionCheck"
-              @change="
-                (checked: any) => {
-                  checkTree(checked, accessPermissionTree, channelData, 'id');
-                  handleAccessPermission();
-                }
-              "
-              :label="$t('checkAll/uncheckAll')"
-            />
-          </div>
-          <el-tree
-            ref="accessPermissionTree"
-            :data="channelData"
-            node-key="id"
-            @check="handleAccessPermission()"
-            :props="{ label: 'name' }"
-            class="border rounded"
-            default-expand-all
-            show-checkbox
-          />
-        </template>
-      </el-form>
-    </template>
-    <template #footer>
-      <div class="flex justify-between items-center">
-        <div>
-          <el-tag>{{ values?.name }}</el-tag>
-        </div>
-        <div>
-          <el-button @click="$emit('update:modelValue', false)">{{ $t('cancel') }}</el-button>
-          <el-button type="primary" @click="handleSubmit()" :loading="buttonLoading" :disabled="disabled">{{ $t('save') }}</el-button>
-        </div>
-      </div>
-    </template>
-  </el-drawer>
-</template>
-
 <script lang="ts">
 export default { name: 'UserPermissionForm' };
 </script>
@@ -61,7 +12,7 @@ import { queryGroup, updateGroupPermission, groupAccessPermissions } from '@/api
 import { queryChannelList } from '@/api/content';
 import LabelTip from '@/components/LabelTip.vue';
 
-const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number } });
+const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null } });
 const emit = defineEmits({ 'update:modelValue': null, finished: null });
 
 const { beanId, modelValue: visible } = toRefs(props);
@@ -138,3 +89,52 @@ const handleAccessPermission = () => {
   }
 };
 </script>
+
+<template>
+  <el-drawer :title="$t('permissionSettings')" :model-value="modelValue" :size="414" @update:model-value="(event) => $emit('update:modelValue', event)">
+    <template #default>
+      <el-form ref="form" :model="values" :disabled="disabled" label-width="150px">
+        <el-form-item prop="allAccessPermission">
+          <template #label><label-tip message="group.allAccessPermission" help /></template>
+          <el-switch v-model="values.allAccessPermission"></el-switch>
+        </el-form-item>
+        <template v-if="!values.allAccessPermission">
+          <div class="border-t">
+            <el-checkbox v-model="accessPermissionExpand" :label="$t('expand/collapse')" @change="(checked: any) => expandTree(checked, accessPermissionTree, channelData, 'id')" />
+            <el-checkbox
+              v-model="accessPermissionCheck"
+              :label="$t('checkAll/uncheckAll')"
+              @change="
+                (checked: any) => {
+                  checkTree(checked, accessPermissionTree, channelData, 'id');
+                  handleAccessPermission();
+                }
+              "
+            />
+          </div>
+          <el-tree
+            ref="accessPermissionTree"
+            :data="channelData"
+            node-key="id"
+            :props="{ label: 'name' }"
+            class="border rounded"
+            default-expand-all
+            show-checkbox
+            @check="() => handleAccessPermission()"
+          />
+        </template>
+      </el-form>
+    </template>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <div>
+          <el-tag>{{ values?.name }}</el-tag>
+        </div>
+        <div>
+          <el-button @click="() => $emit('update:modelValue', false)">{{ $t('cancel') }}</el-button>
+          <el-button type="primary" :loading="buttonLoading" :disabled="disabled" @click="() => handleSubmit()">{{ $t('save') }}</el-button>
+        </div>
+      </div>
+    </template>
+  </el-drawer>
+</template>

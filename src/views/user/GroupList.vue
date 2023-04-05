@@ -1,63 +1,3 @@
-<template>
-  <div>
-    <div class="mb-3">
-      <query-form :params="params" @search="handleSearch" @reset="handleReset">
-        <query-item :label="$t('group.name')" name="Q_Contains_name"></query-item>
-        <query-item :label="$t('group.description')" name="Q_Contains_description"></query-item>
-      </query-form>
-    </div>
-    <div>
-      <el-button type="primary" :disabled="perm('group:create')" :icon="Plus" @click="handleAdd">{{ $t('add') }}</el-button>
-      <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
-        <template #reference>
-          <el-button :disabled="selection.filter((row) => deletable(row.id)).length <= 0 || perm('group:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
-        </template>
-      </el-popconfirm>
-      <list-move class="ml-2" :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" />
-      <column-setting name="group" class="ml-2" />
-    </div>
-    <div class="app-block mt-3">
-      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
-        <column-list name="group">
-          <el-table-column type="selection" width="50"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
-          <el-table-column property="name" :label="$t('group.name')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="description" :label="$t('group.description')" min-width="150" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="allAccessPermission" :label="$t('group.allAccessPermission')" sortable="custom">
-            <template #default="{ row }">
-              <el-tag :type="row.allAccessPermission ? 'success' : 'info'" size="small">{{ $t(row.allAccessPermission ? 'yes' : 'no') }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column property="type" :label="$t('group.type')" sortable="custom" show-overflow-tooltip :formatter="(row) => $t(`group.type.${row.type}`)" />
-          <el-table-column :label="$t('table.action')">
-            <template #default="{ row }">
-              <el-button type="primary" :disabled="perm('group:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
-              <el-button
-                v-if="currentUser.epRank > 0 || currentUser.epDisplay"
-                type="primary"
-                @click="handlePermissionEdit(row.id)"
-                :disabled="perm('group:updatePermission') || currentUser.epRank <= 0"
-                :title="currentUser.epRank <= 0 ? $t('error.enterprise.short') : undefined"
-                size="small"
-                link
-              >
-                {{ $t('permissionSettings') }}
-              </el-button>
-              <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
-                <template #reference>
-                  <el-button type="primary" :disabled="!deletable(row.id) || perm('group:delete')" size="small" link>{{ $t('delete') }}</el-button>
-                </template>
-              </el-popconfirm>
-            </template>
-          </el-table-column>
-        </column-list>
-      </el-table>
-    </div>
-    <group-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" />
-    <group-permission-form v-model="permissionFormVisible" :beanId="beanId" @finished="fetchData"></group-permission-form>
-  </div>
-</template>
-
 <script lang="ts">
 export default { name: 'GroupList' };
 </script>
@@ -142,3 +82,63 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
   await updateGroupOrder(list.map((item: any) => item.id));
 };
 </script>
+
+<template>
+  <div>
+    <div class="mb-3">
+      <query-form :params="params" @search="handleSearch" @reset="handleReset">
+        <query-item :label="$t('group.name')" name="Q_Contains_name"></query-item>
+        <query-item :label="$t('group.description')" name="Q_Contains_description"></query-item>
+      </query-form>
+    </div>
+    <div>
+      <el-button type="primary" :disabled="perm('group:create')" :icon="Plus" @click="handleAdd">{{ $t('add') }}</el-button>
+      <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete(selection.map((row) => row.id))">
+        <template #reference>
+          <el-button :disabled="selection.filter((row) => deletable(row.id)).length <= 0 || perm('group:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
+        </template>
+      </el-popconfirm>
+      <list-move class="ml-2" :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" />
+      <column-setting name="group" class="ml-2" />
+    </div>
+    <div class="app-block mt-3">
+      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
+        <column-list name="group">
+          <el-table-column type="selection" width="50"></el-table-column>
+          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="name" :label="$t('group.name')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="description" :label="$t('group.description')" min-width="150" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="allAccessPermission" :label="$t('group.allAccessPermission')" sortable="custom">
+            <template #default="{ row }">
+              <el-tag :type="row.allAccessPermission ? 'success' : 'info'" size="small">{{ $t(row.allAccessPermission ? 'yes' : 'no') }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column property="type" :label="$t('group.type')" sortable="custom" show-overflow-tooltip :formatter="(row) => $t(`group.type.${row.type}`)" />
+          <el-table-column :label="$t('table.action')">
+            <template #default="{ row }">
+              <el-button type="primary" :disabled="perm('group:update')" size="small" link @click="handleEdit(row.id)">{{ $t('edit') }}</el-button>
+              <el-button
+                v-if="currentUser.epRank > 0 || currentUser.epDisplay"
+                type="primary"
+                :disabled="perm('group:updatePermission') || currentUser.epRank <= 0"
+                :title="currentUser.epRank <= 0 ? $t('error.enterprise.short') : undefined"
+                size="small"
+                link
+                @click="() => handlePermissionEdit(row.id)"
+              >
+                {{ $t('permissionSettings') }}
+              </el-button>
+              <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
+                <template #reference>
+                  <el-button type="primary" :disabled="!deletable(row.id) || perm('group:delete')" size="small" link>{{ $t('delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
+        </column-list>
+      </el-table>
+    </div>
+    <group-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" @finished="fetchData" />
+    <group-permission-form v-model="permissionFormVisible" :bean-id="beanId" @finished="fetchData"></group-permission-form>
+  </div>
+</template>

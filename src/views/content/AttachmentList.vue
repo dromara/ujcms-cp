@@ -1,70 +1,3 @@
-<template>
-  <div>
-    <div class="mb-3">
-      <query-form :params="params" @search="handleSearch" @reset="handleReset">
-        <query-item :label="$t('attachment.name')" name="Q_Contains_name"></query-item>
-      </query-form>
-    </div>
-    <div>
-      <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
-        <template #reference>
-          <el-button :disabled="selection.length <= 0 || perm('attachment:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
-        </template>
-      </el-popconfirm>
-      <column-setting name="attachment" class="ml-2" />
-    </div>
-    <div class="app-block mt-3">
-      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
-        <column-list name="attachment">
-          <el-table-column type="selection" :selectable="(row) => !row.used" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
-          <el-table-column property="name" :label="$t('attachment.name')" sortable="custom" min-width="130" show-overflow-tooltip></el-table-column>
-          <el-table-column property="path" :label="$t('attachment.path')" sortable="custom" min-width="200" display="none" show-overflow-tooltip></el-table-column>
-          <el-table-column property="url" :label="$t('attachment.url')" sortable="custom" min-width="350" display="none" show-overflow-tooltip></el-table-column>
-          <el-table-column property="length" :label="$t('attachment.length')" sortable="custom" align="right" show-overflow-tooltip>
-            <template #default="{ row }">{{ row.size }}</template>
-          </el-table-column>
-          <el-table-column property="created" :label="$t('attachment.created')" sortable="custom" min-width="120" show-overflow-tooltip>
-            <template #default="{ row }">{{ dayjs(row.created).format('YYYY-MM-DD HH:mm') }}</template>
-          </el-table-column>
-          <el-table-column property="user.username" :label="$t('attachment.user')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column :label="$t('attachment.refer')" show-overflow-tooltip>
-            <template #default="{ row }">
-              <div v-for="refer in row.referList" :key="`${refer.referType}-${refer.referId}`">{{ `${refer.referType}-${refer.referId}` }}</div>
-            </template>
-          </el-table-column>
-          <el-table-column property="used" :label="$t('attachment.used')" sortable="custom" show-overflow-tooltip>
-            <template #default="{ row }">
-              <el-tag :type="row.used ? 'success' : 'info'" size="small">{{ $t(row.used ? 'yes' : 'no') }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('table.action')">
-            <template #default="{ row }">
-              <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
-                <template #reference>
-                  <el-button type="primary" :disabled="row.used || perm('attachment:delete')" size="small" link>{{ $t('delete') }}</el-button>
-                </template>
-              </el-popconfirm>
-            </template>
-          </el-table-column>
-        </column-list>
-      </el-table>
-      <el-pagination
-        v-model:currentPage="currentPage"
-        v-model:pageSize="pageSize"
-        :total="total"
-        :page-sizes="pageSizes"
-        :layout="pageLayout"
-        @size-change="fetchData()"
-        @current-change="fetchData()"
-        small
-        background
-        class="px-3 py-2 justify-end"
-      ></el-pagination>
-    </div>
-  </div>
-</template>
-
 <script lang="ts">
 export default { name: 'AttachmentList' };
 </script>
@@ -131,3 +64,70 @@ const handleDelete = async (ids: number[]) => {
   ElMessage.success(t('success'));
 };
 </script>
+
+<template>
+  <div>
+    <div class="mb-3">
+      <query-form :params="params" @search="handleSearch" @reset="handleReset">
+        <query-item :label="$t('attachment.name')" name="Q_Contains_name"></query-item>
+      </query-form>
+    </div>
+    <div>
+      <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete(selection.map((row) => row.id))">
+        <template #reference>
+          <el-button :disabled="selection.length <= 0 || perm('attachment:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
+        </template>
+      </el-popconfirm>
+      <column-setting name="attachment" class="ml-2" />
+    </div>
+    <div class="app-block mt-3">
+      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
+        <column-list name="attachment">
+          <el-table-column type="selection" :selectable="(row) => !row.used" width="45"></el-table-column>
+          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="name" :label="$t('attachment.name')" sortable="custom" min-width="130" show-overflow-tooltip></el-table-column>
+          <el-table-column property="path" :label="$t('attachment.path')" sortable="custom" min-width="200" display="none" show-overflow-tooltip></el-table-column>
+          <el-table-column property="url" :label="$t('attachment.url')" sortable="custom" min-width="350" display="none" show-overflow-tooltip></el-table-column>
+          <el-table-column property="length" :label="$t('attachment.length')" sortable="custom" align="right" show-overflow-tooltip>
+            <template #default="{ row }">{{ row.size }}</template>
+          </el-table-column>
+          <el-table-column property="created" :label="$t('attachment.created')" sortable="custom" min-width="120" show-overflow-tooltip>
+            <template #default="{ row }">{{ dayjs(row.created).format('YYYY-MM-DD HH:mm') }}</template>
+          </el-table-column>
+          <el-table-column property="user.username" :label="$t('attachment.user')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column :label="$t('attachment.refer')" show-overflow-tooltip>
+            <template #default="{ row }">
+              <div v-for="refer in row.referList" :key="`${refer.referType}-${refer.referId}`">{{ `${refer.referType}-${refer.referId}` }}</div>
+            </template>
+          </el-table-column>
+          <el-table-column property="used" :label="$t('attachment.used')" sortable="custom" show-overflow-tooltip>
+            <template #default="{ row }">
+              <el-tag :type="row.used ? 'success' : 'info'" size="small">{{ $t(row.used ? 'yes' : 'no') }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('table.action')">
+            <template #default="{ row }">
+              <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
+                <template #reference>
+                  <el-button type="primary" :disabled="row.used || perm('attachment:delete')" size="small" link>{{ $t('delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
+        </column-list>
+      </el-table>
+      <el-pagination
+        v-model:currentPage="currentPage"
+        v-model:pageSize="pageSize"
+        :total="total"
+        :page-sizes="pageSizes"
+        :layout="pageLayout"
+        small
+        background
+        class="px-3 py-2 justify-end"
+        @size-change="() => fetchData()"
+        @current-change="() => fetchData()"
+      ></el-pagination>
+    </div>
+  </div>
+</template>

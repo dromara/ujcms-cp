@@ -1,3 +1,44 @@
+<script setup lang="ts">
+import { ref, toRefs, watchEffect, computed } from 'vue';
+import { queryDictList } from '@/api/content';
+import Tinymce from '@/components/Tinymce';
+import { BaseUpload, ImageUpload } from '@/components/Upload';
+
+const props = defineProps({ field: { type: Object, required: true }, modelValue: { type: Boolean, required: true }, modelKey: { type: Object, default: null } });
+const emit = defineEmits({ 'update:modelValue': null, 'update:modelKey': null });
+
+const { field, modelValue, modelKey } = toRefs(props);
+const dictList = ref<any[]>([]);
+watchEffect(async () => {
+  const typeId = field.value.dictTypeId;
+  if (typeId) {
+    dictList.value = await queryDictList({ typeId });
+  }
+});
+const data = computed<any>({
+  get: () => {
+    // 下拉多选框的 v-model 为空会报错。
+    if (modelValue.value == null && ['multipleSelect', 'checkbox'].includes(field.value.type)) {
+      return [];
+    }
+    return modelValue.value;
+  },
+  set: (val) => emit('update:modelValue', val),
+});
+const dataKey = computed<any>({
+  get: () => {
+    // 下拉多选框的 v-model 为空会报错。
+    if (modelKey.value == null && ['multipleSelect', 'checkbox'].includes(field.value.type)) {
+      return [];
+    }
+    return modelKey.value;
+  },
+  set: (val) => {
+    emit('update:modelKey', val);
+  },
+});
+</script>
+
 <!--
       { label: '单行文本', type: 'text' },
       { label: '多行文本', type: 'textarea' },
@@ -19,11 +60,11 @@
 -->
 <template>
   <el-input v-if="field.type === 'text'" v-model="data" :placeholder="field.placeholder"></el-input>
-  <el-input v-else-if="field.type === 'textarea'" type="textarea" v-model="data" :placeholder="field.placeholder" :rows="field.rows"></el-input>
+  <el-input v-else-if="field.type === 'textarea'" v-model="data" type="textarea" :placeholder="field.placeholder" :rows="field.rows"></el-input>
   <el-input-number v-else-if="field.type === 'number'" v-model="data" :placeholder="field.placeholder"></el-input-number>
-  <el-date-picker v-else-if="field.type === 'date'" :type="field.dateType ?? 'date'" v-model="data" :placeholder="field.placeholder" />
+  <el-date-picker v-else-if="field.type === 'date'" v-model="data" :type="field.dateType ?? 'date'" :placeholder="field.placeholder" />
   <el-color-picker v-else-if="field.type === 'color'" v-model="data"></el-color-picker>
-  <el-slider v-else-if="field.type === 'slider'" v-model="data" :showInput="field.showInput ?? false" :min="field.min" :max="field.max"></el-slider>
+  <el-slider v-else-if="field.type === 'slider'" v-model="data" :show-input="field.showInput ?? false" :min="field.min" :max="field.max"></el-slider>
   <el-switch v-else-if="field.type === 'switch'" v-model="data"></el-switch>
   <el-radio-group v-else-if="field.type === 'radio'" v-model="dataKey" @change="(val) => (data = dictList.find((item) => item.value === val)?.name)">
     <template v-if="field.checkStyle === 'button'">
@@ -48,21 +89,21 @@
   <el-select
     v-else-if="field.type === 'select'"
     v-model="dataKey"
-    @change="(val) => (data = dictList.find((item) => item.value === val)?.name)"
     :clearable="field.clearable"
     :placeholder="field.placeholder"
     class="w-full"
+    @change="(val) => (data = dictList.find((item) => item.value === val)?.name)"
   >
     <el-option v-for="item in dictList" :key="item.id" :value="item.value" :label="item.name"></el-option>
   </el-select>
   <el-select
     v-else-if="field.type === 'multipleSelect'"
     v-model="dataKey"
-    @change="(val) => (data = dictList.filter((item) => val.indexOf(item.value) !== -1).map((item) => item.name))"
     :clearable="field.clearable"
     :placeholder="field.placeholder"
     multiple
     class="w-full"
+    @change="(val) => (data = dictList.filter((item) => val.indexOf(item.value) !== -1).map((item) => item.name))"
   >
     <el-option v-for="item in dictList" :key="item.id" :value="item.value" :label="item.name"></el-option>
   </el-select>
@@ -104,56 +145,9 @@
   </template>
   <tinymce
     v-else-if="field.type === 'tinyEditor'"
-    class="w-full"
     v-model="data"
+    class="w-full"
     :init="{ placeholder: field.placeholder, ...(field.minHeight ? { min_height: field.minHeight } : {}), ...(field.maxHeight ? { max_height: field.maxHeight } : {}) }"
   />
   <div v-else>{{ `Unsupported type: ${field.type}` }}</div>
 </template>
-
-<script setup lang="ts">
-import { ref, toRefs, watchEffect, computed } from 'vue';
-import { queryDictList } from '@/api/content';
-import Tinymce from '@/components/Tinymce';
-import { BaseUpload, ImageUpload } from '@/components/Upload';
-
-const props = defineProps({ field: { type: Object, required: true }, modelValue: null, modelKey: null });
-const emit = defineEmits({ 'update:modelValue': null, 'update:modelKey': null });
-
-const console = window.console;
-
-const { field, modelValue, modelKey } = toRefs(props);
-const dictList = ref<any[]>([]);
-watchEffect(async () => {
-  const typeId = field.value.dictTypeId;
-  if (typeId) {
-    dictList.value = await queryDictList({ typeId });
-  }
-});
-const data = computed({
-  get: () => {
-    // 下拉多选框的 v-model 为空会报错。
-    if (modelValue?.value == null && ['multipleSelect', 'checkbox'].includes(field.value.type)) {
-      return [];
-    }
-    return modelValue?.value;
-  },
-  set: (val) => emit('update:modelValue', val),
-});
-const dataKey = computed({
-  get: () => {
-    // 下拉多选框的 v-model 为空会报错。
-    if (modelKey?.value == null && ['multipleSelect', 'checkbox'].includes(field.value.type)) {
-      return [];
-    }
-    return modelKey?.value;
-  },
-  set: (val) => {
-    emit('update:modelKey', val);
-  },
-});
-
-// watchEffect(() => {
-//   data.value = modelValue.value;
-// });
-</script>

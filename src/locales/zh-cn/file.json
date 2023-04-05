@@ -1,0 +1,27 @@
+{
+  "webFile.op.uploadZip": "ZIP上传",
+  "webFile.op.upload": "上传",
+  "webFile.op.downloadZip": "ZIP下载",
+  "webFile.op.view": "浏览",
+  "webFile.op.mkdir": "新建文件夹",
+  "webFile.op.mkfile": "新建文件",
+  "webFile.op.rename": "重命名",
+  "webFile.op.copy": "复制",
+  "webFile.op.move": "移动",
+  "webFile.name": "名称",
+  "webFile.newName": "新名称",
+  "webFile.dir": "文件夹",
+  "webFile.lastModified": "修改日期",
+  "webFile.fileType": "类型",
+  "webFile.fileType.directory": "文件夹",
+  "webFile.fileType.zip": "ZIP文件",
+  "webFile.fileType.text": "TXT文件",
+  "webFile.fileType.image": "图片文件",
+  "webFile.fileType.file": "文件",
+  "webFile.size": "大小",
+  "webFile.text": "正文",
+  "webFile.image": "图片",
+  "webFile.error.sameDir": "不能复制或移动到原文件夹，请选择其它文件夹",
+
+  "": ""
+}

@@ -1,30 +1,51 @@
+<script lang="ts">
+export default { name: 'DictForm' };
+</script>
+
+<script setup lang="ts">
+import { ref, PropType } from 'vue';
+import { queryDict, createDict, updateDict, deleteDict } from '@/api/content';
+import DialogForm from '@/components/DialogForm.vue';
+
+defineProps({
+  modelValue: { type: Boolean, required: true },
+  beanId: { type: Number, default: null },
+  beanIds: { type: Array as PropType<number[]>, required: true },
+  type: { type: Object, default: null },
+});
+defineEmits({ 'update:modelValue': null, finished: null });
+const focus = ref<any>();
+const values = ref<any>({});
+const deletable = (bean: any) => bean.id >= 500;
+</script>
+
 <template>
   <dialog-form
-    :name="$t('menu.content.dict')"
-    :queryBean="queryDict"
-    :createBean="createDict"
-    :updateBean="updateDict"
-    :deleteBean="deleteDict"
-    :beanId="beanId"
-    :beanIds="beanIds"
-    :focus="focus"
-    :initValues="(): any => ({ typeId: type?.id, enabled: true })"
-    :toValues="(bean) => ({ ...bean })"
-    :disableDelete="(bean: any) => !deletable(bean)"
-    perms="dict"
     v-model:values="values"
+    :name="$t('menu.content.dict')"
+    :query-bean="queryDict"
+    :create-bean="createDict"
+    :update-bean="updateDict"
+    :delete-bean="deleteDict"
+    :bean-id="beanId"
+    :bean-ids="beanIds"
+    :focus="focus"
+    :init-values="(): any => ({ typeId: type?.id, enabled: true })"
+    :to-values="(bean) => ({ ...bean })"
+    :disable-delete="(bean: any) => !deletable(bean)"
+    perms="dict"
     :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    @finished="$emit('finished')"
+    @update:model-value="(event) => $emit('update:modelValue', event)"
+    @finished="() => $emit('finished')"
   >
     <template #default="{ isEdit }">
       <el-form-item prop="typeId" :label="$t('dict.type')">
         <el-select v-model="values.typeId" disabled>
-          <el-option :value="type.id" :label="type.name"></el-option>
+          <el-option :value="type?.id" :label="type?.name"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item prop="name" :label="$t('dict.name')" :rules="{ required: true, message: () => $t('v.required') }">
-        <el-input v-model="values.name" ref="focus" maxlength="50"></el-input>
+        <el-input ref="focus" v-model="values.name" maxlength="50"></el-input>
       </el-form-item>
       <el-form-item prop="value" :label="$t('dict.value')" :rules="{ required: true, message: () => $t('v.required') }">
         <el-input v-model="values.value" :disabled="isEdit && !deletable(values)" maxlength="50"></el-input>
@@ -41,19 +62,3 @@
     </template>
   </dialog-form>
 </template>
-
-<script lang="ts">
-export default { name: 'DictForm' };
-</script>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import { queryDict, createDict, updateDict, deleteDict } from '@/api/content';
-import DialogForm from '@/components/DialogForm.vue';
-
-defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true }, type: null });
-defineEmits({ 'update:modelValue': null, finished: null });
-const focus = ref<any>();
-const values = ref<any>({});
-const deletable = (bean: any) => bean.id >= 500;
-</script>

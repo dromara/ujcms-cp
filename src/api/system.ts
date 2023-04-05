@@ -1,5 +1,7 @@
 import axios from '@/utils/request';
 
+export const queryCurrentSite = async (): Promise<any> => (await axios.get(`/backend/core/site/current`)).data;
+
 export const querySiteList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/site', { params })).data;
 export const querySite = async (id: number): Promise<any> => (await axios.get(`/backend/core/site/${id}`)).data;
 export const createSite = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/site', data)).data;

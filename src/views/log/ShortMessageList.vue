@@ -1,78 +1,3 @@
-<template>
-  <div>
-    <div class="mb-3">
-      <query-form :params="params" @search="handleSearch" @reset="handleReset">
-        <query-item :label="$t('shortMessage.receiver')" name="Q_Contains_receiver"></query-item>
-      </query-form>
-    </div>
-    <div>
-      <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
-        <template #reference>
-          <el-button :disabled="selection.length <= 0 || perm('shortMessage:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
-        </template>
-      </el-popconfirm>
-      <column-setting name="shortMessage" class="ml-2" />
-    </div>
-    <div class="app-block mt-3">
-      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
-        <column-list name="shortMessage">
-          <el-table-column type="selection" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
-          <el-table-column property="type" :label="$t('shortMessage.type')" sortable="custom" width="100">
-            <template #default="{ row }">
-              <el-tag v-if="row.type === 1" size="small">{{ $t(`shortMessage.type.${row.type}`) }}</el-tag>
-              <el-tag v-else type="success" size="small">{{ $t(`shortMessage.type.${row.type}`) }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column property="receiver" :label="$t('shortMessage.receiver')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="code" :label="$t('shortMessage.code')" sortable="custom" width="100"></el-table-column>
-          <el-table-column property="sendDate" :label="$t('shortMessage.sendDate')" sortable="custom" width="170">
-            <template #default="{ row }">{{ dayjs(row.sendDate).format('YYYY-MM-DD HH:mm:ss') }}</template>
-          </el-table-column>
-          <el-table-column property="ip" :label="$t('shortMessage.ip')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="attempts" :label="$t('shortMessage.attempts')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
-          <el-table-column property="usage" :label="$t('shortMessage.usage')" sortable="custom" width="100">
-            <template #default="{ row }">
-              <el-tag v-if="row.type" size="small">{{ $t(`shortMessage.usage.${row.type}`) }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column property="status" :label="$t('shortMessage.status')" sortable="custom" width="100">
-            <template #default="{ row }">
-              <el-tag v-if="row.status === 1" type="success" size="small">{{ $t(`shortMessage.status.${row.status}`) }}</el-tag>
-              <el-tag v-else-if="[2, 3].includes(row.status)" type="danger" size="small">{{ $t(`shortMessage.status.${row.status}`) }}</el-tag>
-              <el-tag v-else-if="[4].includes(row.status)" type="warning" size="small">{{ $t(`shortMessage.status.${row.status}`) }}</el-tag>
-              <el-tag v-else-if="row.status != null" type="info" size="small">{{ $t(`shortMessage.status.${row.status}`) }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('table.action')">
-            <template #default="{ row }">
-              <el-button type="primary" :disabled="perm('shortMessage:show')" @click="handleEdit(row.id)" size="small" link>{{ $t('view') }}</el-button>
-              <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
-                <template #reference>
-                  <el-button type="primary" :disabled="perm('shortMessage:delete')" size="small" link>{{ $t('delete') }}</el-button>
-                </template>
-              </el-popconfirm>
-            </template>
-          </el-table-column>
-        </column-list>
-      </el-table>
-      <el-pagination
-        v-model:currentPage="currentPage"
-        v-model:pageSize="pageSize"
-        :total="total"
-        :page-sizes="pageSizes"
-        :layout="pageLayout"
-        @size-change="fetchData()"
-        @current-change="fetchData()"
-        small
-        background
-        class="px-3 py-2 justify-end"
-      ></el-pagination>
-    </div>
-    <short-message-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" />
-  </div>
-</template>
-
 <script lang="ts">
 export default { name: 'ShortMessageList' };
 </script>
@@ -131,10 +56,6 @@ const handleReset = () => {
   fetchData();
 };
 
-const handleAdd = () => {
-  beanId.value = undefined;
-  formVisible.value = true;
-};
 const handleEdit = (id: number) => {
   beanId.value = id;
   formVisible.value = true;
@@ -145,3 +66,78 @@ const handleDelete = async (ids: number[]) => {
   ElMessage.success(t('success'));
 };
 </script>
+
+<template>
+  <div>
+    <div class="mb-3">
+      <query-form :params="params" @search="handleSearch" @reset="handleReset">
+        <query-item :label="$t('shortMessage.receiver')" name="Q_Contains_receiver"></query-item>
+      </query-form>
+    </div>
+    <div>
+      <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete(selection.map((row) => row.id))">
+        <template #reference>
+          <el-button :disabled="selection.length <= 0 || perm('shortMessage:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
+        </template>
+      </el-popconfirm>
+      <column-setting name="shortMessage" class="ml-2" />
+    </div>
+    <div class="app-block mt-3">
+      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
+        <column-list name="shortMessage">
+          <el-table-column type="selection" width="45"></el-table-column>
+          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="type" :label="$t('shortMessage.type')" sortable="custom" width="100">
+            <template #default="{ row }">
+              <el-tag v-if="row.type === 1" size="small">{{ $t(`shortMessage.type.${row.type}`) }}</el-tag>
+              <el-tag v-else type="success" size="small">{{ $t(`shortMessage.type.${row.type}`) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column property="receiver" :label="$t('shortMessage.receiver')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="code" :label="$t('shortMessage.code')" sortable="custom" width="100"></el-table-column>
+          <el-table-column property="sendDate" :label="$t('shortMessage.sendDate')" sortable="custom" width="170">
+            <template #default="{ row }">{{ dayjs(row.sendDate).format('YYYY-MM-DD HH:mm:ss') }}</template>
+          </el-table-column>
+          <el-table-column property="ip" :label="$t('shortMessage.ip')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="attempts" :label="$t('shortMessage.attempts')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
+          <el-table-column property="usage" :label="$t('shortMessage.usage')" sortable="custom" width="100">
+            <template #default="{ row }">
+              <el-tag v-if="row.type" size="small">{{ $t(`shortMessage.usage.${row.type}`) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column property="status" :label="$t('shortMessage.status')" sortable="custom" width="100">
+            <template #default="{ row }">
+              <el-tag v-if="row.status === 1" type="success" size="small">{{ $t(`shortMessage.status.${row.status}`) }}</el-tag>
+              <el-tag v-else-if="[2, 3].includes(row.status)" type="danger" size="small">{{ $t(`shortMessage.status.${row.status}`) }}</el-tag>
+              <el-tag v-else-if="[4].includes(row.status)" type="warning" size="small">{{ $t(`shortMessage.status.${row.status}`) }}</el-tag>
+              <el-tag v-else-if="row.status != null" type="info" size="small">{{ $t(`shortMessage.status.${row.status}`) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('table.action')">
+            <template #default="{ row }">
+              <el-button type="primary" :disabled="perm('shortMessage:show')" size="small" link @click="() => handleEdit(row.id)">{{ $t('view') }}</el-button>
+              <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
+                <template #reference>
+                  <el-button type="primary" :disabled="perm('shortMessage:delete')" size="small" link>{{ $t('delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
+        </column-list>
+      </el-table>
+      <el-pagination
+        v-model:currentPage="currentPage"
+        v-model:pageSize="pageSize"
+        :total="total"
+        :page-sizes="pageSizes"
+        :layout="pageLayout"
+        small
+        background
+        class="px-3 py-2 justify-end"
+        @size-change="() => fetchData()"
+        @current-change="() => fetchData()"
+      ></el-pagination>
+    </div>
+    <short-message-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" @finished="fetchData" />
+  </div>
+</template>

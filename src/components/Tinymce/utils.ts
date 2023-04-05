@@ -110,7 +110,7 @@ const bindModelHandlers = (props: any, ctx: SetupContext, editor: any, modelValu
   });
 };
 
-const initEditor = (initEvent: Event, props: any, ctx: SetupContext<any>, editor: any, modelValue: Ref<string>, formItem: any): void => {
+const initEditor = (initEvent: Event, props: any, ctx: any, editor: any, modelValue: Ref<string>, formItem: any): void => {
   editor.setContent(modelValue.value ?? '');
   bindModelHandlers(props, ctx, editor, modelValue, formItem);
   bindHandlers(initEvent, ctx.attrs, editor);

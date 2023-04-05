@@ -1,27 +1,65 @@
+<script lang="ts">
+export default { name: 'BlockItemForm' };
+</script>
+
+<script setup lang="ts">
+import { computed, onMounted, ref, toRefs, PropType } from 'vue';
+import { queryBlockList } from '@/api/config';
+import { queryBlockItem, createBlockItem, updateBlockItem, deleteBlockItem } from '@/api/content';
+import DialogForm from '@/components/DialogForm.vue';
+import { BaseUpload, ImageUpload } from '@/components/Upload';
+import ImageExtractor from './components/ImageExtractor.vue';
+
+const props = defineProps({
+  modelValue: { type: Boolean, required: true },
+  beanId: { type: Number, default: null },
+  beanIds: { type: Array as PropType<number[]>, required: true },
+  blockId: { type: Number, default: null },
+  articleId: { type: Number, default: null },
+  title: { type: String, default: null },
+  description: { type: String, default: null },
+  video: { type: String, default: null },
+  images: { type: Array as PropType<string[]>, default: () => [] },
+});
+defineEmits({ 'update:modelValue': null, finished: null });
+const { blockId } = toRefs(props);
+const currentBlockId = ref<number | null>();
+const focus = ref<any>();
+const values = ref<any>({});
+const blockList = ref<any[]>([]);
+const block = computed(() => blockList.value.find((item) => item.id === (currentBlockId.value ?? blockId?.value)));
+
+onMounted(async () => {
+  blockList.value = await queryBlockList();
+});
+
+const imageExtractorVisible = ref<boolean>(false);
+</script>
+
 <template>
   <div>
     <dialog-form
+      v-model:values="values"
       :name="$t('menu.content.blockItem')"
-      :queryBean="queryBlockItem"
-      :createBean="createBlockItem"
-      :updateBean="updateBlockItem"
-      :deleteBean="deleteBlockItem"
-      :beanId="beanId"
-      :beanIds="beanIds"
+      :query-bean="queryBlockItem"
+      :create-bean="createBlockItem"
+      :update-bean="updateBlockItem"
+      :delete-bean="deleteBlockItem"
+      :bean-id="beanId"
+      :bean-ids="beanIds"
       :focus="focus"
-      :initValues="(): any => ({ blockId: blockId, articleId: articleId, title: title, description: description, video: video })"
-      :toValues="(bean) => ({ ...bean, articleTitle: bean.article?.title, articleId: bean.article?.id })"
+      :init-values="(): any => ({ blockId: blockId, articleId: articleId, title: title, description: description, video: video })"
+      :to-values="(bean) => ({ ...bean, articleTitle: bean.article?.title, articleId: bean.article?.id })"
       :addable="block?.enabled"
       perms="blockItem"
-      v-model:values="values"
       :model-value="modelValue"
-      @update:model-value="$emit('update:modelValue', $event)"
-      @finished="$emit('finished')"
-      @beanChange="(bean) => (currentBlockId = bean.blockId)"
+      @update:model-value="(event) => $emit('update:modelValue', event)"
+      @finished="() => $emit('finished')"
+      @bean-change="(bean) => (currentBlockId = bean.blockId)"
     >
       <template #default="{ isEdit }">
         <el-form-item prop="blockId" :label="$t('blockItem.block')" :rules="{ required: true, message: () => $t('v.required') }">
-          <el-select v-model="values.blockId" class="w-full" @change="(value: any) => (currentBlockId = value)" disabled>
+          <el-select v-model="values.blockId" class="w-full" disabled @change="(value: any) => (currentBlockId = value)">
             <template v-for="item in blockList" :key="item.id">
               <el-option v-if="isEdit || item.enabled" :label="item.name" :value="item.id" :disabled="!item.enabled"></el-option>
             </template>
@@ -34,7 +72,7 @@
           <el-input v-model="values.articleTitle" disabled></el-input>
         </el-form-item>
         <el-form-item prop="title" :label="$t('blockItem.title')" :rules="{ required: true, message: () => $t('v.required') }">
-          <el-input v-model="values.title" ref="focus" maxlength="150"></el-input>
+          <el-input ref="focus" v-model="values.title" maxlength="150"></el-input>
         </el-form-item>
         <el-form-item
           v-if="values.articleId == null && block?.withLinkUrl"
@@ -64,7 +102,7 @@
         </el-form-item>
         <el-form-item v-if="block?.withImage" prop="image" :label="$t('blockItem.image')" :rules="{ required: block?.imageRequired, message: () => $t('v.required') }">
           <image-upload v-model="values.image" :width="block.imageWidth" :height="block.imageHeight" mode="manual"></image-upload>
-          <el-button v-if="images.length > 0" class="ml-2 self-start" @click="imageExtractorVisible = true">{{ $t('article.extractImage') }}</el-button>
+          <el-button v-if="images.length > 0" class="ml-2 self-start" @click="() => (imageExtractorVisible = true)">{{ $t('article.extractImage') }}</el-button>
         </el-form-item>
         <el-form-item
           v-if="block?.withMobileImage"
@@ -80,10 +118,10 @@
           </el-input>
           <base-upload type="video" :on-success="(res: any) => values.video = res.url"></base-upload>
         </el-form-item>
-        <el-form-item prop="targetBlank" :label="$t('blockItem.targetBlank')" :rules="{ required: true, message: () => $t('v.required') }">
+        <el-form-item prop="targetBlank" :label="$t('blockItem.targetBlank')">
           <el-switch v-model="values.targetBlank" />
         </el-form-item>
-        <el-form-item prop="enabled" :label="$t('blockItem.enabled')" :rules="{ required: true, message: () => $t('v.required') }">
+        <el-form-item prop="enabled" :label="$t('blockItem.enabled')">
           <el-switch v-model="values.enabled" />
         </el-form-item>
       </template>
@@ -91,41 +129,3 @@
     <image-extractor v-model="imageExtractorVisible" :urls="images" :append-to-body="true" @finished="(urls: string[]) => (values.image = urls[0])" />
   </div>
 </template>
-
-<script lang="ts">
-export default { name: 'BlockItemForm' };
-</script>
-
-<script setup lang="ts">
-import { computed, onMounted, ref, toRefs, PropType } from 'vue';
-import { queryBlockList } from '@/api/config';
-import { queryBlockItem, createBlockItem, updateBlockItem, deleteBlockItem } from '@/api/content';
-import DialogForm from '@/components/DialogForm.vue';
-import { BaseUpload, ImageUpload } from '@/components/Upload';
-import ImageExtractor from './components/ImageExtractor.vue';
-
-const props = defineProps({
-  modelValue: { type: Boolean, required: true },
-  beanId: { required: true },
-  beanIds: { type: Array, required: true },
-  blockId: { type: Number },
-  articleId: { type: Number },
-  title: { type: String },
-  description: { type: String },
-  video: { type: String },
-  images: { type: Array as PropType<string[]>, default: [] },
-});
-defineEmits({ 'update:modelValue': null, finished: null });
-const { blockId } = toRefs(props);
-const currentBlockId = ref<number | null>();
-const focus = ref<any>();
-const values = ref<any>({});
-const blockList = ref<any[]>([]);
-const block = computed(() => blockList.value.find((item) => item.id === (currentBlockId.value ?? blockId?.value)));
-
-onMounted(async () => {
-  blockList.value = await queryBlockList();
-});
-
-const imageExtractorVisible = ref<boolean>(false);
-</script>

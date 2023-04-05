@@ -1,93 +1,3 @@
-<template>
-  <div>
-    <!-- <transition-group tag="ul" :class="['el-upload-list', 'el-upload-list--picture-card', { 'is-disabled': disabled }]" name="el-list"> -->
-    <draggable
-      :list="fileList"
-      tag="ul"
-      item-key="url"
-      :animation="250"
-      @start="dragging = true"
-      @end="dragging = false"
-      class="el-upload-list"
-      :class="[listType === 'picture' ? 'el-upload-list--picture' : 'el-upload-list--picture-card', { 'is-disabled': disabled }]"
-    >
-      <template #item="{ element: file }">
-        <li class="el-upload-list__item is-success">
-          <div :class="listType === 'picture' ? ['w-32', 'h-32'] : ['w-full', 'h-full']" class="bg-gray-50 flex justify-center items-center relative">
-            <img class="max-w-full max-h-full block" :src="file.url" alt="" />
-            <div
-              class="full-flex-center absolute rounded-md cursor-move bg-black bg-opacity-50 opacity-0 space-x-4"
-              :class="dragging ? undefined : 'hover:opacity-100'"
-              @click.stop
-            >
-              <el-icon class="image-action" @click="(cropperVisible = true), (currentFile = file)" :title="$t('cropImage')"><Crop /></el-icon>
-              <el-icon class="image-action" @click="handlePreview(file)" :title="$t('previewImage')"><View /></el-icon>
-              <el-icon class="image-action" @click="fileList.splice(fileList.indexOf(file), 1)" :title="$t('deleteImage')"><Delete /></el-icon>
-            </div>
-          </div>
-          <div v-if="listType === 'picture'" class="ml-2">
-            <el-input v-model="file.url" placeholder="URL" maxlength="255">
-              <template #prepend>URL</template>
-            </el-input>
-            <el-input v-model="file.name" :placeholder="$t('article.imageList.name')" class="mt-1">
-              <template #prepend>{{ $t('article.imageList.name') }}</template>
-            </el-input>
-            <el-input v-model="file.description" type="textarea" :rows="2" :placeholder="$t('article.imageList.description')" class="mt-1"></el-input>
-          </div>
-        </li>
-      </template>
-      <template #footer>
-        <el-upload
-          :action="imageUploadUrl"
-          :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
-          :data="getData()"
-          :accept="accept"
-          :before-upload="beforeUpload"
-          :on-success="(res: any, file: any) => fileList.push({ name: res.name, url: res.url })"
-          :on-progress="(event: any, file: any) => (progressFile = file)"
-          :on-error="onError"
-          :show-file-list="false"
-          :disabled="disabled"
-          multiple
-          drag
-        >
-          <el-progress v-if="progressFile.status === 'uploading'" type="circle" :percentage="parseInt(progressFile.percentage, 10)" />
-          <div v-else class="el-upload--picture-card">
-            <el-icon><Plus /></el-icon>
-          </div>
-        </el-upload>
-      </template>
-    </draggable>
-    <!-- </transition-group> -->
-    <div>
-      <el-dialog v-model="previewVisible" top="5vh" :width="768">
-        <el-input v-model="previewFile.url" maxlength="255">
-          <template #prepend>URL</template>
-        </el-input>
-        <el-input v-if="listType !== 'picture'" v-model="previewFile.name" :placeholder="$t('article.imageList.name')" class="mt-1">
-          <template #prepend>{{ $t('article.imageList.name') }}</template>
-        </el-input>
-        <el-input
-          v-if="listType !== 'picture'"
-          v-model="previewFile.description"
-          type="textarea"
-          :rows="2"
-          :placeholder="$t('article.imageList.description')"
-          class="mt-1"
-        ></el-input>
-        <img :src="previewFile.url" alt="" class="mt-1 border border-gray-300" />
-      </el-dialog>
-    </div>
-    <image-cropper
-      v-model="cropperVisible"
-      :src="currentFile.url"
-      :thumbnailWidth="thumbnailWidth"
-      :thumbnailHeight="thumbnailHeight"
-      @success="(url) => (currentFile.url = url)"
-    ></image-cropper>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, toRefs, computed, watch, PropType } from 'vue';
 import { ElMessage, useFormItem } from 'element-plus';
@@ -103,10 +13,10 @@ import ImageCropper from './ImageCropper.vue';
 
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
-  fileAccept: { type: String },
-  fileMaxSize: { type: Number },
-  maxWidth: { type: Number },
-  maxHeight: { type: Number },
+  fileAccept: { type: String, default: null },
+  fileMaxSize: { type: Number, default: null },
+  maxWidth: { type: Number, default: null },
+  maxHeight: { type: Number, default: null },
   listType: { type: String as PropType<'pictureCard' | 'picture'>, default: 'pictureCard' },
   disabled: { type: Boolean, default: false },
 });
@@ -166,6 +76,96 @@ const onError = (error: Error) => {
   handleError(JSON.parse(error.message));
 };
 </script>
+
+<template>
+  <div>
+    <!-- <transition-group tag="ul" :class="['el-upload-list', 'el-upload-list--picture-card', { 'is-disabled': disabled }]" name="el-list"> -->
+    <draggable
+      :list="fileList"
+      tag="ul"
+      item-key="url"
+      :animation="250"
+      class="el-upload-list"
+      :class="[listType === 'picture' ? 'el-upload-list--picture' : 'el-upload-list--picture-card', { 'is-disabled': disabled }]"
+      @start="() => (dragging = true)"
+      @end="() => (dragging = false)"
+    >
+      <template #item="{ element: file }">
+        <li class="el-upload-list__item is-success">
+          <div :class="listType === 'picture' ? ['w-32', 'h-32'] : ['w-full', 'h-full']" class="bg-gray-50 flex justify-center items-center relative">
+            <img class="max-w-full max-h-full block" :src="file.url" alt="" />
+            <div
+              class="full-flex-center absolute rounded-md cursor-move bg-black bg-opacity-50 opacity-0 space-x-4"
+              :class="dragging ? undefined : 'hover:opacity-100'"
+              @click.stop
+            >
+              <el-icon class="image-action" :title="$t('cropImage')" @click="() => ((cropperVisible = true), (currentFile = file))"><Crop /></el-icon>
+              <el-icon class="image-action" :title="$t('previewImage')" @click="() => handlePreview(file)"><View /></el-icon>
+              <el-icon class="image-action" :title="$t('deleteImage')" @click="() => fileList.splice(fileList.indexOf(file), 1)"><Delete /></el-icon>
+            </div>
+          </div>
+          <div v-if="listType === 'picture'" class="ml-2">
+            <el-input v-model="file.url" placeholder="URL" maxlength="255">
+              <template #prepend>URL</template>
+            </el-input>
+            <el-input v-model="file.name" :placeholder="$t('article.imageList.name')" class="mt-1">
+              <template #prepend>{{ $t('article.imageList.name') }}</template>
+            </el-input>
+            <el-input v-model="file.description" type="textarea" :rows="2" :placeholder="$t('article.imageList.description')" class="mt-1"></el-input>
+          </div>
+        </li>
+      </template>
+      <template #footer>
+        <el-upload
+          :action="imageUploadUrl"
+          :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
+          :data="getData()"
+          :accept="accept"
+          :before-upload="beforeUpload"
+          :on-success="(res: any, file: any) => fileList.push({ name: res.name, url: res.url })"
+          :on-progress="(event: any, file: any) => (progressFile = file)"
+          :on-error="onError"
+          :show-file-list="false"
+          :disabled="disabled"
+          multiple
+          drag
+        >
+          <el-progress v-if="progressFile.status === 'uploading'" type="circle" :percentage="parseInt(progressFile.percentage, 10)" />
+          <div v-else class="el-upload--picture-card">
+            <el-icon><Plus /></el-icon>
+          </div>
+        </el-upload>
+      </template>
+    </draggable>
+    <!-- </transition-group> -->
+    <div>
+      <el-dialog v-model="previewVisible" top="5vh" :width="768">
+        <el-input v-model="previewFile.url" maxlength="255">
+          <template #prepend>URL</template>
+        </el-input>
+        <el-input v-if="listType !== 'picture'" v-model="previewFile.name" :placeholder="$t('article.imageList.name')" class="mt-1">
+          <template #prepend>{{ $t('article.imageList.name') }}</template>
+        </el-input>
+        <el-input
+          v-if="listType !== 'picture'"
+          v-model="previewFile.description"
+          type="textarea"
+          :rows="2"
+          :placeholder="$t('article.imageList.description')"
+          class="mt-1"
+        ></el-input>
+        <img :src="previewFile.url" alt="" class="mt-1 border border-gray-300" />
+      </el-dialog>
+    </div>
+    <image-cropper
+      v-model="cropperVisible"
+      :src="currentFile.url"
+      :thumbnail-width="thumbnailWidth"
+      :thumbnail-height="thumbnailHeight"
+      @success="(url) => (currentFile.url = url)"
+    ></image-cropper>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 :deep(.el-dialog__headerbtn) {

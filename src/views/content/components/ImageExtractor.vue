@@ -1,26 +1,10 @@
-<template>
-  <el-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" :title="$t('article.extractImage')" :width="768" :append-to-body="appendToBody">
-    <el-row :gutter="16">
-      <el-col v-for="(image, index) in images" :src="image" :key="image.url" :span="8" class="mt-2">
-        <div class="p-1 border-2 rounded cursor-pointer text-center" :class="{ 'border-primary': image.checked, 'border-2': image.checked }" @click="checkImg(image)">
-          <!-- <el-image :src="image.url" :preview-src-list="images.map((it: any) => it.url)" preview-teleported :initial-index="index" class="inline" /> -->
-          <img :src="image.url" class="max-h-36 inline">
-        </div>
-      </el-col>
-    </el-row>
-    <template #footer>
-      <el-button type="primary" @click="finish()" :disabled="images.filter((image: any) => image.checked).length < min">{{ $t('ok') }}</el-button>
-    </template>
-  </el-dialog>
-</template>
-
 <script setup lang="ts">
 import { ref, toRefs, watch, PropType } from 'vue';
 import _ from 'lodash';
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
-  urls: { type: Array as PropType<string[]>, default: [] },
+  urls: { type: Array as PropType<string[]>, default: () => [] },
   min: { type: Number, default: 1 },
   max: { type: Number, default: 1 },
   appendToBody: { type: Boolean },
@@ -63,4 +47,24 @@ const finish = () => {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<template>
+  <el-dialog
+    :model-value="modelValue"
+    :title="$t('article.extractImage')"
+    :width="768"
+    :append-to-body="appendToBody"
+    @update:model-value="(event) => $emit('update:modelValue', event)"
+  >
+    <el-row :gutter="16">
+      <el-col v-for="image in images" :key="image.url" :src="image" :span="8" class="mt-2">
+        <div class="p-1 border-2 rounded cursor-pointer text-center" :class="{ 'border-primary': image.checked, 'border-2': image.checked }" @click="() => checkImg(image)">
+          <!-- <el-image :src="image.url" :preview-src-list="images.map((it: any) => it.url)" preview-teleported :initial-index="index" class="inline" /> -->
+          <img :src="image.url" class="max-h-36 inline" />
+        </div>
+      </el-col>
+    </el-row>
+    <template #footer>
+      <el-button type="primary" :disabled="images.filter((image: any) => image.checked).length < min" @click="() => finish()">{{ $t('ok') }}</el-button>
+    </template>
+  </el-dialog>
+</template>

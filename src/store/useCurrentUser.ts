@@ -130,7 +130,7 @@ const showLoginBox = () => {
           done();
         }
       },
-    });
+    }).catch();
   }
 };
 

@@ -1,11 +1,11 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig, loadEnv } from 'vite';
 import path from 'path';
 import vue from '@vitejs/plugin-vue';
 import legacy from '@vitejs/plugin-legacy';
-import vueI18n from '@intlify/vite-plugin-vue-i18n';
+import vueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
+import { viteMockServe } from 'vite-plugin-mock';
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   // 加载 .env 文件
   const env = loadEnv(mode, process.cwd());
   return {
@@ -26,6 +26,10 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_PROXY_UPLOADS,
           changeOrigin: true,
         },
+        [env.VITE_BASE_TEMPLATES]: {
+          target: env.VITE_PROXY_TEMPLATES,
+          changeOrigin: true,
+        },
       },
     },
     build: {
@@ -36,8 +40,18 @@ export default defineConfig(({ mode }) => {
       legacy({
         targets: ['defaults', 'not IE 11'],
       }),
-      vueI18n({
-        include: path.resolve(__dirname, './src/locales/**'),
+      vueI18nPlugin({
+        include: [path.resolve(__dirname, './locales/**')],
+      }),
+      viteMockServe({
+        ignore: /^_/,
+        mockPath: 'mock',
+        localEnabled: command === 'serve',
+        prodEnabled: false,
+        injectCode: `
+          import { setupProdMockServer } from './mock/_mockProdServer';
+          setupProdMockServer();
+        `,
       }),
     ],
   };

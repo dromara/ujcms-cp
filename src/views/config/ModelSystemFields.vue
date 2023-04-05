@@ -1,5 +1,53 @@
+<script lang="ts">
+export default { name: 'ModelSystemFields' };
+</script>
+
+<script setup lang="ts">
+import { ref, toRefs, watch } from 'vue';
+import { ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+import { getModelData, mergeModelFields } from '@/data';
+import { queryModel, updateModel } from '@/api/config';
+
+const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null } });
+const emit = defineEmits({ 'update:modelValue': null });
+const { beanId, modelValue: visible } = toRefs(props);
+const { t } = useI18n();
+const bean = ref<any>({});
+const buttonLoading = ref<boolean>(false);
+const mains = ref<any[]>([]);
+const asides = ref<any[]>([]);
+watch(visible, async () => {
+  if (visible.value && beanId.value) {
+    bean.value = await queryModel(beanId.value as number);
+    const modelData = getModelData()[bean.value.type];
+    mains.value = mergeModelFields(modelData.mains, bean.value.mains, bean.value.type);
+    if (modelData.asides?.length > 0) {
+      asides.value = mergeModelFields(modelData.asides, bean.value.asides, bean.value.type);
+    }
+  }
+});
+const handleSubmit = async () => {
+  buttonLoading.value = true;
+  try {
+    await updateModel({ ...bean.value, mains: JSON.stringify(mains.value), asides: JSON.stringify(asides.value) });
+    ElMessage.success(t('success'));
+  } finally {
+    buttonLoading.value = false;
+    emit('update:modelValue', false);
+  }
+};
+const handleReset = () => {
+  const modelData = getModelData()[bean.value.type];
+  mains.value = mergeModelFields(modelData.mains, null, bean.value.type);
+  if (modelData.asides?.length > 0) {
+    asides.value = mergeModelFields(modelData.asides, null, bean.value.type);
+  }
+};
+</script>
+
 <template>
-  <el-dialog :title="$t('model.fun.systemFields')" :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" top="5vh" width="1024px">
+  <el-dialog :title="$t('model.fun.systemFields')" :model-value="modelValue" top="5vh" width="1024px" @update:model-value="(event) => $emit('update:modelValue', event)">
     <el-form>
       <el-table :data="mains">
         <el-table-column prop="code" :label="$t('model.field.code')" min-width="110"></el-table-column>
@@ -48,7 +96,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-table :data="asides" v-if="asides.length > 0" class="mt-5">
+      <el-table v-if="asides.length > 0" :data="asides" class="mt-5">
         <el-table-column prop="code" :label="$t('model.field.code')" min-width="100"></el-table-column>
         <el-table-column prop="name" :label="$t('model.field.name')" min-width="120">
           <template #default="{ row }"><el-input v-model="row.name" :placeholder="$t(row.label)" class="w-11/12" /></template>
@@ -61,57 +109,9 @@
         </el-table-column>
       </el-table>
       <div class="mt-3">
-        <el-button :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" native-type="submit">{{ $t('save') }}</el-button>
+        <el-button :loading="buttonLoading" type="primary" native-type="submit" @click.prevent="handleSubmit">{{ $t('save') }}</el-button>
         <el-button @click="handleReset">{{ $t('restoreInitialSettings') }}</el-button>
       </div>
     </el-form>
   </el-dialog>
 </template>
-
-<script lang="ts">
-export default { name: 'ModelSystemFields' };
-</script>
-
-<script setup lang="ts">
-import { ref, toRefs, watch } from 'vue';
-import { ElMessage } from 'element-plus';
-import { useI18n } from 'vue-i18n';
-import { getModelData, mergeModelFields } from '@/data';
-import { queryModel, updateModel } from '@/api/config';
-
-const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true } });
-const emit = defineEmits({ 'update:modelValue': null });
-const { beanId, modelValue: visible } = toRefs(props);
-const { t } = useI18n();
-const bean = ref<any>({});
-const buttonLoading = ref<boolean>(false);
-const mains = ref<any[]>([]);
-const asides = ref<any[]>([]);
-watch(visible, async () => {
-  if (visible.value && beanId.value) {
-    bean.value = await queryModel(beanId.value as number);
-    const modelData = getModelData()[bean.value.type];
-    mains.value = mergeModelFields(modelData.mains, bean.value.mains, bean.value.type);
-    if (modelData.asides?.length > 0) {
-      asides.value = mergeModelFields(modelData.asides, bean.value.asides, bean.value.type);
-    }
-  }
-});
-const handleSubmit = async () => {
-  buttonLoading.value = true;
-  try {
-    await updateModel({ ...bean.value, mains: JSON.stringify(mains.value), asides: JSON.stringify(asides.value) });
-    ElMessage.success(t('success'));
-  } finally {
-    buttonLoading.value = false;
-    emit('update:modelValue', false);
-  }
-};
-const handleReset = () => {
-  const modelData = getModelData()[bean.value.type];
-  mains.value = mergeModelFields(modelData.mains, null, bean.value.type);
-  if (modelData.asides?.length > 0) {
-    asides.value = mergeModelFields(modelData.asides, null, bean.value.type);
-  }
-};
-</script>

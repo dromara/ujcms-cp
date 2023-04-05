@@ -1,55 +1,3 @@
-<template>
-  <div>
-    <div class="mb-3">
-      <query-form :params="params" @search="handleSearch" @reset="handleReset">
-        <query-item :label="$t('dictType.name')" name="Q_Contains_name"></query-item>
-      </query-form>
-    </div>
-    <div>
-      <el-button type="primary" :disabled="perm('dictType:create')" :icon="Plus" @click="handleAdd()">{{ $t('add') }}</el-button>
-      <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
-        <template #reference>
-          <el-button :disabled="selection.length <= 0 || perm('dictType:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
-        </template>
-      </el-popconfirm>
-      <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" class="ml-2" />
-      <column-setting name="dictType" class="ml-2" />
-    </div>
-    <div class="app-block mt-3">
-      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
-        <column-list name="dictType">
-          <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
-          <el-table-column property="name" :label="$t('dictType.name')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="alias" :label="$t('dictType.alias')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="scope" :label="$t('dictType.scope')" sortable="custom">
-            <template #default="{ row }">
-              <el-tag v-if="row.scope === 2" type="success" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
-              <el-tag v-else type="info" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column property="sys" :label="$t('dictType.sys')" sortable="custom">
-            <template #default="{ row }">
-              <el-tag :type="row.sys ? 'success' : 'info'" size="small">{{ $t(row.sys ? 'yes' : 'no') }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('table.action')">
-            <template #default="{ row }">
-              <el-button type="primary" :disabled="perm('dictType:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
-              <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
-                <template #reference>
-                  <el-button type="primary" :disabled="!deletable(row) || perm('dictType:delete')" size="small" link>{{ $t('delete') }}</el-button>
-                </template>
-              </el-popconfirm>
-            </template>
-          </el-table-column>
-        </column-list>
-      </el-table>
-    </div>
-    <dict-type-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" />
-  </div>
-</template>
-
 <script lang="ts">
 export default { name: 'DictTypeList' };
 </script>
@@ -124,3 +72,55 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
   await updateDictTypeOrder(list.map((item) => item.id));
 };
 </script>
+
+<template>
+  <div>
+    <div class="mb-3">
+      <query-form :params="params" @search="handleSearch" @reset="handleReset">
+        <query-item :label="$t('dictType.name')" name="Q_Contains_name"></query-item>
+      </query-form>
+    </div>
+    <div>
+      <el-button type="primary" :disabled="perm('dictType:create')" :icon="Plus" @click="() => handleAdd()">{{ $t('add') }}</el-button>
+      <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete(selection.map((row) => row.id))">
+        <template #reference>
+          <el-button :disabled="selection.length <= 0 || perm('dictType:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
+        </template>
+      </el-popconfirm>
+      <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" class="ml-2" @move="(type) => move(selection, type)" />
+      <column-setting name="dictType" class="ml-2" />
+    </div>
+    <div class="app-block mt-3">
+      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
+        <column-list name="dictType">
+          <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
+          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="name" :label="$t('dictType.name')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="alias" :label="$t('dictType.alias')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="scope" :label="$t('dictType.scope')" sortable="custom">
+            <template #default="{ row }">
+              <el-tag v-if="row.scope === 2" type="success" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
+              <el-tag v-else type="info" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column property="sys" :label="$t('dictType.sys')" sortable="custom">
+            <template #default="{ row }">
+              <el-tag :type="row.sys ? 'success' : 'info'" size="small">{{ $t(row.sys ? 'yes' : 'no') }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('table.action')">
+            <template #default="{ row }">
+              <el-button type="primary" :disabled="perm('dictType:update')" size="small" link @click="() => handleEdit(row.id)">{{ $t('edit') }}</el-button>
+              <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
+                <template #reference>
+                  <el-button type="primary" :disabled="!deletable(row) || perm('dictType:delete')" size="small" link>{{ $t('delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
+        </column-list>
+      </el-table>
+    </div>
+    <dict-type-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" @finished="fetchData" />
+  </div>
+</template>

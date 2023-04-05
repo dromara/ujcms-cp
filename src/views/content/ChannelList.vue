@@ -1,66 +1,3 @@
-<template>
-  <div>
-    <div class="mb-3">
-      <query-form :params="params" @search="handleSearch" @reset="handleReset">
-        <query-item :label="$t('channel.name')" name="Q_Contains_name"></query-item>
-      </query-form>
-    </div>
-    <div>
-      <el-button type="primary" :disabled="perm('channel:create')" :icon="Plus" @click="handleAdd(undefined)">{{ $t('add') }}</el-button>
-      <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
-        <template #reference>
-          <el-button :disabled="selection.length <= 0 || perm('channel:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
-        </template>
-      </el-popconfirm>
-      <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" class="ml-2" />
-      <column-setting name="channel" class="ml-2" />
-    </div>
-    <div class="app-block mt-3">
-      <el-table
-        ref="table"
-        v-loading="loading"
-        row-key="id"
-        default-expand-all
-        :data="data"
-        @selection-change="(rows) => (selection = rows)"
-        @row-dblclick="(row) => handleEdit(row.id)"
-        @sort-change="handleSort"
-      >
-        <column-list name="channel">
-          <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-          <el-table-column property="name" :label="$t('channel.name')" sortable="custom" show-overflow-tooltip>
-            <template #default="{ row }">{{ filtered ? row.names.join(' / ') : row.name }}</template>
-          </el-table-column>
-          <el-table-column property="alias" :label="$t('channel.alias')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="channelModel.name" :label="$t('channel.channelModel')" display="none" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="articleModel.name" :label="$t('channel.articleModel')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="processKey" :label="$t('channel.processKey')" sortable="custom" show-overflow-tooltip>
-            <template #default="{ row }">{{ processList.find((item) => item.key === row.processKey)?.name }}</template>
-          </el-table-column>
-          <el-table-column property="nav" :label="$t('channel.nav')">
-            <template #default="{ row }">
-              <el-tag :type="row.nav ? 'success' : 'info'" size="small">{{ $t(row.nav ? 'yes' : 'no') }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
-          <el-table-column :label="$t('table.action')">
-            <template #default="{ row }">
-              <el-button type="primary" :disabled="perm('channel:create') || !deletable(row)" @click="handleAdd(row)" size="small" link>{{ $t('addChild') }}</el-button>
-              <el-button type="primary" :disabled="perm('channel:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
-              <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
-                <template #reference>
-                  <el-button type="primary" :disabled="perm('channel:delete') || !deletable(row)" size="small" link>{{ $t('delete') }}</el-button>
-                </template>
-              </el-popconfirm>
-            </template>
-          </el-table-column>
-        </column-list>
-      </el-table>
-    </div>
-    <channel-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" :parent="parent" @finished="fetchData" />
-  </div>
-</template>
-
 <script lang="ts">
 export default { name: 'ChannelList' };
 </script>
@@ -163,3 +100,66 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
   });
 };
 </script>
+
+<template>
+  <div>
+    <div class="mb-3">
+      <query-form :params="params" @search="handleSearch" @reset="handleReset">
+        <query-item :label="$t('channel.name')" name="Q_Contains_name"></query-item>
+      </query-form>
+    </div>
+    <div>
+      <el-button type="primary" :disabled="perm('channel:create')" :icon="Plus" @click="() => handleAdd(undefined)">{{ $t('add') }}</el-button>
+      <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete(selection.map((row) => row.id))">
+        <template #reference>
+          <el-button :disabled="selection.length <= 0 || perm('channel:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
+        </template>
+      </el-popconfirm>
+      <list-move :disabled="selection.length <= 0 || filtered || perm('channel:update')" class="ml-2" @move="(type) => move(selection, type)" />
+      <column-setting name="channel" class="ml-2" />
+    </div>
+    <div class="app-block mt-3">
+      <el-table
+        ref="table"
+        v-loading="loading"
+        row-key="id"
+        default-expand-all
+        :data="data"
+        @selection-change="(rows) => (selection = rows)"
+        @row-dblclick="(row) => handleEdit(row.id)"
+        @sort-change="handleSort"
+      >
+        <column-list name="channel">
+          <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
+          <el-table-column property="name" :label="$t('channel.name')" sortable="custom" show-overflow-tooltip>
+            <template #default="{ row }">{{ filtered ? row.names.join(' / ') : row.name }}</template>
+          </el-table-column>
+          <el-table-column property="alias" :label="$t('channel.alias')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="channelModel.name" :label="$t('channel.channelModel')" display="none" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="articleModel.name" :label="$t('channel.articleModel')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="processKey" :label="$t('channel.processKey')" sortable="custom" show-overflow-tooltip>
+            <template #default="{ row }">{{ processList.find((item) => item.key === row.processKey)?.name }}</template>
+          </el-table-column>
+          <el-table-column property="nav" :label="$t('channel.nav')">
+            <template #default="{ row }">
+              <el-tag :type="row.nav ? 'success' : 'info'" size="small">{{ $t(row.nav ? 'yes' : 'no') }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column :label="$t('table.action')">
+            <template #default="{ row }">
+              <el-button type="primary" :disabled="perm('channel:create') || !deletable(row)" size="small" link @click="() => handleAdd(row)">{{ $t('addChild') }}</el-button>
+              <el-button type="primary" :disabled="perm('channel:update')" size="small" link @click="() => handleEdit(row.id)">{{ $t('edit') }}</el-button>
+              <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
+                <template #reference>
+                  <el-button type="primary" :disabled="perm('channel:delete') || !deletable(row)" size="small" link>{{ $t('delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
+        </column-list>
+      </el-table>
+    </div>
+    <channel-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" :parent="parent" @finished="fetchData" />
+  </div>
+</template>

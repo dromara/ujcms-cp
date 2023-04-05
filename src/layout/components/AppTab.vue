@@ -1,44 +1,5 @@
-<template>
-  <div class="overflow-hidden shadow bg-white flex items-stretch">
-    <div class="text-secondary flex items-stretch">
-      <div class="flex items-center px-2 border-l border-r border-t rounded-t" @click="refresh(tabName)">
-        <el-icon class="cursor-pointer" :title="$t('contextMenu.refresh')"><RefreshRight /></el-icon>
-      </div>
-    </div>
-    <div class="flex-grow overflow-hidden">
-      <el-tabs
-        v-model="tabName"
-        type="card"
-        :closable="!closeDisabled"
-        @tab-click="handleTabClick"
-        @tab-remove="handleTabRemove"
-        @contextmenu.prevent.native="openContextMenu($event)"
-      >
-        <el-tab-pane v-for="{ name, label } in viewTabs" :key="name" :name="name" :label="label" />
-      </el-tabs>
-    </div>
-    <ul ref="contextMenu" :style="{ left: left + 'px', top: top + 'px', visibility: visible ? 'visible' : 'hidden' }" class="context-menu">
-      <li :class="['context-menu-item', { 'is-disabled': refreshDisabled }]" @click="handleRefreshClick" @mousedown="(e) => handleMouseDown(refreshDisabled, e)">
-        <el-icon class="mr-1"><RefreshRight /></el-icon>{{ $t('contextMenu.refresh') }}
-      </li>
-      <li :class="['context-menu-item', { 'is-disabled': closeDisabled }]" @click="handleCloseClick" @mousedown="(e) => handleMouseDown(closeDisabled, e)">
-        <el-icon class="mr-1"><Close /></el-icon>{{ $t('contextMenu.close') }}
-      </li>
-      <li :class="['context-menu-item', { 'is-disabled': closeLeftDisabled }]" @click="handleCloseLeftClick" @mousedown="(e) => handleMouseDown(closeLeftDisabled, e)">
-        <el-icon class="mr-1 rotate-90"><Download /></el-icon>{{ $t('contextMenu.closeLeft') }}
-      </li>
-      <li :class="['context-menu-item', { 'is-disabled': closeRightDisabled }]" @click="handleCloseRightClick" @mousedown="(e) => handleMouseDown(closeRightDisabled, e)">
-        <el-icon class="mr-1 -rotate-90"><Download /></el-icon>{{ $t('contextMenu.closeRight') }}
-      </li>
-      <li :class="['context-menu-item', { 'is-disabled': closeDisabled }]" @click="handleCloseOtherClick" @mousedown="(e) => handleMouseDown(closeDisabled, e)">
-        <el-icon class="mr-1 rotate-90"><DCaret /></el-icon>{{ $t('contextMenu.closeOther') }}
-      </li>
-    </ul>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, watch,computed } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { RefreshRight, Close, DCaret, Download } from '@element-plus/icons-vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -197,6 +158,45 @@ const handleTabRemove = (paneName: string | number) => {
   remove(paneName);
 };
 </script>
+
+<template>
+  <div class="overflow-hidden shadow bg-white flex items-stretch">
+    <div class="text-secondary flex items-stretch">
+      <div class="flex items-center px-2 border-l border-r border-t rounded-t" @click="() => refresh(tabName)">
+        <el-icon class="cursor-pointer" :title="$t('contextMenu.refresh')"><RefreshRight /></el-icon>
+      </div>
+    </div>
+    <div class="flex-grow overflow-hidden">
+      <el-tabs
+        v-model="tabName"
+        type="card"
+        :closable="!closeDisabled"
+        @tab-click="handleTabClick"
+        @tab-remove="handleTabRemove"
+        @contextmenu.prevent="(event: any) => openContextMenu(event)"
+      >
+        <el-tab-pane v-for="{ name, label } in viewTabs" :key="name" :name="name" :label="label" />
+      </el-tabs>
+    </div>
+    <ul ref="contextMenu" :style="{ left: left + 'px', top: top + 'px', visibility: visible ? 'visible' : 'hidden' }" class="context-menu">
+      <li :class="['context-menu-item', { 'is-disabled': refreshDisabled }]" @click="handleRefreshClick" @mousedown="(e) => handleMouseDown(refreshDisabled, e)">
+        <el-icon class="mr-1"><RefreshRight /></el-icon>{{ $t('contextMenu.refresh') }}
+      </li>
+      <li :class="['context-menu-item', { 'is-disabled': closeDisabled }]" @click="handleCloseClick" @mousedown="(e) => handleMouseDown(closeDisabled, e)">
+        <el-icon class="mr-1"><Close /></el-icon>{{ $t('contextMenu.close') }}
+      </li>
+      <li :class="['context-menu-item', { 'is-disabled': closeLeftDisabled }]" @click="handleCloseLeftClick" @mousedown="(e) => handleMouseDown(closeLeftDisabled, e)">
+        <el-icon class="mr-1 rotate-90"><Download /></el-icon>{{ $t('contextMenu.closeLeft') }}
+      </li>
+      <li :class="['context-menu-item', { 'is-disabled': closeRightDisabled }]" @click="handleCloseRightClick" @mousedown="(e) => handleMouseDown(closeRightDisabled, e)">
+        <el-icon class="mr-1 -rotate-90"><Download /></el-icon>{{ $t('contextMenu.closeRight') }}
+      </li>
+      <li :class="['context-menu-item', { 'is-disabled': closeDisabled }]" @click="handleCloseOtherClick" @mousedown="(e) => handleMouseDown(closeDisabled, e)">
+        <el-icon class="mr-1 rotate-90"><DCaret /></el-icon>{{ $t('contextMenu.closeOther') }}
+      </li>
+    </ul>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 :deep(.el-tabs__header) {

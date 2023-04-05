@@ -1,13 +1,6 @@
-<template>
-  <el-breadcrumb separator="/">
-    <transition-group name="breadcrumb">
-      <el-breadcrumb-item v-for="(item, index) in itemList" :key="item.path">
-        <span v-if="index === itemList.length - 1" class="text-gray-400">{{ $t(item.meta.title) }}</span>
-        <a v-else @click.prevent="handleLink(item)">{{ $t(item.meta.title) }}</a>
-      </el-breadcrumb-item>
-    </transition-group>
-  </el-breadcrumb>
-</template>
+<script lang="ts">
+export default { name: 'BreadCrumb' };
+</script>
 
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue';
@@ -31,3 +24,14 @@ watchEffect(() => {
   itemList.value = route.matched.filter((item) => item.meta?.title);
 });
 </script>
+
+<template>
+  <el-breadcrumb separator="/">
+    <transition-group name="breadcrumb">
+      <el-breadcrumb-item v-for="(item, index) in itemList" :key="item.path">
+        <span v-if="index === itemList.length - 1" class="text-gray-400">{{ $t(item.meta.title) }}</span>
+        <a v-else @click.prevent="() => handleLink(item)">{{ $t(item.meta.title) }}</a>
+      </el-breadcrumb-item>
+    </transition-group>
+  </el-breadcrumb>
+</template>

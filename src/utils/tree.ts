@@ -78,6 +78,25 @@ export const disableSubtree = (data: any[], disabledId?: string | number): any[]
   return doDisableSubtree(data, disabledId, false);
 };
 
+export const disableParentTree = (data: any[]): any[] => {
+  data.forEach((item) => {
+    item.disabled = item.children.length > 0;
+    disableParentTree(item.children);
+  });
+  return data;
+};
+
+export const disableTree = (data: any[], disabledIds?: (string | number)[]): any[] => {
+  if (!disabledIds || disabledIds.length <= 0) return data;
+  data.forEach((item) => {
+    if (disabledIds.includes(item.id)) {
+      item.disabled = true;
+    }
+    disableTree(item.children, disabledIds);
+  });
+  return data;
+};
+
 const doDisableTreeWithPermission = (data: any[], permissionIds: any[]): any[] => {
   data.forEach((item) => {
     if (!permissionIds.includes(item.id)) {

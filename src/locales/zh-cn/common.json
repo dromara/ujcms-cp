@@ -21,6 +21,7 @@
   "reset": "重置",
   "cancel": "取消",
   "save": "保存",
+  "copy": "复制",
   "create": "创建",
   "update": "更新",
   "success": "成功",
@@ -32,6 +33,7 @@
   "size": "大小",
   "globalData": "全局数据",
 
+  "upload": "上传",
   "clickToUpload": "点击上传",
   "clickOrDragToUpload": "点击或拖拽上传",
   "imageCrop": "图片裁剪",

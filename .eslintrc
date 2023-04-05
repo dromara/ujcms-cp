@@ -1,0 +1,33 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:vue/vue3-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "parser": "vue-eslint-parser",
+  "parserOptions": {
+    // "extraFileExtensions": [".vue"],
+    // "project": ["./tsconfig.json"],
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "parser": "@typescript-eslint/parser"
+  },
+  "plugins": ["vue", "@typescript-eslint"],
+  "rules": {
+    // "no-param-reassign": ["error", { "props": true, "ignorePropertyModificationsFor": ["state"] }],
+    // "import/prefer-default-export": "off",
+
+    // "@typescript-eslint/explicit-module-boundary-types": "off",
+    // // 避免使用Q_作为查询参数时报错
+    // "@typescript-eslint/camelcase": "off",
+
+    // 允许使用 any 类型
+    "@typescript-eslint/no-explicit-any": "off"
+  }
+}

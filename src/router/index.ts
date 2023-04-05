@@ -1,6 +1,6 @@
 import { Component } from 'vue';
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
-import { Document, Tools, UserFilled, Operation, Tickets, Connection } from '@element-plus/icons-vue';
+import { Document, Tools, UserFilled, Operation, Tickets, Connection, Folder } from '@element-plus/icons-vue';
 import Layout from '@/layout/index.vue';
 
 declare module 'vue-router' {
@@ -13,15 +13,15 @@ declare module 'vue-router' {
   }
 }
 export const routes: Array<RouteRecordRaw> = [
-  { path: '/refresh', component: () => import('@/views/Refresh.vue'), meta: { hidden: true, noCache: true } },
-  { path: '/login', component: () => import('@/views/Login.vue'), meta: { hidden: true, noCache: true } },
+  { path: '/refresh', component: () => import('@/views/RefreshPage.vue'), meta: { hidden: true, noCache: true } },
+  { path: '/login', component: () => import('@/views/LoginPage.vue'), meta: { hidden: true, noCache: true } },
   { path: '/404', component: () => import('@/views/404.vue'), meta: { hidden: true, noCache: true } },
   { path: '/403', component: () => import('@/views/403.vue'), meta: { hidden: true, noCache: true } },
   {
     path: '',
     component: Layout,
     meta: { hidden: true },
-    children: [{ path: '', name: 'Home', component: () => import('@/views/Home.vue'), meta: { title: 'menu.home', requiresPermission: 'backend' } }],
+    children: [{ path: '', name: 'HomePage', component: () => import('@/views/HomePage.vue'), meta: { title: 'menu.homepage', requiresPermission: 'backend' } }],
   },
   {
     path: '/content',
@@ -37,7 +37,7 @@ export const routes: Array<RouteRecordRaw> = [
       {
         path: 'article-review',
         name: 'ArticleReviewList',
-        component: () => import('@/views/Enterprise.vue'),
+        component: () => import('@/views/EnterprisePage.vue'),
         meta: { title: 'menu.content.articleReview', requiresPermission: 'articleReview:page' },
       },
       {
@@ -53,6 +53,7 @@ export const routes: Array<RouteRecordRaw> = [
         meta: { title: 'menu.content.blockItem', requiresPermission: 'blockItem:page' },
       },
       { path: 'dict', name: 'DictList', component: () => import('@/views/content/DictList.vue'), meta: { title: 'menu.content.dict', requiresPermission: 'dict:page' } },
+      { path: 'tag', name: 'TagList', component: () => import('@/views/content/TagList.vue'), meta: { title: 'menu.content.tag', requiresPermission: 'tag:page' } },
       {
         path: 'attachment',
         name: 'AttachmentList',
@@ -75,8 +76,33 @@ export const routes: Array<RouteRecordRaw> = [
       {
         path: 'message-board',
         name: 'MessageBoardList',
-        component: () => import('@/views/Enterprise.vue'),
+        component: () => import('@/views/EnterprisePage.vue'),
         meta: { title: 'menu.interaction.messageBoard', requiresPermission: 'messageBoard:page' },
+      },
+    ],
+  },
+  {
+    path: '/file',
+    component: Layout,
+    meta: { title: 'menu.file', icon: Folder, requiresPermission: 'menu.file' },
+    children: [
+      {
+        path: 'web-file-template',
+        name: 'WebFileTemplateList',
+        component: () => import('@/views/file/WebFileTemplateList.vue'),
+        meta: { title: 'menu.file.webFileTemplate', requiresPermission: 'webFileTemplate:page' },
+      },
+      {
+        path: 'web-file-upload',
+        name: 'WebFileUploadList',
+        component: () => import('@/views/file/WebFileUploadList.vue'),
+        meta: { title: 'menu.file.webFileUpload', requiresPermission: 'webFileUpload:page' },
+      },
+      {
+        path: 'web-file-html',
+        name: 'WebFileHtmlList',
+        component: () => import('@/views/file/WebFileHtmlList.vue'),
+        meta: { title: 'menu.file.webFileHtml', requiresPermission: 'webFileHtml:page' },
       },
     ],
   },
@@ -132,13 +158,13 @@ export const routes: Array<RouteRecordRaw> = [
       {
         path: 'login-log',
         name: 'LoginLogList',
-        component: () => import('@/views/Enterprise.vue'),
+        component: () => import('@/views/EnterprisePage.vue'),
         meta: { title: 'menu.log.loginLog', requiresPermission: 'loginLog:page' },
       },
       {
         path: 'operation-log',
         name: 'OperationLogList',
-        component: () => import('@/views/Enterprise.vue'),
+        component: () => import('@/views/EnterprisePage.vue'),
         meta: { title: 'menu.log.operationLog', requiresPermission: 'operationLog:page' },
       },
     ],
@@ -148,23 +174,23 @@ export const routes: Array<RouteRecordRaw> = [
     component: Layout,
     meta: { title: 'menu.system', icon: Operation, requiresPermission: 'menu.system' },
     children: [
-      { path: 'site', name: 'SiteList', component: () => import('@/views/Enterprise.vue'), meta: { title: 'menu.system.site', requiresPermission: 'site:page' } },
+      { path: 'site', name: 'SiteList', component: () => import('@/views/EnterprisePage.vue'), meta: { title: 'menu.system.site', requiresPermission: 'site:page' } },
       {
         path: 'process-model',
         name: 'ProcessModelList',
-        component: () => import('@/views/Enterprise.vue'),
+        component: () => import('@/views/EnterprisePage.vue'),
         meta: { title: 'menu.system.processModel', requiresPermission: 'processModel:page' },
       },
       {
         path: 'process-instance',
         name: 'ProcessInstanceList',
-        component: () => import('@/views/Enterprise.vue'),
+        component: () => import('@/views/EnterprisePage.vue'),
         meta: { title: 'menu.system.processInstance', requiresPermission: 'processInstance:page' },
       },
       {
         path: 'process-history',
         name: 'ProcessHistoryList',
-        component: () => import('@/views/Enterprise.vue'),
+        component: () => import('@/views/EnterprisePage.vue'),
         meta: { title: 'menu.system.processHistory', requiresPermission: 'processHistory:page' },
       },
       // { path: 'task', name: 'TaskList', component: () => import('@/views/system/TaskList.vue'), meta: { title: 'menu.system.task', requiresPermission: 'task:page' } },

@@ -1,3 +1,9 @@
+<script setup lang="ts">
+import { Avatar } from '@element-plus/icons-vue';
+import dayjs from 'dayjs';
+import { currentUser } from '@/store/useCurrentUser';
+</script>
+
 <template>
   <div>
     <div class="app-block p-3 flex">
@@ -18,9 +24,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { Avatar } from '@element-plus/icons-vue';
-import dayjs from 'dayjs';
-import { currentUser } from '@/store/useCurrentUser';
-</script>

@@ -1,8 +1,3 @@
-<template>
-  <!-- 在ElementPlus的对话框中，“更多”工具条按钮点击后，点击其它地方不会关闭工具条 -->
-  <div ref="toastuiEditor" v-on-click-outside="clickOutside"></div>
-</template>
-
 <script lang="ts">
 const editorEvents = ['load', 'change', 'caretChange', 'focus', 'blur', 'keydown', 'keyup', 'beforePreviewRender', 'beforeConvertWysiwygToMarkdown'];
 export default { name: 'TuiEditor' };
@@ -36,7 +31,7 @@ const props = defineProps({
   height: { type: String, default: '300px' },
   previewStyle: { type: String as PropType<PreviewStyle>, default: 'tab' },
   language: { type: String, default: 'en' },
-  options: { type: Object },
+  options: { type: Object, default: null },
 });
 const emit = defineEmits([...editorEvents, 'update:modelValue', 'update:html', 'different']);
 
@@ -157,6 +152,11 @@ const setMarkdown = (markdown: string): void => editor.setMarkdown(markdown);
 const getRootElement = () => toastuiEditor.value;
 defineExpose({ getRootElement, getHTML, getMarkdown, setHTML, setMarkdown });
 </script>
+
+<template>
+  <!-- 在ElementPlus的对话框中，“更多”工具条按钮点击后，点击其它地方不会关闭工具条 -->
+  <div ref="toastuiEditor" v-on-click-outside="clickOutside"></div>
+</template>
 
 <style lang="scss" scoped>
 :deep(.ProseMirror),

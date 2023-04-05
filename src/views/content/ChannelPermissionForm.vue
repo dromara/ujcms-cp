@@ -1,37 +1,3 @@
-<template>
-  <el-drawer :title="$t('permissionSettings')" :with-header="false" :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" :size="576">
-    <template #default>
-      <el-form ref="form" :model="values" :disabled="disabled" label-width="150px">
-        <el-tabs v-model="tabName">
-          <el-tab-pane :label="$t('role.permission')" name="permission">
-            <el-form-item prop="groupIds">
-              <template #label><label-tip message="channel.group" /></template>
-              <el-checkbox-group v-model="values.groupIds">
-                <el-tooltip v-for="item in groupList" :key="item.id" :content="item.description">
-                  <el-checkbox :label="item.id">{{ item.name }}</el-checkbox>
-                </el-tooltip>
-              </el-checkbox-group>
-            </el-form-item>
-          </el-tab-pane>
-          <el-tab-pane :label="$t('role.grantPermission')" name="grantPermission"> </el-tab-pane>
-          <el-tab-pane :label="$t('role.articlePermission')" name="articlePermission"> </el-tab-pane>
-        </el-tabs>
-      </el-form>
-    </template>
-    <template #footer>
-      <div class="flex justify-between items-center">
-        <div>
-          <el-tag>{{ values?.name }}</el-tag>
-        </div>
-        <div>
-          <el-button @click="$emit('update:modelValue', false)">{{ $t('cancel') }}</el-button>
-          <el-button type="primary" @click="handleSubmit()" :loading="buttonLoading" :disabled="disabled">{{ $t('save') }}</el-button>
-        </div>
-      </div>
-    </template>
-  </el-drawer>
-</template>
-
 <script lang="ts">
 export default { name: 'RolePermissionForm' };
 </script>
@@ -45,7 +11,7 @@ import { queryGroupList } from '@/api/user';
 import { queryChannel } from '@/api/content';
 import LabelTip from '@/components/LabelTip.vue';
 
-const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number } });
+const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null } });
 const emit = defineEmits({ 'update:modelValue': null, finished: null });
 
 const { beanId, modelValue: visible } = toRefs(props);
@@ -94,3 +60,37 @@ const handleSubmit = () => {
   });
 };
 </script>
+
+<template>
+  <el-drawer :title="$t('permissionSettings')" :with-header="false" :model-value="modelValue" :size="576" @update:model-value="(event) => $emit('update:modelValue', event)">
+    <template #default>
+      <el-form ref="form" :model="values" :disabled="disabled" label-width="150px">
+        <el-tabs v-model="tabName">
+          <el-tab-pane :label="$t('role.permission')" name="permission">
+            <el-form-item prop="groupIds">
+              <template #label><label-tip message="channel.group" /></template>
+              <el-checkbox-group v-model="values.groupIds">
+                <el-tooltip v-for="item in groupList" :key="item.id" :content="item.description">
+                  <el-checkbox :label="item.id">{{ item.name }}</el-checkbox>
+                </el-tooltip>
+              </el-checkbox-group>
+            </el-form-item>
+          </el-tab-pane>
+          <el-tab-pane :label="$t('role.grantPermission')" name="grantPermission"> </el-tab-pane>
+          <el-tab-pane :label="$t('role.articlePermission')" name="articlePermission"> </el-tab-pane>
+        </el-tabs>
+      </el-form>
+    </template>
+    <template #footer>
+      <div class="flex justify-between items-center">
+        <div>
+          <el-tag>{{ values?.name }}</el-tag>
+        </div>
+        <div>
+          <el-button @click="() => $emit('update:modelValue', false)">{{ $t('cancel') }}</el-button>
+          <el-button type="primary" :loading="buttonLoading" :disabled="disabled" @click="() => handleSubmit()">{{ $t('save') }}</el-button>
+        </div>
+      </div>
+    </template>
+  </el-drawer>
+</template>

@@ -1,56 +1,3 @@
-<template>
-  <div class="w-full">
-    <el-upload
-      :action="fileUploadUrl"
-      :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
-      :accept="accept"
-      :before-upload="beforeUpload"
-      :on-success="(res: any) => fileList.push({ name: res.name, url: res.url, length: res.size })"
-      :on-progress="(event: any, file: any) => (progressFile = file)"
-      :on-error="onError"
-      :show-file-list="false"
-      :disabled="disabled"
-      multiple
-      drag
-    >
-      <!--
-      // 用于测试上传进度条
-      action="https://jsonplaceholder.typicode.com/posts/"
-      -->
-      {{ $t('clickOrDragToUpload') }}
-      <!-- <el-button type="primary">{{ $t('clickToUpload') }}</el-button> -->
-    </el-upload>
-    <el-progress v-if="progressFile.status === 'uploading'" :percentage="parseInt(progressFile.percentage, 10)"></el-progress>
-    <transition-group tag="ul" :class="['el-upload-list', 'el-upload-list--text', { 'is-disabled': disabled }]" name="el-list">
-      <li v-for="file in fileList" :key="file.url" class="el-upload-list__item is-success">
-        <a class="el-upload-list__item-name" @click="handlePreview(file)">
-          <el-icon class="el-icon--document"><Document /></el-icon>{{ file.name }}
-        </a>
-        <label class="el-upload-list__item-status-label">
-          <el-icon class="el-icon--upload-success el-icon--circle-check"><CircleCheck /></el-icon>
-        </label>
-        <el-icon v-if="!disabled" class="el-icon--close" @click="fileList.splice(fileList.indexOf(file), 1)"><Close /></el-icon>
-      </li>
-    </transition-group>
-    <el-dialog :title="$t('article.fileList.attribute')" v-model="previewVisible" top="5vh" :width="768" append-to-body>
-      <el-form ref="form" :model="previewFile" label-width="150px">
-        <el-form-item prop="name" :label="$t('name')" :rules="{ required: true, message: () => $t('v.required') }">
-          <el-input v-model="previewFile.name" maxlength="100"></el-input>
-        </el-form-item>
-        <el-form-item prop="length" :label="$t('size')" :rules="{ required: true, message: () => $t('v.required') }">
-          <el-input v-model="previewFile.length" maxlength="19">
-            <template #append>Byte</template>
-          </el-input>
-        </el-form-item>
-        <el-form-item prop="url" label="URL" :rules="{ required: true, message: () => $t('v.required') }">
-          <el-input v-model="previewFile.url" maxlength="255"></el-input>
-        </el-form-item>
-        <el-button @click.prevent="handleSubmit()" type="primary" native-type="submit">{{ $t('save') }}</el-button>
-      </el-form>
-    </el-dialog>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, toRefs, computed, watch } from 'vue';
 import { ElMessage, useFormItem } from 'element-plus';
@@ -64,8 +11,8 @@ import { fileUploadUrl } from '@/api/config';
 
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
-  fileAccept: { type: String },
-  fileMaxSize: { type: Number },
+  fileAccept: { type: String, default: null },
+  fileMaxSize: { type: Number, default: null },
   disabled: { type: Boolean, default: false },
 });
 const emit = defineEmits({ 'update:modelValue': null });
@@ -117,6 +64,59 @@ const onError = (error: Error) => {
   handleError(JSON.parse(error.message));
 };
 </script>
+
+<template>
+  <div class="w-full">
+    <el-upload
+      :action="fileUploadUrl"
+      :headers="{ ...getAuthHeaders(), ...getSiteHeaders() }"
+      :accept="accept"
+      :before-upload="beforeUpload"
+      :on-success="(res: any) => fileList.push({ name: res.name, url: res.url, length: res.size })"
+      :on-progress="(event: any, file: any) => (progressFile = file)"
+      :on-error="onError"
+      :show-file-list="false"
+      :disabled="disabled"
+      multiple
+      drag
+    >
+      <!--
+      // 用于测试上传进度条
+      action="https://jsonplaceholder.typicode.com/posts/"
+      -->
+      {{ $t('clickOrDragToUpload') }}
+      <!-- <el-button type="primary">{{ $t('clickToUpload') }}</el-button> -->
+    </el-upload>
+    <el-progress v-if="progressFile.status === 'uploading'" :percentage="parseInt(progressFile.percentage, 10)"></el-progress>
+    <transition-group tag="ul" :class="['el-upload-list', 'el-upload-list--text', { 'is-disabled': disabled }]" name="el-list">
+      <li v-for="file in fileList" :key="file.url" class="el-upload-list__item is-success">
+        <a class="el-upload-list__item-name" @click="() => handlePreview(file)">
+          <el-icon class="el-icon--document"><Document /></el-icon>{{ file.name }}
+        </a>
+        <label class="el-upload-list__item-status-label">
+          <el-icon class="el-icon--upload-success el-icon--circle-check"><CircleCheck /></el-icon>
+        </label>
+        <el-icon v-if="!disabled" class="el-icon--close" @click="() => fileList.splice(fileList.indexOf(file), 1)"><Close /></el-icon>
+      </li>
+    </transition-group>
+    <el-dialog v-model="previewVisible" :title="$t('article.fileList.attribute')" top="5vh" :width="768" append-to-body>
+      <el-form ref="form" :model="previewFile" label-width="150px">
+        <el-form-item prop="name" :label="$t('name')" :rules="{ required: true, message: () => $t('v.required') }">
+          <el-input v-model="previewFile.name" maxlength="100"></el-input>
+        </el-form-item>
+        <el-form-item prop="length" :label="$t('size')" :rules="{ required: true, message: () => $t('v.required') }">
+          <el-input v-model="previewFile.length" maxlength="19">
+            <template #append>Byte</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="url" label="URL" :rules="{ required: true, message: () => $t('v.required') }">
+          <el-input v-model="previewFile.url" maxlength="255"></el-input>
+        </el-form-item>
+        <el-button type="primary" native-type="submit" @click.prevent="() => handleSubmit()">{{ $t('save') }}</el-button>
+      </el-form>
+    </el-dialog>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 :deep(.el-upload-dragger) {

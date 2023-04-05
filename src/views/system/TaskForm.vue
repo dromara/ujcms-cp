@@ -1,22 +1,40 @@
+<script lang="ts">
+export default { name: 'TaskForm' };
+</script>
+
+<script setup lang="ts">
+import { ref, PropType } from 'vue';
+import { queryTask, createTask, updateTask, deleteTask } from '@/api/system';
+import DialogForm from '@/components/DialogForm.vue';
+
+defineProps({
+  modelValue: { type: Boolean, required: true },
+  beanId: { type: Number, default: null },
+  beanIds: { type: Array as PropType<number[]>, required: true },
+});
+defineEmits({ 'update:modelValue': null, finished: null });
+const values = ref<any>({});
+</script>
+
 <template>
   <dialog-form
+    v-model:values="values"
     :name="$t('menu.system.task')"
-    :queryBean="queryTask"
-    :createBean="createTask"
-    :updateBean="updateTask"
-    :deleteBean="deleteTask"
-    :beanId="beanId"
-    :beanIds="beanIds"
-    :initValues="(): any => ({ user: {} })"
-    :toValues="(bean) => ({ ...bean })"
-    :disableEdit="() => true"
+    :query-bean="queryTask"
+    :create-bean="createTask"
+    :update-bean="updateTask"
+    :delete-bean="deleteTask"
+    :bean-id="beanId"
+    :bean-ids="beanIds"
+    :init-values="(): any => ({ user: {} })"
+    :to-values="(bean) => ({ ...bean })"
+    :disable-edit="() => true"
     :addable="false"
     perms="task"
-    v-model:values="values"
     :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    @finished="$emit('finished')"
     large
+    @update:model-value="(event) => $emit('update:modelValue', event)"
+    @finished="() => $emit('finished')"
   >
     <template #default="{}">
       <el-row>
@@ -66,7 +84,7 @@
             <el-tag v-if="values.status === 4" type="success">{{ $t(`task.status.${values.status}`) }}</el-tag>
           </el-form-item>
         </el-col>
-        <el-col :span="24" v-if="values.errorInfo">
+        <el-col v-if="values.errorInfo" :span="24">
           <el-form-item :label="$t('task.errorInfo')">
             <pre><code class="whitespace-pre-wrap">{{ values.errorInfo }}</code></pre>
           </el-form-item>
@@ -75,17 +93,3 @@
     </template>
   </dialog-form>
 </template>
-
-<script lang="ts">
-export default { name: 'TaskForm' };
-</script>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import { queryTask, createTask, updateTask, deleteTask } from '@/api/system';
-import DialogForm from '@/components/DialogForm.vue';
-
-defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true } });
-defineEmits({ 'update:modelValue': null, finished: null });
-const values = ref<any>({});
-</script>

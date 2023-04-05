@@ -1,26 +1,44 @@
+<script lang="ts">
+export default { name: 'RoleForm' };
+</script>
+
+<script setup lang="ts">
+import { ref, PropType } from 'vue';
+import { queryRole, createRole, updateRole, deleteRole, roleScopeNotAllowed } from '@/api/user';
+import { currentUser } from '@/store/useCurrentUser';
+import DialogForm from '@/components/DialogForm.vue';
+import LabelTip from '@/components/LabelTip.vue';
+
+defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null }, beanIds: { type: Array as PropType<number[]>, required: true } });
+defineEmits({ 'update:modelValue': null, finished: null });
+
+const focus = ref<any>();
+const values = ref<any>({});
+</script>
+
 <template>
   <dialog-form
-    :name="$t('menu.user.role')"
-    :queryBean="queryRole"
-    :createBean="createRole"
-    :updateBean="updateRole"
-    :deleteBean="deleteRole"
-    :beanId="beanId"
-    :beanIds="beanIds"
-    :focus="focus"
-    :initValues="() => ({ type: 4, rank: currentUser.rank + 1, scope: 0 })"
-    :toValues="(bean) => ({ ...bean })"
-    :disableDelete="(bean) => bean.id <= 1"
-    :disableEdit="(bean) => (bean.global && !currentUser.globalPermission) || currentUser.rank > bean.rank"
-    perms="role"
     v-model:values="values"
+    :name="$t('menu.user.role')"
+    :query-bean="queryRole"
+    :create-bean="createRole"
+    :update-bean="updateRole"
+    :delete-bean="deleteRole"
+    :bean-id="beanId"
+    :bean-ids="beanIds"
+    :focus="focus"
+    :init-values="() => ({ type: 4, rank: currentUser.rank + 1, scope: 0 })"
+    :to-values="(bean) => ({ ...bean })"
+    :disable-delete="(bean) => bean.id <= 1"
+    :disable-edit="(bean) => (bean.global && !currentUser.globalPermission) || currentUser.rank > bean.rank"
+    perms="role"
     :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    @finished="$emit('finished')"
+    @update:model-value="(event) => $emit('update:modelValue', event)"
+    @finished="(event) => $emit('finished')"
   >
     <template #default="{ bean, disabled }">
       <el-form-item prop="name" :label="$t('role.name')" :rules="{ required: true, message: () => $t('v.required') }">
-        <el-input v-model="values.name" ref="focus" maxlength="50"></el-input>
+        <el-input ref="focus" v-model="values.name" maxlength="50"></el-input>
       </el-form-item>
       <el-form-item prop="description" :label="$t('role.description')">
         <el-input v-model="values.description" maxlength="300"></el-input>
@@ -72,21 +90,3 @@
     </template>
   </dialog-form>
 </template>
-
-<script lang="ts">
-export default { name: 'RoleForm' };
-</script>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import { queryRole, createRole, updateRole, deleteRole, roleScopeNotAllowed } from '@/api/user';
-import { currentUser } from '@/store/useCurrentUser';
-import DialogForm from '@/components/DialogForm.vue';
-import LabelTip from '@/components/LabelTip.vue';
-
-defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true } });
-defineEmits({ 'update:modelValue': null, finished: null });
-
-const focus = ref<any>();
-const values = ref<any>({});
-</script>

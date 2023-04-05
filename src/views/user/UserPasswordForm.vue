@@ -1,57 +1,3 @@
-<template>
-  <el-dialog
-    :title="$t('changePassword')"
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    @opened="
-      focus?.focus();
-      form.resetFields();
-    "
-  >
-    <el-form ref="form" :model="values" v-loading="loading" label-width="150px" label-position="right">
-      <el-form-item prop="username" :label="$t('user.username')">
-        <el-input :model-value="username" readonly></el-input>
-      </el-form-item>
-      <el-form-item
-        prop="newPassword"
-        :label="$t('user.newPassword')"
-        :rules="[
-          { required: true, message: () => $t('v.required') },
-          {
-            min: securitySettings.passwordMinLength,
-            max: securitySettings.passwordMaxLength,
-            message: () => $t('user.error.passwordLength', { min: securitySettings.passwordMinLength, max: securitySettings.passwordMaxLength }),
-          },
-          { pattern: new RegExp(securitySettings.passwordPattern), message: () => $t(`user.error.passwordPattern.${securitySettings.passwordStrength}`) },
-        ]"
-      >
-        <el-input v-model="values.newPassword" :maxlength="securitySettings.passwordMaxLength" ref="focus" show-password></el-input>
-      </el-form-item>
-      <el-form-item
-        prop="passwordAgain"
-        :label="$t('user.passwordAgain')"
-        :rules="[
-          { required: true, message: () => $t('v.required') },
-          {
-            validator: (rule:any, value:any, callback:any) => {
-              if (value !== values.newPassword) {
-                callback($t('user.error.passwordNotMatch'));
-                return;
-              }
-              callback();
-            },
-          },
-        ]"
-      >
-        <el-input v-model="values.passwordAgain" maxlength="50" show-password></el-input>
-      </el-form-item>
-      <div>
-        <el-button :loading="buttonLoading" @click.prevent="handleSubmit" type="primary" native-type="submit">{{ $t('submit') }}</el-button>
-      </div>
-    </el-form>
-  </el-dialog>
-</template>
-
 <script lang="ts">
 export default { name: 'UserPasswordForm' };
 </script>
@@ -101,3 +47,59 @@ const handleSubmit = () => {
   });
 };
 </script>
+
+<template>
+  <el-dialog
+    :title="$t('changePassword')"
+    :model-value="modelValue"
+    @update:model-value="(event) => $emit('update:modelValue', event)"
+    @opened="
+      () => {
+        focus?.focus();
+        form.resetFields();
+      }
+    "
+  >
+    <el-form ref="form" v-loading="loading" :model="values" label-width="150px" label-position="right">
+      <el-form-item prop="username" :label="$t('user.username')">
+        <el-input :model-value="username" readonly></el-input>
+      </el-form-item>
+      <el-form-item
+        prop="newPassword"
+        :label="$t('user.newPassword')"
+        :rules="[
+          { required: true, message: () => $t('v.required') },
+          {
+            min: securitySettings.passwordMinLength,
+            max: securitySettings.passwordMaxLength,
+            message: () => $t('user.error.passwordLength', { min: securitySettings.passwordMinLength, max: securitySettings.passwordMaxLength }),
+          },
+          { pattern: new RegExp(securitySettings.passwordPattern), message: () => $t(`user.error.passwordPattern.${securitySettings.passwordStrength}`) },
+        ]"
+      >
+        <el-input ref="focus" v-model="values.newPassword" :maxlength="securitySettings.passwordMaxLength" show-password></el-input>
+      </el-form-item>
+      <el-form-item
+        prop="passwordAgain"
+        :label="$t('user.passwordAgain')"
+        :rules="[
+          { required: true, message: () => $t('v.required') },
+          {
+            validator: (rule:any, value:any, callback:any) => {
+              if (value !== values.newPassword) {
+                callback($t('user.error.passwordNotMatch'));
+                return;
+              }
+              callback();
+            },
+          },
+        ]"
+      >
+        <el-input v-model="values.passwordAgain" maxlength="50" show-password></el-input>
+      </el-form-item>
+      <div>
+        <el-button :loading="buttonLoading" type="primary" native-type="submit" @click.prevent="handleSubmit">{{ $t('submit') }}</el-button>
+      </div>
+    </el-form>
+  </el-dialog>
+</template>

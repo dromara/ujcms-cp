@@ -1,50 +1,3 @@
-<template>
-  <div>
-    <div class="mb-3">
-      <query-form :params="params" @search="handleSearch" @reset="handleReset">
-        <query-item :label="$t('{{camelCase name}}.name')" name="Q_Contains_name"></query-item>
-      </query-form>
-    </div>
-    <div class="space-x-2">
-      <el-button type="primary" :disabled="perm('{{camelCase name}}:create')" :icon="Plus" @click="handleAdd()">\{{ $t('add') }}</el-button>
-      <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
-        <template #reference>
-          <el-button :disabled="selection.length <= 0 || perm('{{camelCase name}}:delete')" :icon="Delete">\{{ $t('delete') }}</el-button>
-        </template>
-      </el-popconfirm>
-      <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" />
-      <column-setting name="{{camelCase name}}" />
-    </div>
-    <div class="app-block mt-3">
-      <el-table
-        ref="table"
-        v-loading="loading"
-        :data="data"
-        @selection-change="(rows) => (selection = rows)"
-        @row-dblclick="(row) => handleEdit(row.id)"
-        @sort-change="handleSort"
-      >
-        <column-list name="{{camelCase name}}">
-          <el-table-column type="selection" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
-          <el-table-column property="name" :label="$t('{{camelCase name}}.name')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column :label="$t('table.action')">
-            <template #default="{row}">
-              <el-button type="primary" :disabled="perm('{{camelCase name}}:update')" @click="handleEdit(row.id)" size="small" link>\{{ $t('edit') }}</el-button>
-              <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
-                <template #reference>
-                  <el-button type="primary" :disabled="perm('{{camelCase name}}:delete')" size="small" link>\{{ $t('delete') }}</el-button>
-                </template>
-              </el-popconfirm>
-            </template>
-          </el-table-column>
-        </column-list>
-      </el-table>
-    </div>
-    <{{kebabCase name}}-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" />
-  </div>
-</template>
-
 <script lang="ts">
 export default { name: '{{pascalCase name}}List' };
 </script>
@@ -118,3 +71,50 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
   await update{{pascalCase name}}Order(list.map((item) => item.id));
 };
 </script>
+
+<template>
+  <div>
+    <div class="mb-3">
+      <query-form :params="params" @search="handleSearch" @reset="() => handleReset()">
+        <query-item :label="$t('{{camelCase name}}.name')" name="Q_Contains_name"></query-item>
+      </query-form>
+    </div>
+    <div class="space-x-2">
+      <el-button type="primary" :disabled="perm('{{camelCase name}}:create')" :icon="Plus" @click="() => handleAdd()">\{{ $t('add') }}</el-button>
+      <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete(selection.map((row) => row.id))">
+        <template #reference>
+          <el-button :disabled="selection.length <= 0 || perm('{{camelCase name}}:delete')" :icon="Delete">\{{ $t('delete') }}</el-button>
+        </template>
+      </el-popconfirm>
+      <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" />
+      <column-setting name="{{camelCase name}}" />
+    </div>
+    <div class="app-block mt-3">
+      <el-table
+        ref="table"
+        v-loading="loading"
+        :data="data"
+        @selection-change="(rows) => (selection = rows)"
+        @row-dblclick="(row) => handleEdit(row.id)"
+        @sort-change="handleSort"
+      >
+        <column-list name="{{camelCase name}}">
+          <el-table-column type="selection" width="45"></el-table-column>
+          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="name" :label="$t('{{camelCase name}}.name')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column :label="$t('table.action')">
+            <template #default="{row}">
+              <el-button type="primary" :disabled="perm('{{camelCase name}}:update')" @click="() => handleEdit(row.id)" size="small" link>\{{ $t('edit') }}</el-button>
+              <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
+                <template #reference>
+                  <el-button type="primary" :disabled="perm('{{camelCase name}}:delete')" size="small" link>\{{ $t('delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
+        </column-list>
+      </el-table>
+    </div>
+    <{{kebabCase name}}-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" @finished="() => fetchData()" />
+  </div>
+</template>

@@ -72,6 +72,8 @@
   "log.article.reject": "审核驳回文章",
   "log.article.completelyDelete": "彻底删除文章",
   "log.article.delete": "删除文章",
+  "log.article.internalPush": "站内推送",
+  "log.article.externalPush": "站群推送",
   "log.article.sticky": "置顶文章",
 
   "log.channel": "栏目管理",
@@ -79,7 +81,7 @@
   "log.channel.update": "修改栏目",
   "log.channel.updateOrder": "修改栏目顺序",
   "log.channel.delete": "删除栏目",
-  
+
   "log.blockItem": "区块项管理",
   "log.blockItem.create": "新增区块项",
   "log.blockItem.update": "修改区块项",
@@ -92,9 +94,14 @@
   "log.dict.updateOrder": "修改字典顺序",
   "log.dict.delete": "删除字典",
 
+  "log.tag": "TAG管理",
+  "log.tag.create": "新增TAG",
+  "log.tag.update": "修改TAG",
+  "log.tag.delete": "删除TAG",
+
   "log.attachment": "附件管理",
   "log.attachment.delete": "删除附件",
-  
+
   "log.fulltext": "全文索引",
   "log.fulltext.reindexAll": "更新全部全文索引",
   "log.fulltext.reindexSite": "更新本站全文索引",
@@ -104,12 +111,45 @@
   "log.html.updateHome": "更新首页静态页",
   "log.html.updateChannel": "更新栏目静态页",
   "log.html.updateArticle": "更新文章静态页",
-  
+
   "log.messageBoard": "留言管理",
   "log.messageBoard.create": "新增留言",
   "log.messageBoard.update": "修改留言",
   "log.messageBoard.updateStatus": "修改留言状态",
   "log.messageBoard.delete": "删除留言",
+
+  "log.webFileTemplate": "模板文件",
+  "log.webFileTemplate.create": "新建文件",
+  "log.webFileTemplate.update": "修改文件",
+  "log.webFileTemplate.mkdir": "新建文件夹",
+  "log.webFileTemplate.rename": "重命名",
+  "log.webFileTemplate.copy": "复制文件",
+  "log.webFileTemplate.move": "移动文件",
+  "log.webFileTemplate.upload": "上传文件",
+  "log.webFileTemplate.uploadZip": "上传ZIP文件",
+  "log.webFileTemplate.delete": "删除文件",
+
+  "log.webFileUpload": "上传文件",
+  "log.webFileUpload.create": "新建文件",
+  "log.webFileUpload.update": "修改文件",
+  "log.webFileUpload.mkdir": "新建文件夹",
+  "log.webFileUpload.rename": "重命名",
+  "log.webFileUpload.copy": "复制文件",
+  "log.webFileUpload.move": "移动文件",
+  "log.webFileUpload.upload": "上传文件",
+  "log.webFileUpload.uploadZip": "上传ZIP文件",
+  "log.webFileUpload.delete": "删除文件",
+
+  "log.webFileHtml": "HTML文件",
+  "log.webFileHtml.create": "新建文件",
+  "log.webFileHtml.update": "修改文件",
+  "log.webFileHtml.mkdir": "新建文件夹",
+  "log.webFileHtml.rename": "重命名",
+  "log.webFileHtml.copy": "复制文件",
+  "log.webFileHtml.move": "移动文件",
+  "log.webFileHtml.upload": "上传文件",
+  "log.webFileHtml.uploadZip": "上传ZIP文件",
+  "log.webFileHtml.delete": "删除文件",
 
   "log.config": "全局设置",
   "log.config.updateBase": "修改全局基础设置",
@@ -171,7 +211,7 @@
   "log.org.update": "修改组织",
   "log.org.updateOrder": "修改组织顺序",
   "log.org.delete": "删除组织",
-  
+
   "log.group": "用户组管理",
   "log.group.create": "新增用户组",
   "log.group.update": "修改用户组",
@@ -186,7 +226,7 @@
   "log.loginLog.delete": "删除登录日志",
 
   "log.operationLog": "操作日志管理",
-  "log.operationLog.delete": "删除操作日志",  
+  "log.operationLog.delete": "删除操作日志",
 
   "log.site": "站点管理",
   "log.site.create": "新增站点",
@@ -203,9 +243,9 @@
   "log.process.deleteProcessDefinition": "删除流程定义",
   "log.process.deleteProcessHistory": "删除历史流程",
   "log.process.deleteProcessInstance": "删除流程实例",
-    
+
   "log.task": "任务管理",
-  "log.task.delete": "删除任务",  
+  "log.task.delete": "删除任务",
 
   "log.personal": "个人管理",
   "log.personal.updatePassword": "修改密码",

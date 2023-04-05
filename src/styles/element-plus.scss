@@ -7,7 +7,6 @@
 // 如果你想导入所有样式:
 @use 'element-plus/theme-chalk/src/index.scss' as *;
 
-
 // dialog body 与标题的padding太大，原30px改为10px。
 .el-dialog__body {
   padding-top: 10px;

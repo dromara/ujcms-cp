@@ -1,24 +1,40 @@
+<script lang="ts">
+export default { name: 'ShortMessageForm' };
+</script>
+
+<script setup lang="ts">
+import { ref, PropType } from 'vue';
+import { queryShortMessage, createShortMessage, updateShortMessage, deleteShortMessage } from '@/api/log';
+import DialogForm from '@/components/DialogForm.vue';
+import LabelTip from '@/components/LabelTip.vue';
+
+defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null }, beanIds: { type: Array as PropType<number[]>, required: true } });
+defineEmits({ 'update:modelValue': null, finished: null });
+const focus = ref<any>();
+const values = ref<any>({});
+</script>
+
 <template>
   <dialog-form
-    :name="$t('menu.log.shortMessage')"
-    :queryBean="queryShortMessage"
-    :createBean="createShortMessage"
-    :updateBean="updateShortMessage"
-    :deleteBean="deleteShortMessage"
-    :beanId="beanId"
-    :beanIds="beanIds"
-    :focus="focus"
-    :initValues="(): any => ({})"
-    :toValues="(bean) => ({ ...bean })"
-    perms="shortMessage"
-    :disableEdit="() => true"
     v-model:values="values"
+    :name="$t('menu.log.shortMessage')"
+    :query-bean="queryShortMessage"
+    :create-bean="createShortMessage"
+    :update-bean="updateShortMessage"
+    :delete-bean="deleteShortMessage"
+    :bean-id="beanId"
+    :bean-ids="beanIds"
+    :focus="focus"
+    :init-values="(): any => ({})"
+    :to-values="(bean) => ({ ...bean })"
+    perms="shortMessage"
+    :disable-edit="() => true"
     :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    @finished="$emit('finished')"
     :addable="false"
+    @update:model-value="(event) => $emit('update:modelValue', event)"
+    @finished="() => $emit('finished')"
   >
-    <template #default="{ bean }">
+    <template #default="{}">
       <el-form-item prop="type">
         <template #label><label-tip message="shortMessage.type" /></template>
         <el-tag v-if="values.type === 1">{{ $t(`shortMessage.type.${values.type}`) }}</el-tag>
@@ -52,19 +68,3 @@
     </template>
   </dialog-form>
 </template>
-
-<script lang="ts">
-export default { name: 'ShortMessageForm' };
-</script>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import { queryShortMessage, createShortMessage, updateShortMessage, deleteShortMessage } from '@/api/log';
-import DialogForm from '@/components/DialogForm.vue';
-import LabelTip from '@/components/LabelTip.vue';
-
-defineProps({ modelValue: { type: Boolean, required: true }, beanId: { required: true }, beanIds: { type: Array, required: true } });
-defineEmits({ 'update:modelValue': null, finished: null });
-const focus = ref<any>();
-const values = ref<any>({});
-</script>

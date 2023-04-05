@@ -1,23 +1,3 @@
-<template>
-  <form class="flex">
-    <div class="space-y-1">
-      <div v-for="(name, index) in names" :key="name" class="flex">
-        <el-button :icon="index == 0 ? Plus : Minus" @click="handelRow(index)" :disabled="index <= 0 && remains.length <= 0" circle></el-button>
-        <el-select v-model="names[index]" @change="clearParams()" class="w-36">
-          <el-option v-for="item in data.filter((it) => it.name === names[index] || remains.includes(it))" :key="item.name" :label="item.label" :value="item.name"></el-option>
-        </el-select>
-        <query-input :inputs="inputs" :name="names[index]"></query-input>
-      </div>
-    </div>
-    <div>
-      <el-button-group class="ml-2">
-        <el-button native-type="submit" :icon="Search" @click.prevent="$emit('search')">{{ $t('search') }}</el-button>
-        <el-button :icon="Refresh" @click="$emit('reset')">{{ $t('reset') }}</el-button>
-      </el-button-group>
-    </div>
-  </form>
-</template>
-
 <script setup lang="ts">
 import { useSlots, provide, computed, ref, toRefs } from 'vue';
 import { Plus, Minus, Search, Refresh } from '@element-plus/icons-vue';
@@ -56,3 +36,23 @@ const handelRow = (index: number) => {
   }
 };
 </script>
+
+<template>
+  <form class="flex">
+    <div class="space-y-1">
+      <div v-for="(name, index) in names" :key="name" class="flex">
+        <el-button :icon="index == 0 ? Plus : Minus" :disabled="index <= 0 && remains.length <= 0" circle @click="() => handelRow(index)"></el-button>
+        <el-select v-model="names[index]" class="w-36" @change="() => clearParams()">
+          <el-option v-for="item in data.filter((it) => it.name === names[index] || remains.includes(it))" :key="item.name" :label="item.label" :value="item.name"></el-option>
+        </el-select>
+        <query-input :inputs="inputs" :name="names[index]"></query-input>
+      </div>
+    </div>
+    <div>
+      <el-button-group class="ml-2">
+        <el-button native-type="submit" :icon="Search" @click.prevent="() => $emit('search')">{{ $t('search') }}</el-button>
+        <el-button :icon="Refresh" @click="() => $emit('reset')">{{ $t('reset') }}</el-button>
+      </el-button-group>
+    </div>
+  </form>
+</template>

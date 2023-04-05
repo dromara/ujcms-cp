@@ -59,6 +59,7 @@
   "processModel.error.key": "必须以字母开头，由字母、数字、中划线、下划线组成",
 
   "processInstance.op.task": "审核过程",
+  "processInstance.history": "审核历史",
   "processInstance.name": "名称",
   "processInstance.businessKey": "业务ID",
   "processInstance.startedBy": "发起人",

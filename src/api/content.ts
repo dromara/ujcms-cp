@@ -18,6 +18,8 @@ export const queryArticlePage = async (params?: Record<string, any>): Promise<an
 export const queryArticle = async (id: number): Promise<any> => (await axios.get(`/backend/core/article/${id}`)).data;
 export const createArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/article', data)).data;
 export const updateArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/article?_method=put', data)).data;
+export const internalPushArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/article/internal-push', data)).data;
+export const externalPushArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/article/external-push', data)).data;
 export const stickyArticle = async (ids: number[], sticky: number): Promise<any> => (await axios.post('/backend/core/article/sticky?_method=put', { ids, sticky })).data;
 export const deleteArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article/delete?_method=put', data)).data;
 export const submitArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article/submit?_method=put', data)).data;
@@ -50,3 +52,10 @@ export const htmlAll = async (): Promise<any> => (await axios.post('/backend/cor
 export const htmlHome = async (): Promise<any> => (await axios.post('/backend/core/generator/html-home')).data;
 export const htmlChannel = async (): Promise<any> => (await axios.post('/backend/core/generator/html-channel')).data;
 export const htmlArticle = async (): Promise<any> => (await axios.post('/backend/core/generator/html-article')).data;
+
+export const queryTagPage = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/tag', { params })).data;
+export const queryTagList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/tag/list', { params })).data;
+export const queryTag = async (id: number): Promise<any> => (await axios.get(`/backend/core/tag/${id}`)).data;
+export const createTag = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/tag', data)).data;
+export const updateTag = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/tag?_method=put', data)).data;
+export const deleteTag = async (data: number[]): Promise<any> => (await axios.post('/backend/core/tag?_method=delete', data)).data;

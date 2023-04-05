@@ -1,61 +1,3 @@
-<template>
-  <div>
-    <div class="mb-3">
-      <query-form :params="params" @search="handleSearch" @reset="handleReset">
-        <query-item :label="$t('org.name')" name="Q_Contains_name"></query-item>
-        <query-item :label="$t('org.address')" name="Q_Contains_address"></query-item>
-        <query-item :label="$t('org.phone')" name="Q_Contains_phone"></query-item>
-        <query-item :label="$t('org.contacts')" name="Q_Contains_contacts"></query-item>
-      </query-form>
-    </div>
-    <div>
-      <el-button type="primary" :icon="Plus" @click="handleAdd()">{{ $t('add') }}</el-button>
-      <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete(selection.map((row) => row.id))">
-        <template #reference>
-          <el-button :disabled="selection.length <= 0" :icon="Delete">{{ $t('delete') }}</el-button>
-        </template>
-      </el-popconfirm>
-      <list-move class="ml-2" :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" />
-      <el-checkbox v-if="currentUser.globalPermission" class="ml-2 align-middle" v-model="showGlobalData" @change="fetchData()" :label="$t('globalData')" border />
-      <column-setting name="org" class="ml-2" />
-    </div>
-    <div class="app-block mt-3">
-      <el-table
-        ref="table"
-        v-loading="loading"
-        row-key="id"
-        :data="data"
-        @selection-change="(rows) => (selection = rows)"
-        @row-dblclick="(row) => handleEdit(row.id)"
-        @sort-change="handleSort"
-      >
-        <column-list name="org">
-          <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
-          <el-table-column property="name" :label="$t('org.name')" sortable="custom" min-width="120" show-overflow-tooltip>
-            <template #default="{ row }">{{ row.names.join(' / ') }}</template>
-          </el-table-column>
-          <el-table-column property="address" :label="$t('org.address')" sortable="custom" display="none" min-width="100" show-overflow-tooltip></el-table-column>
-          <el-table-column property="phone" :label="$t('org.phone')" sortable="custom" min-width="100" show-overflow-tooltip></el-table-column>
-          <el-table-column property="contacts" :label="$t('org.contacts')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column :label="$t('table.action')">
-            <template #default="{ row }">
-              <el-button type="primary" :disabled="perm('org:create')" @click="handleAdd(row.id)" size="small" link>{{ $t('addChild') }}</el-button>
-              <el-button type="primary" :disabled="perm('org:update')" @click="handleEdit(row.id)" size="small" link>{{ $t('edit') }}</el-button>
-              <el-popconfirm :title="$t('confirmDelete')" @confirm="handleDelete([row.id])">
-                <template #reference>
-                  <el-button type="primary" :disabled="!deletable(row) || perm('org:delete')" size="small" link>{{ $t('delete') }}</el-button>
-                </template>
-              </el-popconfirm>
-            </template>
-          </el-table-column>
-        </column-list>
-      </el-table>
-    </div>
-    <org-form v-model="formVisible" :beanId="beanId" :beanIds="beanIds" @finished="fetchData" :parentId="parentId" :showGlobalData="showGlobalData" />
-  </div>
-</template>
-
 <script lang="ts">
 export default { name: 'OrgList' };
 </script>
@@ -142,3 +84,61 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
   });
 };
 </script>
+
+<template>
+  <div>
+    <div class="mb-3">
+      <query-form :params="params" @search="handleSearch" @reset="handleReset">
+        <query-item :label="$t('org.name')" name="Q_Contains_name"></query-item>
+        <query-item :label="$t('org.address')" name="Q_Contains_address"></query-item>
+        <query-item :label="$t('org.phone')" name="Q_Contains_phone"></query-item>
+        <query-item :label="$t('org.contacts')" name="Q_Contains_contacts"></query-item>
+      </query-form>
+    </div>
+    <div>
+      <el-button type="primary" :icon="Plus" @click="() => handleAdd()">{{ $t('add') }}</el-button>
+      <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete(selection.map((row) => row.id))">
+        <template #reference>
+          <el-button :disabled="selection.length <= 0" :icon="Delete">{{ $t('delete') }}</el-button>
+        </template>
+      </el-popconfirm>
+      <list-move class="ml-2" :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" />
+      <el-checkbox v-if="currentUser.globalPermission" v-model="showGlobalData" class="ml-2 align-middle" :label="$t('globalData')" border @change="() => fetchData()" />
+      <column-setting name="org" class="ml-2" />
+    </div>
+    <div class="app-block mt-3">
+      <el-table
+        ref="table"
+        v-loading="loading"
+        row-key="id"
+        :data="data"
+        @selection-change="(rows) => (selection = rows)"
+        @row-dblclick="(row) => handleEdit(row.id)"
+        @sort-change="handleSort"
+      >
+        <column-list name="org">
+          <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
+          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="name" :label="$t('org.name')" sortable="custom" min-width="120" show-overflow-tooltip>
+            <template #default="{ row }">{{ row.names.join(' / ') }}</template>
+          </el-table-column>
+          <el-table-column property="address" :label="$t('org.address')" sortable="custom" display="none" min-width="100" show-overflow-tooltip></el-table-column>
+          <el-table-column property="phone" :label="$t('org.phone')" sortable="custom" min-width="100" show-overflow-tooltip></el-table-column>
+          <el-table-column property="contacts" :label="$t('org.contacts')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column :label="$t('table.action')">
+            <template #default="{ row }">
+              <el-button type="primary" :disabled="perm('org:create')" size="small" link @click="() => handleAdd(row.id)">{{ $t('addChild') }}</el-button>
+              <el-button type="primary" :disabled="perm('org:update')" size="small" link @click="() => handleEdit(row.id)">{{ $t('edit') }}</el-button>
+              <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
+                <template #reference>
+                  <el-button type="primary" :disabled="!deletable(row) || perm('org:delete')" size="small" link>{{ $t('delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
+        </column-list>
+      </el-table>
+    </div>
+    <org-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" :parent-id="parentId" :show-global-data="showGlobalData" @finished="fetchData" />
+  </div>
+</template>

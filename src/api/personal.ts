@@ -7,4 +7,3 @@ export const queryMachineLicense = async (): Promise<any> => (await axios.get('/
 
 export const queryHomepageEnvironment = async (): Promise<any> => (await axios.get('/backend/core/homepage/environment')).data;
 export const queryHomepageGeneratedKey = async (): Promise<any> => (await axios.get('/backend/core/homepage/generated-key')).data;
-

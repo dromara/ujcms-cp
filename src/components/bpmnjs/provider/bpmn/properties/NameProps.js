@@ -1,6 +1,6 @@
-import {  getBusinessObject,  is} from 'bpmn-js/lib/util/ModelUtil';
+import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
 import { isAny } from 'bpmn-js/lib/features/modeling/util/ModelingUtil';
-import {  add as collectionAdd} from 'diagram-js/lib/util/Collections';
+import { add as collectionAdd } from 'diagram-js/lib/util/Collections';
 import { TextFieldEntry, isTextFieldEntryEdited } from '@bpmn-io/properties-panel';
 import { useService } from 'bpmn-js-properties-panel';
 
@@ -12,11 +12,9 @@ import { useService } from 'bpmn-js-properties-panel';
  * @returns {Array<Entry>} entries
  */
 export function NameProps(props) {
-  const {
-    element
-  } = props;
+  const { element } = props;
 
-  if (isAny(element, [ 'bpmn:Collaboration', 'bpmn:DataAssociation', 'bpmn:Association' ])) {
+  if (isAny(element, ['bpmn:Collaboration', 'bpmn:DataAssociation', 'bpmn:Association'])) {
     return [];
   }
 
@@ -24,15 +22,13 @@ export function NameProps(props) {
     {
       id: 'name',
       component: Name,
-      isEdited: isTextFieldEntryEdited
-    }
+      isEdited: isTextFieldEntryEdited,
+    },
   ];
 }
 
 function Name(props) {
-  const {
-    element
-  } = props;
+  const { element } = props;
 
   const modeling = useService('modeling');
   const debounce = useService('debounceInput');
@@ -48,12 +44,12 @@ function Name(props) {
     debounce,
     setValue: (value) => {
       modeling.updateProperties(element, {
-        name: value
+        name: value,
       });
     },
     getValue: (element) => {
       return element.businessObject.name;
-    }
+    },
   };
 
   // (2) text annotations
@@ -62,12 +58,12 @@ function Name(props) {
       ...options,
       setValue: (value) => {
         modeling.updateProperties(element, {
-          text: value
+          text: value,
         });
       },
       getValue: (element) => {
         return element.businessObject.text;
-      }
+      },
     };
   }
 
@@ -77,7 +73,7 @@ function Name(props) {
       ...options,
       setValue: (value) => {
         const businessObject = getBusinessObject(element),
-              categoryValueRef = businessObject.categoryValueRef;
+          categoryValueRef = businessObject.categoryValueRef;
 
         if (!categoryValueRef) {
           initializeCategory(businessObject, canvas.getRootElement(), bpmnFactory);
@@ -87,10 +83,10 @@ function Name(props) {
       },
       getValue: (element) => {
         const businessObject = getBusinessObject(element),
-              categoryValueRef = businessObject.categoryValueRef;
+          categoryValueRef = businessObject.categoryValueRef;
 
         return categoryValueRef && categoryValueRef.value;
-      }
+      },
     };
   }
 
@@ -99,10 +95,8 @@ function Name(props) {
     options.label = translate('Participant Name');
   }
 
-
   return TextFieldEntry(options);
 }
-
 
 // helpers ////////////////////////
 
@@ -118,7 +112,7 @@ function createCategoryValue(definitions, bpmnFactory) {
   const categoryValue = bpmnFactory.create('bpmn:CategoryValue');
 
   const category = bpmnFactory.create('bpmn:Category', {
-    categoryValue: [ categoryValue ]
+    categoryValue: [categoryValue],
   });
 
   // add to correct place

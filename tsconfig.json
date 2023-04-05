@@ -1,20 +1,28 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    // "target": "ESNext",
+    // "module": "ESNext",
+    "target": "es2020",
+    "module": "es2020",
     "useDefineForClassFields": true,
-    "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
     "strict": true,
     "jsx": "preserve",
-    "sourceMap": true,
     "resolveJsonModule": true,
+    "isolatedModules": true,
     "esModuleInterop": true,
+    "lib": ["ESNext", "DOM"],
+    "skipLibCheck": true,
+    "noEmit": true,
+
+    "noImplicitAny": false,
+    "sourceMap": true,
     "baseUrl": ".",
-    "types": ["element-plus/global", "@intlify/vite-plugin-vue-i18n/client"],
+    "types": ["vite/client", "element-plus/global", "@intlify/unplugin-vue-i18n/messages"],
     "paths": {
       "@/*": ["src/*"]
-    },
-    "lib": ["esnext", "dom"]
+    }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "mock/**/*.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

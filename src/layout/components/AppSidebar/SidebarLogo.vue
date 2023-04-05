@@ -1,3 +1,8 @@
+<script setup lang="ts">
+defineProps({ collapse: { type: Boolean, required: true } });
+const title = import.meta.env.VITE_APP_TITLE || 'UJCMS';
+</script>
+
 <template>
   <div class="flex h-12 items-center justify-center overflow-hidden">
     <router-link class="whitespace-nowrap text-center" to="/">
@@ -10,8 +15,3 @@
     </router-link>
   </div>
 </template>
-
-<script setup lang="ts">
-defineProps({ collapse: { type: Boolean, required: true } });
-const title = import.meta.env.VITE_APP_TITLE || 'UJCMS';
-</script>

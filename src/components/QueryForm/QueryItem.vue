@@ -1,3 +1,20 @@
+<script setup lang="ts">
+import { inject, PropType, ref, toRefs } from 'vue';
+
+const props = defineProps({
+  label: { type: String, required: true },
+  name: { type: String, required: true },
+  // 'string' | 'date' | 'datetime' | 'number'
+  type: { type: String, default: null },
+  options: { type: Object as PropType<Array<{ label: string; value: string | number }>>, default: null },
+});
+const params = inject<any>('params');
+const { name } = toRefs(props);
+const [firstName, secondName] = name.value.split(',');
+const first = ref<string>(firstName);
+const second = ref<string>(secondName);
+</script>
+
 <template>
   <slot>
     <div v-if="type === 'number'" class="inline-block">
@@ -37,19 +54,3 @@
     <el-input v-else v-model="params[name]" class="w-96"></el-input>
   </slot>
 </template>
-<script setup lang="ts">
-import { inject, PropType, ref, toRefs } from 'vue';
-
-const props = defineProps({
-  label: { type: String, required: true },
-  name: { type: String, required: true },
-  // 'string' | 'date' | 'datetime' | 'number'
-  type: { type: String },
-  options: { type: Object as PropType<Array<{ label: string; value: string | number }>> },
-});
-const params = inject<any>('params');
-const { name } = toRefs(props);
-const [firstName, secondName] = name.value.split(',');
-const first = ref<string>(firstName);
-const second = ref<string>(secondName);
-</script>
