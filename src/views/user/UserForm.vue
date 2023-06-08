@@ -164,9 +164,9 @@ watch(visible, () => {
         <el-col :span="12">
           <el-form-item prop="gender" :label="$t('user.gender')" :rules="{ required: true, message: () => $t('v.required') }">
             <el-radio-group v-model="values.gender">
-              <el-radio :label="'m'">{{ $t('gender.male') }}</el-radio>
-              <el-radio :label="'f'">{{ $t('gender.female') }}</el-radio>
-              <el-radio :label="'n'">{{ $t('gender.none') }}</el-radio>
+              <el-radio :label="1">{{ $t('gender.male') }}</el-radio>
+              <el-radio :label="2">{{ $t('gender.female') }}</el-radio>
+              <el-radio :label="0">{{ $t('gender.none') }}</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>

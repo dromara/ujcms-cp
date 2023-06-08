@@ -71,9 +71,9 @@
   "gender.male": "男",
   "gender.female": "女",
   "gender.none": "保密",
-  "gender.m": "男",
-  "gender.f": "女",
-  "gender.n": "保密",
+  "gender.1": "男",
+  "gender.2": "女",
+  "gender.0": "保密",
 
   "undo": "撤销",
   "redo": "重做",

@@ -65,6 +65,11 @@ module.exports = {
         light: '#fab6b6',
         lighter: '#fef0f0',
       },
+      purple: {
+        DEFAULT: colors.purple[500],
+        light: colors.purple[300],
+        lighter: colors.purple[100],
+      },
       secondary: {
         DEFAULT: '#909399',
         light: '#c8c9cc',

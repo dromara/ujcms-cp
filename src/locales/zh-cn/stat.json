@@ -1,0 +1,32 @@
+{
+  "visit.now": "现在",
+  "visit.today": "今日",
+  "visit.yesterday": "昨日",
+  "visit.last7day": "最近7日",
+  "visit.last30day": "最近30日",
+  "visit.lastYear": "最近一年",
+  "visit.all": "全部",
+  "visit.pv": "浏览量(PV)",
+  "visit.uv": "访客数(UV)",
+  "visit.ip": "IP数",
+  "visit.bounceRate": "跳出率",
+  "visit.averageDuration": "平均访问时长",
+  "visit.averagePv": "平均访问页数",
+  "visit.url": "受访页面",
+  "visit.entryUrl": "入口页面",
+
+  "visitTrend.yesterdayPv": "昨日浏览量(PV)",
+  "visitTrend.todayPv": "今日浏览量(PV)",
+
+  "visitVisitor.newVisitor": "新访客",
+  "visitVisitor.oldVisitor": "老访客",
+  "visitVisitor.pv": "浏览量",
+  "visitVisitor.uv": "访客数",
+
+  "visitSource.name": "来源",
+  "visitDevice.name": "设备",
+  "visitOs.name": "操作系统",
+  "visitBrowser.name": "浏览器",
+
+  "": ""
+}

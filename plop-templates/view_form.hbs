@@ -25,14 +25,14 @@ const values = ref<any>({});
     :bean-id="beanId"
     :bean-ids="beanIds"
     :focus="focus"
-    :init-values="(): any => ({})"
+    :init-values="() => ({})"
     :to-values="(bean) => ({ ...bean })"
     :model-value="modelValue"
     perms="{{camelCase name}}"
     @update:model-value="(event) => $emit('update:modelValue', event)"
     @finished="() => $emit('finished')"
   >
-    <template #default="{ bean }">
+    <template #default="{}">
       <el-form-item prop="name" :rules="{ required: true, message: () => $t('v.required') }">
         <template #label><label-tip message="{{camelCase name}}.name" /></template>
         <el-input ref="focus" v-model="values.name" maxlength="50"></el-input>

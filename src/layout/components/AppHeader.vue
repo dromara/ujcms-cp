@@ -11,8 +11,9 @@ import BreadCrumb from '@/components/BreadCrumb/index.vue';
 import PasswordForm from '@/views/personal/PasswordForm.vue';
 import MachineCode from '@/views/personal/MachineCode.vue';
 import MachineLicense from '@/views/personal/MachineLicense.vue';
-import HomepageEnvironment from '@/views/personal/HomepageEnvironment.vue';
-import HomepageGeneratedKey from '@/views/personal/HomepageGeneratedKey.vue';
+import SystemInfo from '@/views/personal/SystemInfo.vue';
+import SystemMonitor from '@/views/personal/SystemMonitor.vue';
+import GeneratedKey from '@/views/personal/GeneratedKey.vue';
 
 const { locale } = useI18n({ useScope: 'global' });
 
@@ -43,26 +44,27 @@ const handleLogout = () => {
 const passwordFormVisible = ref<boolean>(false);
 const machineCodeVisible = ref<boolean>(false);
 const machineLicenseVisible = ref<boolean>(false);
-const homepageEnvironmentVisible = ref<boolean>(false);
-const homepageGeneratedKeyVisible = ref<boolean>(false);
+const systemInfoVisible = ref<boolean>(false);
+const systemMonitorVisible = ref<boolean>(false);
+const generatedKeyVisible = ref<boolean>(false);
 </script>
 
 <template>
-  <div class="h-12 flex justify-between items-center overflow-hidden shadow bg-white">
-    <div class="h-full flex items-center">
-      <div class="h-full flex items-center align-middle px-4 cursor-pointer hover:bg-gray-100" @click="toggleSidebar">
+  <div class="flex items-center justify-between h-12 overflow-hidden bg-white shadow">
+    <div class="flex items-center h-full">
+      <div class="flex items-center h-full px-4 align-middle cursor-pointer hover:bg-gray-100" @click="toggleSidebar">
         <el-icon :size="18"><component :is="appState.sidebar ? Fold : Expand"></component></el-icon>
       </div>
       <bread-crumb class="inline-block" />
     </div>
     <div class="h-full">
-      <div v-if="site" class="h-full inline-block">
+      <div v-if="site" class="inline-block h-full">
         <el-link class="h-full px-3 hover:bg-gray-100" :href="site?.url" :underline="false" :title="$t('siteHome')" target="_blank">
           <el-icon :size="16" class="align-text-top"><HomeFilled /></el-icon>
         </el-link>
       </div>
       <el-dropdown v-if="site" class="h-full">
-        <div class="h-full flex items-center px-3 hover:bg-gray-100">
+        <div class="flex items-center h-full px-3 hover:bg-gray-100">
           {{ site?.name }}
         </div>
         <template #dropdown>
@@ -74,7 +76,7 @@ const homepageGeneratedKeyVisible = ref<boolean>(false);
         </template>
       </el-dropdown>
       <el-dropdown class="h-full">
-        <div class="h-full flex items-center px-3 hover:bg-gray-100">
+        <div class="flex items-center h-full px-3 hover:bg-gray-100">
           {{ languages[(locale as string) || 'zh-cn'] }}
         </div>
         <template #dropdown>
@@ -84,7 +86,7 @@ const homepageGeneratedKeyVisible = ref<boolean>(false);
         </template>
       </el-dropdown>
       <el-dropdown class="h-full">
-        <div class="h-full flex items-center px-3 hover:bg-gray-100">
+        <div class="flex items-center h-full px-3 hover:bg-gray-100">
           <el-icon><User /></el-icon>
           <span class="ml-1">{{ currentUser.username }}</span>
         </div>
@@ -96,10 +98,13 @@ const homepageGeneratedKeyVisible = ref<boolean>(false);
             </router-link>
              -->
             <el-dropdown-item :disabled="perm('password:update')" @click="() => (passwordFormVisible = true)">{{ $t('changePassword') }}</el-dropdown-item>
-            <el-dropdown-item divided :disabled="perm('homepage:environment')" @click="() => (homepageEnvironmentVisible = true)">
-              {{ $t('menu.personal.homepage.environment') }}
+            <el-dropdown-item divided :disabled="perm('homepage:systemInfo')" @click="() => (systemInfoVisible = true)">
+              {{ $t('menu.personal.homepage.systemInfo') }}
             </el-dropdown-item>
-            <el-dropdown-item :disabled="perm('homepage:generatedKey')" @click="() => (homepageGeneratedKeyVisible = true)">
+            <el-dropdown-item v-if="hasPermission('homepage:systemMonitor') && isInclude('homepage:systemMonitor')" @click="() => (systemMonitorVisible = true)">
+              {{ $t('menu.personal.homepage.systemMonitor') }}
+            </el-dropdown-item>
+            <el-dropdown-item divided :disabled="perm('homepage:generatedKey')" @click="() => (generatedKeyVisible = true)">
               {{ $t('menu.personal.homepage.generatedKey') }}
             </el-dropdown-item>
             <el-dropdown-item v-if="hasPermission('machine:code') && isInclude('machine:code')" divided @click="() => (machineCodeVisible = true)">
@@ -114,8 +119,9 @@ const homepageGeneratedKeyVisible = ref<boolean>(false);
       </el-dropdown>
     </div>
     <password-form v-model="passwordFormVisible" />
-    <homepage-environment v-if="hasPermission('homepage:environment')" v-model="homepageEnvironmentVisible"></homepage-environment>
-    <homepage-generated-key v-if="hasPermission('homepage:generatedKey')" v-model="homepageGeneratedKeyVisible"></homepage-generated-key>
+    <system-info v-if="hasPermission('homepage:systemInfo')" v-model="systemInfoVisible"></system-info>
+    <system-monitor v-if="hasPermission('homepage:systemMonitor') && isInclude('homepage:systemMonitor')" v-model="systemMonitorVisible"></system-monitor>
+    <generated-key v-if="hasPermission('homepage:generatedKey')" v-model="generatedKeyVisible"></generated-key>
     <machine-code v-if="hasPermission('machine:code') && isInclude('machine:code')" v-model="machineCodeVisible"></machine-code>
     <machine-license v-if="hasPermission('machine:license') && isInclude('machine:license')" v-model="machineLicenseVisible"></machine-license>
   </div>

@@ -134,6 +134,55 @@ export const routes: Array<RouteRecordRaw> = [
     ],
   },
   {
+    path: '/stat',
+    component: Layout,
+    meta: { title: 'menu.stat', icon: UserFilled, requiresPermission: 'menu.stat' },
+    children: [
+      {
+        path: 'visit-trend',
+        name: 'VisitTrend',
+        component: () => import('@/views/stat/VisitTrend.vue'),
+        meta: { title: 'menu.stat.visitTrend', requiresPermission: 'visitTrend:page' },
+      },
+      {
+        path: 'visited-page',
+        name: 'VisitedPage',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.stat.visitedPage', requiresPermission: 'visitedPage:page' },
+      },
+      {
+        path: 'entry-page',
+        name: 'EntryPage',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.stat.entryPage', requiresPermission: 'entryPage:page' },
+      },
+      {
+        path: 'visit-source',
+        name: 'VisitSource',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.stat.visitSource', requiresPermission: 'visitSource:page' },
+      },
+      {
+        path: 'visit-visitor',
+        name: 'VisitVisitor',
+        component: () => import('@/views/stat/VisitVisitor.vue'),
+        meta: { title: 'menu.stat.visitVisitor', requiresPermission: 'visitVisitor:page' },
+      },
+      {
+        path: 'visit-region',
+        name: 'VisitRegion',
+        component: () => import('@/views/stat/VisitRegion.vue'),
+        meta: { title: 'menu.stat.visitRegion', requiresPermission: 'visitRegion:page' },
+      },
+      {
+        path: 'visit-env',
+        name: 'VisitEnv',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.stat.visitEnv', requiresPermission: 'visitEnv:page' },
+      },
+    ],
+  },
+  {
     path: '/user',
     component: Layout,
     meta: { title: 'menu.user', icon: UserFilled, requiresPermission: 'menu.user' },

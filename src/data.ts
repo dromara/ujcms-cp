@@ -27,9 +27,14 @@ export function getPermsTreeData(): any[] {
           perms: ['password:update', 'password:matches'],
         },
         {
-          label: t('menu.personal.homepage.environment'),
-          key: 'homepage:environment',
-          perms: ['homepage:environment'],
+          label: t('menu.personal.homepage.systemInfo'),
+          key: 'homepage:systemInfo',
+          perms: ['homepage:systemInfo'],
+        },
+        {
+          label: t('menu.personal.homepage.systemMonitor'),
+          key: 'homepage:systemMonitor',
+          perms: ['homepage:systemMonitor'],
         },
         {
           label: t('menu.personal.homepage.generatedKey'),
@@ -304,6 +309,48 @@ export function getPermsTreeData(): any[] {
             { label: t('edit'), key: 'dictType:update', perms: ['dictType:update', 'dictType:show'] },
             { label: t('delete'), key: 'dictType:delete', perms: ['dictType:delete'] },
           ],
+        },
+      ],
+    },
+    {
+      label: t('menu.stat'),
+      key: 'menu.stat.key',
+      perms: ['menu.stat'],
+      children: [
+        {
+          label: t('menu.stat.visitTrend'),
+          key: 'visitTrend.key',
+          perms: ['visitTrend:page', 'visitTrend:list'],
+        },
+        {
+          label: t('menu.stat.visitedPage'),
+          key: 'visitedPage.key',
+          perms: ['visitedPage:page', 'visitedPage:list'],
+        },
+        {
+          label: t('menu.stat.entryPage'),
+          key: 'entryPage.key',
+          perms: ['entryPage:page', 'entryPage:list'],
+        },
+        {
+          label: t('menu.stat.visitSource'),
+          key: 'visitSource.key',
+          perms: ['visitSource:page', 'visitSource:list'],
+        },
+        {
+          label: t('menu.stat.visitVisitor'),
+          key: 'visitVisitor.key',
+          perms: ['visitVisitor:page', 'visitVisitor:list'],
+        },
+        {
+          label: t('menu.stat.visitRegion'),
+          key: 'visitRegion.key',
+          perms: ['visitRegion:page', 'visitCountry:list', 'visitProvince:list'],
+        },
+        {
+          label: t('menu.stat.visitEnv'),
+          key: 'visitEnv.key',
+          perms: ['visitEnv:page', 'visitDevice:list', 'visitOs:list', 'visitBrowser:list'],
         },
       ],
     },

@@ -9,7 +9,7 @@ import { ElMessage } from 'element-plus';
 import { sm2Encrypt } from '@/utils/sm';
 import { securitySettings } from '@/store/useConfig';
 import { queryClientPublicKey } from '@/api/login';
-import { updatePassword } from '@/api/personal';
+import { updatePersonalPassword } from '@/api/personal';
 
 defineProps({ modelValue: { type: Boolean, required: true } });
 const emit = defineEmits({ 'update:modelValue': null });
@@ -38,7 +38,7 @@ const handleSubmit = () => {
     try {
       const password = sm2Encrypt(values.value.password, publicKey.value);
       const newPassword = sm2Encrypt(values.value.newPassword, publicKey.value);
-      const data = await updatePassword({ ...values.value, password, newPassword, passwordAgain: undefined });
+      const data = await updatePersonalPassword({ ...values.value, password, newPassword, passwordAgain: undefined });
 
       // 登录失败，显示错误信息
       if (data.status !== 0) {

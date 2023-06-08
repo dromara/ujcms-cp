@@ -1,26 +1,278 @@
 <script setup lang="ts">
-import { Avatar } from '@element-plus/icons-vue';
+import { onMounted, ref, shallowRef } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { Document, Files, FolderOpened, User, UserFilled } from '@element-plus/icons-vue';
 import dayjs from 'dayjs';
-import { currentUser } from '@/store/useCurrentUser';
+import duration from 'dayjs/plugin/duration';
+import echarts, { ECOption } from '@/utils/echarts';
+import { queryContentStat } from '@/api/personal';
+import { queryTrendStat, queryVisitorStat, queryProvinceStat } from '@/api/stat';
+
+const { t, n } = useI18n();
+dayjs.extend(duration);
+
+const trendChart = shallowRef<HTMLElement>();
+const initTrendChart = async () => {
+  const list = await queryTrendStat({ begin: dayjs().startOf('day').subtract(1, 'day').format(), end: dayjs().endOf('day').format() });
+  const option: ECOption = {
+    tooltip: { trigger: 'axis' },
+    legend: { data: [t('visitTrend.yesterdayPv'), t('visitTrend.todayPv')] },
+    grid: { left: 16, right: 16, top: 40, bottom: 0, containLabel: true },
+    xAxis: { type: 'category', boundaryGap: false, axisTick: { show: false }, data: Array.from(Array(24).keys()) },
+    yAxis: { type: 'value', minInterval: 1 },
+    series: [
+      {
+        name: t('visitTrend.yesterdayPv'),
+        type: 'line',
+        symbol: 'circle',
+        color: '#a0cfff',
+        data: list.filter((item) => dayjs(item.date) < dayjs().startOf('day')).map((item) => item.pvCount),
+      },
+      {
+        name: t('visitTrend.todayPv'),
+        type: 'line',
+        symbol: 'circle',
+        color: '#409eff',
+        areaStyle: { color: '#ecf5ff' },
+        data: list.filter((item) => dayjs(item.date) >= dayjs().startOf('day')).map((item) => item.pvCount),
+      },
+    ],
+  };
+  const chartDom = trendChart.value;
+  if (chartDom == null) {
+    return;
+  }
+  let chart = echarts.getInstanceByDom(chartDom);
+  if (chart == null) {
+    chart = echarts.init(chartDom);
+  }
+  chart.setOption(option);
+  window.addEventListener('resize', function () {
+    chart && chart.resize();
+  });
+};
+
+const provinceChart = shallowRef<HTMLElement>();
+const initProvinceChart = async () => {
+  const list = await queryProvinceStat({ begin: dayjs().subtract(30, 'day').format('YYYY-MM-DD'), end: dayjs().format('YYYY-MM-DD') });
+  const total = list.reduce((acc, curr) => acc + curr.pvCount, 0);
+  const option: ECOption = {
+    title: { text: t('menu.stat.visitRegion'), textStyle: { color: '#909399', fontWeight: 'normal', fontSize: 16 } },
+    tooltip: { trigger: 'item', valueFormatter: (value: any) => n((value * 100) / total, 'decimal') + '%' },
+    legend: { type: 'scroll', orient: 'vertical', right: '10%', top: 16, bottom: 16 },
+    series: [
+      {
+        name: t('menu.stat.visitRegion'),
+        type: 'pie',
+        radius: '72%',
+        center: ['40%', '56%'],
+        data: list.map((item) => ({ value: item.pvCount, name: item.name })),
+      },
+    ],
+  };
+
+  const chartDom = provinceChart.value;
+  if (chartDom == null) {
+    return;
+  }
+  let chart = echarts.getInstanceByDom(chartDom);
+  if (chart == null) {
+    chart = echarts.init(chartDom);
+  }
+  chart.setOption(option);
+  window.addEventListener('resize', function () {
+    chart && chart.resize();
+  });
+};
+
+const newVisitor = ref<any>({});
+const oldVisitor = ref<any>({});
+const fetchVisitorStat = async () => {
+  const visitorStat = await queryVisitorStat({ begin: dayjs().subtract(30, 'day').format('YYYY-MM-DD'), end: dayjs().format('YYYY-MM-DD') });
+  newVisitor.value = visitorStat['newVisitor'];
+  oldVisitor.value = visitorStat['oldVisitor'];
+  const totalUvCount = newVisitor.value.uvCount + oldVisitor.value.uvCount;
+  if (totalUvCount > 0) {
+    newVisitor.value.proportion = (newVisitor.value.uvCount * 100) / totalUvCount;
+    oldVisitor.value.proportion = (oldVisitor.value.uvCount * 100) / totalUvCount;
+  } else {
+    newVisitor.value.proportion = 50;
+    oldVisitor.value.proportion = 50;
+  }
+};
+
+const contentStat = ref<any>({});
+const fetchContentStat = async () => {
+  contentStat.value = await queryContentStat();
+};
+
+onMounted(async () => {
+  initTrendChart();
+  initProvinceChart();
+  fetchVisitorStat();
+  fetchContentStat();
+});
 </script>
 
 <template>
   <div>
-    <div class="app-block p-3 flex">
-      <div>
-        <el-avatar :size="76" class="flex justify-center items-center">
-          <el-icon class="text-5xl"><Avatar /></el-icon>
-        </el-avatar>
-      </div>
-      <div class="ml-3 space-y-1 text-gray-regular text-sm">
-        <p class="text-base font-bold">{{ currentUser.username }}</p>
-        <p>
-          {{ $t('user.loginDate') }}: <span class="ml-1">{{ dayjs(currentUser.loginDate).format('YYYY-MM-DD HH:mm:ss') }}</span>
-        </p>
-        <p>
-          {{ $t('user.loginIp') }}: <span class="ml-1">{{ currentUser.loginIp }}</span>
-        </p>
-      </div>
+    <el-row :gutter="12">
+      <el-col :span="6">
+        <div class="p-3 app-block">
+          <div class="text-sm text-gray-secondary">{{ $t('contentStat.article') }}</div>
+          <div class="flex items-end justify-between mt-1">
+            <div class="text-3xl text-primary">{{ contentStat.article?.total }}</div>
+            <div class="flex items-center justify-center w-12 h-12 text-xl text-white rounded bg-primary">
+              <el-icon><Document /></el-icon>
+            </div>
+          </div>
+          <div class="flex justify-between pt-2 mt-3 text-xs border-t text-gray-regular">
+            <div>{{ $t('contentStat.last7day') }}</div>
+            <div>{{ contentStat.article?.last7day }}</div>
+          </div>
+        </div>
+      </el-col>
+      <el-col :span="6">
+        <div class="p-3 app-block">
+          <div class="text-sm text-gray-secondary">{{ $t('contentStat.channel') }}</div>
+          <div class="flex items-end justify-between mt-1">
+            <div class="text-3xl text-primary">{{ contentStat.channel?.total }}</div>
+            <div class="flex items-center justify-center w-12 h-12 text-xl text-white rounded bg-warning">
+              <el-icon><FolderOpened /></el-icon>
+            </div>
+          </div>
+          <div class="flex justify-between pt-2 mt-3 text-xs border-t text-gray-regular">
+            <div>{{ $t('contentStat.last7day') }}</div>
+            <div>{{ contentStat.channel?.last7day }}</div>
+          </div>
+        </div>
+      </el-col>
+      <el-col :span="6">
+        <div class="p-3 app-block">
+          <div class="text-sm text-gray-secondary">{{ $t('contentStat.user') }}</div>
+          <div class="flex items-end justify-between mt-1">
+            <div class="text-3xl text-primary">{{ contentStat.user?.total }}</div>
+            <div class="flex items-center justify-center w-12 h-12 text-xl text-white rounded bg-success">
+              <el-icon><User /></el-icon>
+            </div>
+          </div>
+          <div class="flex justify-between pt-2 mt-3 text-xs border-t text-gray-regular">
+            <div>{{ $t('contentStat.last7day') }}</div>
+            <div>{{ contentStat.user?.last7day }}</div>
+          </div>
+        </div>
+      </el-col>
+      <el-col :span="6">
+        <div class="p-3 app-block">
+          <div class="text-sm text-gray-secondary">{{ $t('contentStat.attachment') }}</div>
+          <div class="flex items-end justify-between mt-1">
+            <div class="text-3xl text-primary">{{ contentStat.attachment?.total }}</div>
+            <div class="flex items-center justify-center w-12 h-12 text-xl text-white rounded bg-danger">
+              <el-icon><Files /></el-icon>
+            </div>
+          </div>
+          <div class="flex justify-between pt-2 mt-3 text-xs border-t text-gray-regular">
+            <div>{{ $t('contentStat.last7day') }}</div>
+            <div>{{ contentStat.attachment?.last7day }}</div>
+          </div>
+        </div>
+      </el-col>
+    </el-row>
+    <div class="px-3 py-5 mt-3 app-block">
+      <div ref="trendChart" class="h-64"></div>
     </div>
+    <el-row :gutter="12">
+      <el-col :span="12">
+        <div class="flex p-3 mt-3 justify-evenly app-block">
+          <div class="h-64 w-60 text-primary">
+            <div class="mt-2 text-center">{{ $t('visitVisitor.newVisitor') }}</div>
+            <div class="flex items-center justify-center mt-2">
+              <el-icon class="text-5xl"><UserFilled /></el-icon>
+              <span class="text-3xl">
+                <span v-if="newVisitor.uvCount > 0">{{ $n(newVisitor.proportion ?? 0, 'decimal') }}</span>
+                <span v-else>-</span>%
+              </span>
+            </div>
+            <div class="mt-4 space-y-2 text-sm">
+              <el-row :gutter="24">
+                <el-col :span="12" class="text-right">{{ $t('visitVisitor.pv') }}</el-col>
+                <el-col :span="12">{{ newVisitor.pvCount }}</el-col>
+              </el-row>
+              <el-row :gutter="24">
+                <el-col :span="12" class="text-right">{{ $t('visitVisitor.uv') }}</el-col>
+                <el-col :span="12">{{ newVisitor.uvCount }}</el-col>
+              </el-row>
+              <el-row :gutter="24">
+                <el-col :span="12" class="text-right">{{ $t('visit.bounceRate') }}</el-col>
+                <el-col :span="12">
+                  <span v-if="newVisitor.uvCount > 0">{{ $n((newVisitor.bounceCount * 100) / newVisitor.uvCount, 'decimal') }}%</span>
+                  <span v-else>-</span>
+                </el-col>
+              </el-row>
+              <el-row :gutter="24">
+                <el-col :span="12" class="text-right">{{ $t('visit.averageDuration') }}</el-col>
+                <el-col :span="12">
+                  <span v-if="newVisitor.uvCount > 0">{{ dayjs.duration(newVisitor.duration / newVisitor.uvCount, 'seconds').format('HH:mm:ss') }}</span>
+                  <span v-else>-</span>
+                </el-col>
+              </el-row>
+              <el-row :gutter="24">
+                <el-col :span="12" class="text-right">{{ $t('visit.averagePv') }}</el-col>
+                <el-col :span="12">
+                  <span v-if="newVisitor.uvCount > 0">{{ $n(newVisitor.pvCount / newVisitor.uvCount, 'decimal') }}</span>
+                  <span v-else>-</span>
+                </el-col>
+              </el-row>
+            </div>
+          </div>
+          <div class="h-64 w-60 text-gray-secondary">
+            <div class="mt-2 text-center">{{ $t('visitVisitor.oldVisitor') }}</div>
+            <div class="flex items-center justify-center mt-2">
+              <el-icon class="text-5xl"><UserFilled /></el-icon>
+              <span class="text-3xl">
+                <span v-if="oldVisitor.uvCount > 0">{{ $n(oldVisitor.proportion ?? 0, 'decimal') }}</span>
+                <span v-else>-</span>%
+              </span>
+            </div>
+            <div class="mt-4 space-y-2 text-sm">
+              <el-row :gutter="24">
+                <el-col :span="12" class="text-right">{{ $t('visitVisitor.pv') }}</el-col>
+                <el-col :span="12">{{ oldVisitor.pvCount }}</el-col>
+              </el-row>
+              <el-row :gutter="24">
+                <el-col :span="12" class="text-right">{{ $t('visitVisitor.uv') }}</el-col>
+                <el-col :span="12">{{ oldVisitor.uvCount }}</el-col>
+              </el-row>
+              <el-row :gutter="24">
+                <el-col :span="12" class="text-right">{{ $t('visit.bounceRate') }}</el-col>
+                <el-col :span="12">
+                  <span v-if="oldVisitor.uvCount > 0">{{ $n((oldVisitor.bounceCount * 100) / oldVisitor.uvCount, 'decimal') }}%</span>
+                  <span v-else>-</span>
+                </el-col>
+              </el-row>
+              <el-row :gutter="24">
+                <el-col :span="12" class="text-right">{{ $t('visit.averageDuration') }}</el-col>
+                <el-col :span="12">
+                  <span v-if="newVisitor.uvCount > 0">{{ dayjs.duration(oldVisitor.duration / oldVisitor.uvCount, 'seconds').format('HH:mm:ss') }}</span>
+                  <span v-else>-</span>
+                </el-col>
+              </el-row>
+              <el-row :gutter="24">
+                <el-col :span="12" class="text-right">{{ $t('visit.averagePv') }}</el-col>
+                <el-col :span="12">
+                  <span v-if="oldVisitor.uvCount > 0">{{ $n(oldVisitor.pvCount / oldVisitor.uvCount, 'decimal') }}</span>
+                  <span v-else>-</span>
+                </el-col>
+              </el-row>
+            </div>
+          </div>
+        </div>
+      </el-col>
+      <el-col :span="12">
+        <div class="p-3 mt-3 app-block">
+          <div ref="provinceChart" class="w-full h-64"></div>
+        </div>
+      </el-col>
+    </el-row>
   </div>
 </template>
