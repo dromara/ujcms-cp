@@ -4,7 +4,7 @@ import { queryDictList } from '@/api/content';
 import Tinymce from '@/components/Tinymce';
 import { BaseUpload, ImageUpload } from '@/components/Upload';
 
-const props = defineProps({ field: { type: Object, required: true }, modelValue: { type: Boolean, required: true }, modelKey: { type: Object, default: null } });
+const props = defineProps({ field: { type: Object, required: true }, modelValue: { type: Object, required: true }, modelKey: { type: Object, default: null } });
 const emit = defineEmits({ 'update:modelValue': null, 'update:modelKey': null });
 
 const { field, modelValue, modelKey } = toRefs(props);

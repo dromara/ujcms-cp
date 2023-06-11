@@ -14,6 +14,7 @@ import FieldItem from '@/views/config/components/FieldItem.vue';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 import Tinymce from '@/components/Tinymce';
+import { ImageUpload } from '@/components/Upload';
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -203,6 +204,15 @@ const initCustoms = (customs: any) => {
                 </el-form-item>
               </el-col>
             </template>
+            <el-col v-if="mains['image'].show" :span="mains['image'].double ? 12 : 24">
+              <el-form-item
+                prop="image"
+                :label="mains['image'].name ?? $t('channel.image')"
+                :rules="mains['image'].required ? { required: true, message: () => $t('v.required') } : undefined"
+              >
+                <image-upload v-model="values.image" :height="mains['image'].imageHeight" :width="mains['image'].imageWidth" :mode="mains['image'].imageMode"></image-upload>
+              </el-form-item>
+            </el-col>
             <el-col v-if="mains['channelModel'].show" :span="mains['channelModel'].double ? 12 : 24">
               <el-form-item prop="channelModelId" :label="mains['channelModel'].name ?? $t('channel.channelModel')" :rules="{ required: true, message: () => $t('v.required') }">
                 <el-select
