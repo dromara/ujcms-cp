@@ -247,7 +247,7 @@ const cancelSticky = async (id: number) => {
 <template>
   <el-container>
     <el-aside width="200px" class="pr-3">
-      <el-scrollbar class="bg-white rounded-sm p-2">
+      <el-scrollbar class="p-2 bg-white rounded-sm">
         <div class="mb-1 ml-2">
           <el-button
             :type="channel == null ? 'primary' : undefined"
@@ -323,7 +323,7 @@ const cancelSticky = async (id: number) => {
         </el-popconfirm>
         <column-setting name="article" class="ml-2" />
       </div>
-      <div class="app-block mt-3">
+      <div class="mt-3 app-block">
         <el-table
           ref="table"
           v-loading="tableLoading"
@@ -362,7 +362,7 @@ const cancelSticky = async (id: number) => {
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column property="channel.name" :label="$t('article.channel')" sortable="custom" show-overflow-tooltip></el-table-column>
+            <el-table-column property="channel.name" :label="$t('article.channel')" sort-by="channel-name" sortable="custom" show-overflow-tooltip></el-table-column>
             <el-table-column property="org.name" :label="$t('article.org')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
             <el-table-column property="author" :label="$t('article.author')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
             <el-table-column property="editor" :label="$t('article.editor')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
@@ -520,7 +520,7 @@ const cancelSticky = async (id: number) => {
           :layout="pageLayout"
           small
           background
-          class="px-3 py-2 justify-end"
+          class="justify-end px-3 py-2"
           @size-change="() => fetchData()"
           @current-change="() => fetchData()"
         ></el-pagination>
