@@ -3,7 +3,7 @@ export default { name: 'ArticleForm' };
 </script>
 
 <script setup lang="ts">
-import { computed, ref, toRefs, watch, nextTick, PropType } from 'vue';
+import { computed, ref, toRefs, watch, PropType } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Finished, Box, Hide, DocumentRemove, Delete, CircleCheck, CircleClose } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
@@ -26,7 +26,8 @@ import {
   queryArticleTemplates,
 } from '@/api/content';
 import { queryModelList } from '@/api/config';
-import { jodConvertDocUrl, jodConvertLibraryUrl, queryjodConvertEnabled, queryDictListByAlias, queryTagList } from '@/api/content';
+import { validateErrorWord, validateSensitiveWord } from '@/api/system';
+import { jodConvertDocUrl, jodConvertLibraryUrl, queryJodConvertEnabled, queryDictListByAlias, queryTagList } from '@/api/content';
 import { toTree } from '@/utils/tree';
 import { formatDuration } from '@/utils/common';
 import { getModelData, mergeModelFields, arr2obj } from '@/data';
@@ -56,7 +57,8 @@ const showFullTitle = ref<boolean>(false);
 const showLinkUrl = ref<boolean>(false);
 const focus = ref<any>();
 const values = ref<any>({});
-const jodconverterEnabled = ref<boolean>(false);
+const tinyText = ref<any>();
+const jodConverterEnabled = ref<boolean>(false);
 const channelList = ref<any[]>([]);
 const flatChannelList = ref<any[]>([]);
 const articleModelList = ref<any[]>([]);
@@ -82,12 +84,15 @@ watch(visible, () => {
     fetchChannelList();
     fetchArticleModeList();
     fetchArticleTemplates();
-    fetchJodconverterEnabled();
+    fetchJodConverterEnabled();
   }
 });
-const fetchJodconverterEnabled = async () => {
+watch(fields, () => {
+  initCustoms(values.value.customs);
+});
+const fetchJodConverterEnabled = async () => {
   if (currentUser.epRank > 0) {
-    jodconverterEnabled.value = await queryjodConvertEnabled();
+    jodConverterEnabled.value = await queryJodConvertEnabled();
   }
 };
 const fetchSourceList = (name: string) => queryDictListByAlias('sys_article_source', name);
@@ -115,6 +120,52 @@ const initCustoms = (customs: any) => {
     }
   });
   return customs;
+};
+
+const preventSubmit = async (bean: any) => {
+  if (currentUser.epRank <= 0) {
+    return false;
+  }
+
+  const errorWordData = await validateErrorWord({ text: bean.text });
+  if (errorWordData.status === -1) {
+    if (bean.editorType === 1) {
+      const searchreplace = tinyText.value.editor.plugins.searchreplace;
+      searchreplace.find(errorWordData.result.name);
+      searchreplace.done();
+      ElMessageBox.confirm(t('article.error.errorWord.confirm', { name: errorWordData.result.name, correct: errorWordData.result.correct }), {
+        cancelButtonText: t('cancel'),
+        confirmButtonText: t('ok'),
+        type: 'warning',
+        callback: (action: string) => {
+          if (action === 'confirm') {
+            searchreplace.find(errorWordData.result.name);
+            searchreplace.replace(errorWordData.result.correct, false, true);
+            searchreplace.done();
+            values.value.text = tinyText.value.editor.getContent();
+          }
+        },
+      });
+    } else if (bean.editorType === 2) {
+      ElMessageBox.alert(t('article.error.errorWord.alert.message', { name: errorWordData.result.name }), t('article.error.errorWord.alert.title'), {
+        confirmButtonText: t('ok'),
+      });
+    }
+    return true;
+  }
+  const sensitiveWordData = await validateSensitiveWord({ text: bean.text });
+  if (sensitiveWordData.status === -1) {
+    if (bean.editorType === 1) {
+      const searchreplace = tinyText.value.editor.plugins.searchreplace;
+      searchreplace.find(sensitiveWordData.result.name);
+      searchreplace.done();
+    }
+    ElMessageBox.alert(t('article.error.sensitiveWord.alert.message', { name: sensitiveWordData.result.name }), t('article.error.sensitiveWord.alert.title'), {
+      confirmButtonText: t('ok'),
+    });
+    return true;
+  }
+  return false;
 };
 
 const handleSaveAsDraft = () => {
@@ -197,7 +248,7 @@ const extractImage = () => {
           editorType: mains['text'].editorType,
           channelId: channel?.id,
           allowComment: true,
-          customs: initCustoms({}),
+          customs: {},
           fileList: [],
           imageList: [],
         })
@@ -207,6 +258,7 @@ const extractImage = () => {
       :model-value="modelValue"
       :addable="!isReview"
       :disable-edit="(bean) => bean.id != null && !bean.editable"
+      :prevent-submit="preventSubmit"
       label-width="140px"
       large
       @update:model-value="(event) => $emit('update:modelValue', event)"
@@ -450,7 +502,7 @@ const extractImage = () => {
                     :mode="mains['image'].imageMode"
                     :disabled="disabled"
                   ></image-upload>
-                  <el-button class="ml-2 self-start" @click="() => extractImage()">{{ $t('article.extractImage') }}</el-button>
+                  <el-button class="self-start ml-2" @click="() => extractImage()">{{ $t('article.extractImage') }}</el-button>
                 </el-form-item>
               </el-col>
               <template v-for="field in fields" :key="field.code">
@@ -582,7 +634,7 @@ const extractImage = () => {
                       <template #prepend>{{ $t('article.docOrig') }}</template>
                     </el-input>
                     <base-upload
-                      v-if="jodconverterEnabled && currentUser.epRank > 0"
+                      v-if="jodConverterEnabled && currentUser.epRank > 0"
                       type="library"
                       :disabled="perm('jodConvert:library') || disabled"
                       :upload-action="jodConvertLibraryUrl"
@@ -596,7 +648,7 @@ const extractImage = () => {
                       }
                     "
                     ></base-upload>
-                    <el-alert v-if="!jodconverterEnabled && currentUser.epRank > 0" :title="$t('error.jodConverterNotEnabled')" type="error" :closable="false" />
+                    <el-alert v-if="!jodConverterEnabled && currentUser.epRank > 0" :title="$t('error.jodConverterNotEnabled')" type="error" :closable="false" />
                     <el-button v-if="currentUser.epRank === 0" type="primary" @click="() => $alert($t('error.enterprise'), { dangerouslyUseHTMLString: true })">
                       {{ $t('article.op.clickToUpload') }}
                     </el-button>
@@ -637,7 +689,7 @@ const extractImage = () => {
                     <el-radio-group v-if="mains['text'].editorSwitch" v-model="values.editorType" class="mr-6" @change="() => (values.markdown = '')">
                       <el-radio v-for="n in [1, 2]" :key="n" :label="n">{{ $t(`model.field.editorType.${n}`) }}</el-radio>
                     </el-radio-group>
-                    <div v-if="values.editorType === 1 && jodconverterEnabled && currentUser.epRank > 0" class="inline-flex mb-1">
+                    <div v-if="values.editorType === 1 && jodConverterEnabled && currentUser.epRank > 0" class="inline-flex mb-1">
                       <base-upload
                         type="doc"
                         :disabled="perm('jodConvert:doc')"
@@ -650,7 +702,7 @@ const extractImage = () => {
                       <el-button type="primary" @click="() => $alert($t('error.enterprise'), { dangerouslyUseHTMLString: true })">{{ $t('article.op.docImport') }}</el-button>
                     </div>
                     <tui-editor v-if="values.editorType === 2" v-model="values.markdown" v-model:html="values.text" class="leading-6" />
-                    <tinymce v-else v-model="values.text" :disabled="disabled" />
+                    <tinymce v-else ref="tinyText" v-model="values.text" :disabled="disabled" />
                   </div>
                 </el-form-item>
               </el-col>
@@ -694,9 +746,6 @@ const extractImage = () => {
                     @change="
                       (value) => {
                         articleModelId = flatChannelList.find((item) => item.id === value)?.articleModelId;
-                        nextTick().then(() => {
-                          initCustoms(values.customs);
-                        });
                       }
                     "
                   />
@@ -756,7 +805,7 @@ const extractImage = () => {
                   :rules="asides['articleTemplate'].required ? { required: true, message: () => $t('v.required') } : undefined"
                 >
                   <template #label><label-tip :label="asides['articleTemplate'].name ?? $t('article.articleTemplate')" message="article.articleTemplate" help /></template>
-                  <el-select v-model="values.articleTemplate" class="w-full">
+                  <el-select v-model="values.articleTemplate" clearable class="w-full">
                     <el-option v-for="item in articleTemplates" :key="item" :label="item + '.html'" :value="item"></el-option>
                   </el-select>
                 </el-form-item>

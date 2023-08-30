@@ -97,6 +97,13 @@
   "task.status.4": "完成",
   "task.errorInfo": "错误信息",
 
+  "sensitiveWord.name": "敏感词",
+  "sensitiveWord.enabled": "是否启用",
+
+  "errorWord.name": "易错词",
+  "errorWord.correct": "正确词",
+  "errorWord.enabled": "是否启用",
+
   "license.activated": "是否激活",
   "license.activated.true": "已激活",
   "license.activated.false": "未激活",

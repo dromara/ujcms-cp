@@ -727,7 +727,7 @@ const invalidExtension = (extensions: string) => {
                 <template #label><label-tip message="config.storage.type" /></template>
                 <el-select v-model="values.type" class="w-full">
                   <el-option
-                    v-for="n in [0, 1, 10].filter((item) => item === 0 || currentUser.epRank > 2 || currentUser.epDisplay)"
+                    v-for="n in [0, 1, 10].filter((item) => item === 0 || currentUser.epRank >= 2 || currentUser.epDisplay)"
                     :key="n"
                     :value="n"
                     :label="$t(`config.storage.type.${n}`)"

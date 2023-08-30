@@ -5,7 +5,17 @@ export default { name: 'ChannelForm' };
 <script setup lang="ts">
 import { ref, computed, toRefs, watch, PropType } from 'vue';
 import { toTree, disableSubtree, disableTreeWithPermission } from '@/utils/tree';
-import { queryChannel, createChannel, updateChannel, deleteChannel, queryChannelList, queryChannelPermissions, queryChannelTemplates, queryArticleTemplates } from '@/api/content';
+import {
+  queryChannel,
+  createChannel,
+  updateChannel,
+  deleteChannel,
+  queryChannelList,
+  queryChannelPermissions,
+  queryChannelTemplates,
+  queryArticleTemplates,
+  channelAliasExist,
+} from '@/api/content';
 import { queryProcessDefinitionList } from '@/api/system';
 import { queryModelList } from '@/api/config';
 import { getModelData, mergeModelFields, arr2obj } from '@/data';
@@ -14,6 +24,7 @@ import FieldItem from '@/views/config/components/FieldItem.vue';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 import Tinymce from '@/components/Tinymce';
+import { TuiEditor } from '@/components/TuiEditor';
 import { ImageUpload } from '@/components/Upload';
 
 const props = defineProps({
@@ -90,9 +101,17 @@ watch(visible, () => {
     fetchProcessList();
   }
 });
+watch(fields, () => {
+  initCustoms(values.value.customs);
+});
 const initCustoms = (customs: any) => {
   fields.value.forEach((field: any) => {
-    customs[field.code] = field.defaultValue;
+    if (customs[field.code] == null) {
+      customs[field.code] = field.defaultValue;
+      if (field.defaultValueKey != null) {
+        customs[field.code + '_key'] = field.defaultValueKey;
+      }
+    }
   });
   return customs;
 };
@@ -121,7 +140,7 @@ const initCustoms = (customs: any) => {
       allowComment: bean?.allowComment ?? parent?.allowComment ?? true,
       allowContribute: bean?.allowContribute ?? parent?.allowContribute ?? true,
       allowSearch: bean?.allowSearch ?? parent?.allowSearch ?? true,
-      customs: initCustoms({}),
+      customs: {},
     })"
     :to-values="(bean) => ({ ...bean })"
     perms="channel"
@@ -138,7 +157,7 @@ const initCustoms = (customs: any) => {
       }
     "
   >
-    <template #default="{ isEdit }">
+    <template #default="{ bean }">
       <el-row>
         <el-col :span="18">
           <el-row>
@@ -153,6 +172,15 @@ const initCustoms = (customs: any) => {
                 :rules="[
                   { required: true, message: () => $t('v.required') },
                   { pattern: /^[\w-]*$/, message: () => $t('channel.error.aliasPattern') },
+                  {
+                    asyncValidator: async (rule, value, callback) => {
+                      if (value !== bean.alias && (await channelAliasExist(value))) {
+                        callback($t('channel.error.aliasExist'));
+                        return;
+                      }
+                      callback();
+                    },
+                  },
                 ]"
               >
                 <template #label><label-tip :label="mains['alias'].name ?? $t('channel.alias')" message="channel.alias" help /></template>
@@ -221,11 +249,6 @@ const initCustoms = (customs: any) => {
                   @change="
                     (value) => {
                       channelModelId = value;
-                      if (!isEdit) {
-                        $nextTick().then(() => {
-                          initCustoms(values.customs);
-                        });
-                      }
                     }
                   "
                 >
@@ -311,7 +334,13 @@ const initCustoms = (customs: any) => {
                 :label="mains['text'].name ?? $t('channel.text')"
                 :rules="mains['text'].required ? { required: true, message: () => $t('v.required') } : undefined"
               >
-                <tinymce v-model="values.text" />
+                <div class="w-full">
+                  <el-radio-group v-if="mains['text'].editorSwitch" v-model="values.editorType" class="mr-6" @change="() => (values.markdown = '')">
+                    <el-radio v-for="n in [1, 2]" :key="n" :label="n">{{ $t(`model.field.editorType.${n}`) }}</el-radio>
+                  </el-radio-group>
+                  <tui-editor v-if="values.editorType === 2" v-model="values.markdown" v-model:html="values.text" class="leading-6" />
+                  <tinymce v-else ref="tinyText" v-model="values.text" />
+                </div>
               </el-form-item>
             </el-col>
           </el-row>
@@ -333,7 +362,7 @@ const initCustoms = (customs: any) => {
               </el-form-item>
               <el-form-item prop="type" :label="asides['type'].name ?? $t('channel.type')" :rules="{ required: true, message: () => $t('v.required') }">
                 <el-select v-model="values.type" class="w-full">
-                  <el-option v-for="n in [1, 2, 3, 4, 5]" :key="n" :label="$t(`channel.type.${n}`)" :value="n"></el-option>
+                  <el-option v-for="n in [1, 2, 3, 4]" :key="n" :label="$t(`channel.type.${n}`)" :value="n"></el-option>
                 </el-select>
               </el-form-item>
               <el-form-item

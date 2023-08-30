@@ -38,6 +38,8 @@ const props = defineProps({
   deleteBean: { type: Function as PropType<(ids: any[]) => Promise<any>>, required: true },
   disableDelete: { type: Function as PropType<(bean: any) => boolean>, default: null },
   disableEdit: { type: Function as PropType<(bean: any) => boolean>, default: null },
+  beforeValidate: { type: Function as PropType<(values: any) => Promise<boolean> | void>, default: null },
+  preventSubmit: { type: Function as PropType<(values: any) => Promise<boolean>>, default: null },
   addable: { type: Boolean, default: true },
   action: { type: String as PropType<'add' | 'copy' | 'edit'>, default: 'edit' },
   showId: { type: Boolean, default: true },
@@ -123,29 +125,6 @@ const handleAdd = () => {
 const handleCancel = () => {
   emit('update:modelValue', false);
 };
-const handleSubmit = () => {
-  form.value.validate(async (valid: boolean) => {
-    if (!valid) return;
-    buttonLoading.value = true;
-    try {
-      emit('beforeSubmit', values.value);
-      if (isEdit.value) {
-        await props.updateBean(values.value);
-      } else {
-        await props.createBean(values.value);
-        // eslint-disable-next-line no-unused-expressions
-        focus.value?.focus?.();
-        emit('update:values', props.initValues(values.value));
-        form.value.resetFields();
-      }
-      ElMessage.success(t('success'));
-      if (!continuous.value) emit('update:modelValue', false);
-      emit('finished', bean.value);
-    } finally {
-      buttonLoading.value = false;
-    }
-  });
-};
 const handleDelete = async () => {
   buttonLoading.value = true;
   try {
@@ -166,6 +145,32 @@ const handleDelete = async () => {
     buttonLoading.value = false;
   }
 };
+const handleSubmit = async () => {
+  await props.beforeValidate?.(values.value);
+  form.value.validate(async (valid: boolean) => {
+    if (!valid) return;
+    buttonLoading.value = true;
+    try {
+      if ((await props.preventSubmit?.(values.value)) ?? false) {
+        return;
+      }
+      emit('beforeSubmit', values.value);
+      if (isEdit.value) {
+        await props.updateBean(values.value);
+      } else {
+        await props.createBean(values.value);
+        focus.value?.focus?.();
+        emit('update:values', props.initValues(values.value));
+        form.value.resetFields();
+      }
+      ElMessage.success(t('success'));
+      if (!continuous.value) emit('update:modelValue', false);
+      emit('finished', bean.value);
+    } finally {
+      buttonLoading.value = false;
+    }
+  });
+};
 const submit = (
   executor: (values: any, payload: { isEdit: boolean; continuous: boolean; form: any; props: any; focus: any; loadBean: () => Promise<any>; emit: any }) => Promise<any>,
 ) => {
@@ -173,6 +178,9 @@ const submit = (
     if (!valid) return;
     buttonLoading.value = true;
     try {
+      if ((await props.preventSubmit?.(values.value)) ?? false) {
+        return;
+      }
       emit('beforeSubmit', values.value);
 
       await executor(values.value, { isEdit: isEdit.value, continuous: continuous.value, form: form.value, props, focus: focus.value, loadBean, emit });
@@ -190,7 +198,9 @@ const remove = async (
   buttonLoading.value = true;
   try {
     await executor(values.value, { isEdit: isEdit.value, continuous: continuous.value, form: form.value, props, focus: focus.value, loadBean, emit });
-    if (!continuous.value) emit('update:modelValue', false);
+    if (!continuous.value) {
+      emit('update:modelValue', false);
+    }
     if (hasNext.value) {
       handleNext();
       ids.value.splice(index.value - 1, 1);

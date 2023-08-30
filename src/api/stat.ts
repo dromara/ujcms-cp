@@ -10,3 +10,4 @@ export const queryProvinceStat = async (params?: Record<string, any>): Promise<a
 export const queryDeviceStat = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/visit/device-stat', { params })).data;
 export const queryOsStat = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/visit/os-stat', { params })).data;
 export const queryBrowserStat = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/visit/browser-stat', { params })).data;
+export const querySourceTypeStat = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/visit/source-type-stat', { params })).data;

@@ -172,6 +172,39 @@ export function getPermsTreeData(): any[] {
             { label: t('delete'), key: 'messageBoard:delete', perms: ['messageBoard:delete'] },
           ],
         },
+        {
+          label: t('menu.interaction.vote'),
+          key: 'vote.key',
+          perms: ['vote:page', 'vote:list'],
+          children: [
+            { label: t('list'), key: 'vote:page' },
+            { label: t('add'), key: 'vote:create', perms: ['vote:create'] },
+            { label: t('edit'), key: 'vote:update', perms: ['vote:update', 'vote:show'] },
+            { label: t('delete'), key: 'vote:delete', perms: ['vote:delete'] },
+          ],
+        },
+        {
+          label: t('menu.interaction.survey'),
+          key: 'survey.key',
+          perms: ['survey:page', 'survey:list'],
+          children: [
+            { label: t('list'), key: 'survey:page' },
+            { label: t('add'), key: 'survey:create', perms: ['survey:create'] },
+            { label: t('edit'), key: 'survey:update', perms: ['survey:update', 'survey:show'] },
+            { label: t('delete'), key: 'survey:delete', perms: ['survey:delete'] },
+          ],
+        },
+        // {
+        //   label: t('menu.interaction.example'),
+        //   key: 'example.key',
+        //   perms: ['example:page', 'example:list'],
+        //   children: [
+        //     { label: t('list'), key: 'example:page' },
+        //     { label: t('add'), key: 'example:create', perms: ['example:create'] },
+        //     { label: t('edit'), key: 'example:update', perms: ['example:update', 'example:show'] },
+        //     { label: t('delete'), key: 'example:delete', perms: ['example:delete'] },
+        //   ],
+        // },
       ],
     },
     {
@@ -271,7 +304,7 @@ export function getPermsTreeData(): any[] {
           key: 'siteSettings.key',
           perms: ['siteSettings:show'],
           children: [
-            { label: t('site.settings.base'), key: 'siteSettings:base:update', perms: ['siteSettings:base:update'] },
+            { label: t('site.settings.base'), key: 'siteSettings:base:update', perms: ['siteSettings:base:update', 'site:theme'] },
             { label: t('site.settings.watermark'), key: 'siteSettings:watermark:update', perms: ['siteSettings:watermark:update'] },
             { label: t('site.settings.messageBoard'), key: 'siteSettings:messageBoard:update', perms: ['siteSettings:messageBoard:update'] },
             { label: t('site.settings.customs'), key: 'siteSettings:customs:update', perms: ['siteSettings:customs:update'] },
@@ -319,37 +352,37 @@ export function getPermsTreeData(): any[] {
       children: [
         {
           label: t('menu.stat.visitTrend'),
-          key: 'visitTrend.key',
+          key: 'visitTrend:page',
           perms: ['visitTrend:page', 'visitTrend:list'],
         },
         {
           label: t('menu.stat.visitedPage'),
-          key: 'visitedPage.key',
+          key: 'visitedPage:page',
           perms: ['visitedPage:page', 'visitedPage:list'],
         },
         {
           label: t('menu.stat.entryPage'),
-          key: 'entryPage.key',
+          key: 'entryPage:page',
           perms: ['entryPage:page', 'entryPage:list'],
         },
         {
           label: t('menu.stat.visitSource'),
-          key: 'visitSource.key',
+          key: 'visitSource:page',
           perms: ['visitSource:page', 'visitSource:list'],
         },
         {
           label: t('menu.stat.visitVisitor'),
-          key: 'visitVisitor.key',
+          key: 'visitVisitor:page',
           perms: ['visitVisitor:page', 'visitVisitor:list'],
         },
         {
           label: t('menu.stat.visitRegion'),
-          key: 'visitRegion.key',
+          key: 'visitRegion:page',
           perms: ['visitRegion:page', 'visitCountry:list', 'visitProvince:list'],
         },
         {
           label: t('menu.stat.visitEnv'),
-          key: 'visitEnv.key',
+          key: 'visitEnv:page',
           perms: ['visitEnv:page', 'visitDevice:list', 'visitOs:list', 'visitBrowser:list'],
         },
       ],
@@ -452,7 +485,7 @@ export function getPermsTreeData(): any[] {
         {
           label: t('menu.system.site'),
           key: 'site.key',
-          perms: ['site:page', 'site:list', 'org:list', 'model:list'],
+          perms: ['site:page', 'site:list', 'org:list', 'model:list', 'site:theme'],
           children: [
             { label: t('list'), key: 'site:page' },
             { label: t('add'), key: 'site:create', perms: ['site:create'] },
@@ -488,6 +521,28 @@ export function getPermsTreeData(): any[] {
           children: [
             { label: t('list'), key: 'processHistory:page' },
             { label: t('delete'), key: 'processHistory:delete', perms: ['processHistory:delete'] },
+          ],
+        },
+        {
+          label: t('menu.system.sensitiveWord'),
+          key: 'sensitiveWord.key',
+          perms: ['sensitiveWord:page', 'sensitiveWord:list'],
+          children: [
+            { label: t('list'), key: 'sensitiveWord:page' },
+            { label: t('add'), key: 'sensitiveWord:create', perms: ['sensitiveWord:create'] },
+            { label: t('edit'), key: 'sensitiveWord:update', perms: ['sensitiveWord:update', 'sensitiveWord:show'] },
+            { label: t('delete'), key: 'sensitiveWord:delete', perms: ['sensitiveWord:delete'] },
+          ],
+        },
+        {
+          label: t('menu.system.errorWord'),
+          key: 'errorWord.key',
+          perms: ['errorWord:page', 'errorWord:list'],
+          children: [
+            { label: t('list'), key: 'errorWord:page' },
+            { label: t('add'), key: 'errorWord:create', perms: ['errorWord:create'] },
+            { label: t('edit'), key: 'errorWord:update', perms: ['errorWord:update', 'errorWord:show'] },
+            { label: t('delete'), key: 'errorWord:delete', perms: ['errorWord:delete'] },
           ],
         },
         // {
@@ -560,7 +615,7 @@ export function getModelData(): any {
         { code: 'allowComment', must: false, show: true, double: true, required: true },
         { code: 'allowContribute', must: false, show: true, double: true, required: true },
         { code: 'allowSearch', must: false, show: true, double: true, required: true },
-        { code: 'text', must: false, show: false, double: false, required: false },
+        { code: 'text', must: false, show: false, double: false, required: false, type: 'editor', editorType: 1, editorSwitch: true },
       ],
       asides: [
         { code: 'parent', must: true, show: true, required: false },
@@ -607,6 +662,9 @@ export const logModules = [
   'fulltext',
   'html',
   'messageBoard',
+  'vote',
+  'survey',
+  'example',
   'webFileTemplate',
   'webFileUpload',
   'webFileHtml',
@@ -669,6 +727,18 @@ export const logNames = [
   'messageBoard.update',
   'messageBoard.updateStatus',
   'messageBoard.delete',
+
+  'vote.create',
+  'vote.update',
+  'vote.delete',
+
+  'survey.create',
+  'survey.update',
+  'survey.delete',
+
+  'example.create',
+  'example.update',
+  'example.delete',
 
   'webFileTemplate.create',
   'webFileTemplate.update',

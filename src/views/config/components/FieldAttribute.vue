@@ -133,7 +133,7 @@ const dictTypeChange = async () => {
   </template>
   <template v-if="['switch'].includes(field.type)">
     <el-form-item prop="defaultValue" :label="$t('model.field.defaultValue')">
-      <el-switch v-model="field.defaultValue" :active-value="field.activeValue" :inactive-value="field.inactiveValue"></el-switch>
+      <el-switch v-model="field.defaultValue"></el-switch>
     </el-form-item>
     <!--
     <el-form-item prop="activeValue" :label="$t('model.field.activeValue')" :rules="{ required: true, message: () => $t('v.required') }">

@@ -13,8 +13,7 @@
   "channel.type.1": "常规栏目",
   "channel.type.2": "单页栏目",
   "channel.type.3": "转向链接",
-  "channel.type.4": "链接到第一篇文章",
-  "channel.type.5": "链接到第一个子栏目",
+  "channel.type.4": "链接到第一个子栏目",
   "channel.processKey": "审核流程",
   "channel.linkUrl": "转向链接",
   "channel.linkUrl.tooltip": "外部转向链接格式为https://www.example.com，内部转向链接格式为/channel/12，不是转向链接请留空",
@@ -31,6 +30,7 @@
   "channel.allowSearch": "允许搜索",
   "channel.text": "正文",
   "channel.error.aliasPattern": "别名只能由英文字母、数字、下划线、中划线组成",
+  "channel.error.aliasExist": "栏目别名已经存在",
   "channel.error.linkUrl": "必须以 http 或 / 开头",
 
   "article.op.recommendTo": "推荐到",
@@ -117,6 +117,12 @@
   "article.error.leafChannelOnly": "只能选择末级栏目",
   "article.error.sticky": "请输入 0-999 之间的整数",
   "article.error.linkUrl": "必须以 http 或 / 开头",
+  "article.error.sensitiveWord.alert.title": "敏感词",
+  "article.error.sensitiveWord.alert.message": "发现敏感词 “{name}”，请修正后再提交！",
+  "article.error.errorWord.confirm": "正文中发现易错词 “{name}”，将修正为“{correct}”",
+  "article.error.errorWord.alert.title": "易错词",
+  "article.error.errorWord.alert.message": "发现易错词 “{name}”，建议修正为“{correct}”",
+
 
   "blockItem.block": "区块",
   "blockItem.article": "文章",

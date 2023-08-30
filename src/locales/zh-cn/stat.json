@@ -24,6 +24,10 @@
   "visitVisitor.uv": "访客数",
 
   "visitSource.name": "来源",
+  "visitSource.type.DIRECT": "直接访问",
+  "visitSource.type.INNER": "内部链接",
+  "visitSource.type.OUTER": "外部链接",
+  "visitSource.type.SEARCH": "搜索引擎",
   "visitDevice.name": "设备",
   "visitOs.name": "操作系统",
   "visitBrowser.name": "浏览器",

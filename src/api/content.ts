@@ -2,7 +2,7 @@ import axios from '@/utils/request';
 
 export const jodConvertDocUrl = `${import.meta.env.VITE_BASE_API}/backend/core/jod-convert/doc`;
 export const jodConvertLibraryUrl = `${import.meta.env.VITE_BASE_API}/backend/core/jod-convert/library`;
-export const queryjodConvertEnabled = async (): Promise<boolean> => (await axios.get('/backend/core/jod-convert/enabled')).data;
+export const queryJodConvertEnabled = async (): Promise<boolean> => (await axios.get('/backend/core/jod-convert/enabled')).data;
 
 export const queryChannelList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/channel', { params })).data;
 export const queryChannel = async (id: number): Promise<any> => (await axios.get(`/backend/core/channel/${id}`)).data;
@@ -13,6 +13,7 @@ export const deleteChannel = async (data: number[]): Promise<any> => (await axio
 export const queryChannelPermissions = async (): Promise<any> => (await axios.get('/backend/core/channel/channel-permissions')).data;
 export const queryChannelTemplates = async (): Promise<any> => (await axios.get('/backend/core/channel/channel-templates')).data;
 export const queryArticleTemplates = async (): Promise<any> => (await axios.get('/backend/core/channel/article-templates')).data;
+export const channelAliasExist = async (alias?: string): Promise<any> => (await axios.get('/backend/core/channel/alias-exist', { params: { alias } })).data;
 
 export const queryArticlePage = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/article', { params })).data;
 export const queryArticle = async (id: number): Promise<any> => (await axios.get(`/backend/core/article/${id}`)).data;

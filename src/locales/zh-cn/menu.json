@@ -21,6 +21,9 @@
 
   "menu.interaction": "互动",
   "menu.interaction.messageBoard": "留言管理",
+  "menu.interaction.vote": "投票管理",
+  "menu.interaction.survey": "调查问卷",
+  "menu.interaction.example": "示例管理",
 
   "menu.file": "文件",
   "menu.file.webFileTemplate": "模板文件",
@@ -65,6 +68,8 @@
   "menu.system.processInstance": "流程实例",
   "menu.system.processHistory": "历史流程",
   "menu.system.task": "任务管理",
+  "menu.system.sensitiveWord": "敏感词管理",
+  "menu.system.errorWord": "易错词管理",
 
   "": ""
 }

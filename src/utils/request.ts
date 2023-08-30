@@ -63,7 +63,7 @@ export const handleError = ({ timestamp, message, path, error, exception, trace,
     //没有当前站点权限，清空站点信息，刷新页面以获取默认站点
     removeSessionSiteId();
     window.location.reload();
-  } else if (exception === 'com.ujcms.util.web.exception.LogicException') {
+  } else if (exception === 'com.ujcms.commons.web.exception.LogicException') {
     ElMessageBox.alert(message, { type: 'warning' });
   } else if (status === 401) {
     removeAccessToken();

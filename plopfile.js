@@ -1,11 +1,16 @@
-// npm run plop user user page
-// npm run plop <子系统> <模块> <page|list>
+// npm run plop core user user page
+// npm run plop <子系统> <分类> <模块> <page|list>
 /* eslint-disable func-names */
 module.exports = function (plop) {
   // controller generator
   plop.setGenerator('view', {
     description: 'application views',
     prompts: [
+      {
+        type: 'input',
+        name: 'sub',
+        message: 'sub:',
+      },
       {
         type: 'input',
         name: 'path',

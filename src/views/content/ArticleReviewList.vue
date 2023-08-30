@@ -93,7 +93,7 @@ const handleTask = (id: string) => {
       }}</el-button>
       <column-setting name="article" class="ml-2" />
     </div>
-    <div class="app-block mt-3">
+    <div class="mt-3 app-block">
       <el-table ref="table" v-loading="tableLoading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)">
         <column-list name="article">
           <el-table-column type="selection" width="45"></el-table-column>
@@ -152,7 +152,7 @@ const handleTask = (id: string) => {
         :layout="pageLayout"
         small
         background
-        class="px-3 py-2 justify-end"
+        class="justify-end px-3 py-2"
         @size-change="() => fetchData()"
         @current-change="() => fetchData()"
       ></el-pagination>

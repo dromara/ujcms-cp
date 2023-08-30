@@ -56,7 +56,7 @@ watch(visible, () => {
     :bean-id="beanId"
     :bean-ids="beanIds"
     :focus="focus"
-    :init-values="(): any => ({orgId:org?.id, gender: 'm', roleIds: [] })"
+    :init-values="(): any => ({orgId:org?.id, gender: 0, roleIds: [] })"
     :to-values="(bean: any) => ({ ...bean })"
     :disable-delete="(bean: any) => bean.id <= 1"
     :disable-edit="(bean) => currentUser.rank > bean.rank"

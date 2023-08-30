@@ -31,6 +31,7 @@ const filtered = ref<boolean>(false);
 const parent = ref<any>();
 const channelPermissions = ref<number[]>([]);
 const processList = ref<any[]>([]);
+const expandRowKeys = ref<string[]>([]);
 
 const deletable = (bean: any) => currentUser.allChannelPermission || channelPermissions.value.includes(bean.id);
 
@@ -55,18 +56,26 @@ const fetchChannelPermissions = async () => {
   channelPermissions.value = await queryChannelPermissions();
 };
 onMounted(() => {
-  fetchData();
+  fetchData().then(() => {
+    if (!filtered.value) {
+      expandRowKeys.value = data.value.map((it) => String(it.id));
+    }
+  });
   fetchProcessList();
   fetchChannelPermissions();
 });
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
-  if (prop) {
+  if (prop && order) {
     sort.value = (column.sortBy ?? prop) + (order === 'descending' ? '_desc' : '');
   } else {
     sort.value = undefined;
   }
   fetchData();
+};
+const handleFinished = () => {
+  fetchData();
+  fetchChannelPermissions();
 };
 const handleSearch = () => fetchData();
 const handleReset = () => {
@@ -118,29 +127,44 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
       <list-move :disabled="selection.length <= 0 || filtered || perm('channel:update')" class="ml-2" @move="(type) => move(selection, type)" />
       <column-setting name="channel" class="ml-2" />
     </div>
-    <div class="app-block mt-3">
+    <div class="mt-3 app-block">
       <el-table
         ref="table"
         v-loading="loading"
         row-key="id"
-        default-expand-all
         :data="data"
+        :expand-row-keys="expandRowKeys"
         @selection-change="(rows) => (selection = rows)"
         @row-dblclick="(row) => handleEdit(row.id)"
         @sort-change="handleSort"
       >
         <column-list name="channel">
           <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-          <el-table-column property="name" :label="$t('channel.name')" sortable="custom" show-overflow-tooltip>
-            <template #default="{ row }">{{ filtered ? row.names.join(' / ') : row.name }}</template>
+          <el-table-column property="name" :label="$t('channel.name')" min-width="120" sortable="custom" show-overflow-tooltip>
+            <template #default="{ row }">{{ filtered ? row.names?.join(' / ') : row.name }}</template>
           </el-table-column>
-          <el-table-column property="alias" :label="$t('channel.alias')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="channelModel.name" :label="$t('channel.channelModel')" display="none" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="articleModel.name" :label="$t('channel.articleModel')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="processKey" :label="$t('channel.processKey')" sortable="custom" show-overflow-tooltip>
+          <el-table-column property="alias" :label="$t('channel.alias')" min-width="80" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column
+            property="channelModel.name"
+            :label="$t('channel.channelModel')"
+            sort-by="channelModel@model-name"
+            display="none"
+            sortable="custom"
+            min-width="60"
+            show-overflow-tooltip
+          ></el-table-column>
+          <el-table-column
+            property="articleModel.name"
+            :label="$t('channel.articleModel')"
+            sort-by="articleModel@model-name"
+            sortable="custom"
+            min-width="60"
+            show-overflow-tooltip
+          ></el-table-column>
+          <el-table-column property="processKey" :label="$t('channel.processKey')" min-width="60" sortable="custom" show-overflow-tooltip>
             <template #default="{ row }">{{ processList.find((item) => item.key === row.processKey)?.name }}</template>
           </el-table-column>
-          <el-table-column property="nav" :label="$t('channel.nav')">
+          <el-table-column property="nav" :label="$t('channel.nav')" min-width="40">
             <template #default="{ row }">
               <el-tag :type="row.nav ? 'success' : 'info'" size="small">{{ $t(row.nav ? 'yes' : 'no') }}</el-tag>
             </template>
@@ -160,6 +184,6 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
         </column-list>
       </el-table>
     </div>
-    <channel-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" :parent="parent" @finished="fetchData" />
+    <channel-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" :parent="parent" @finished="handleFinished" />
   </div>
 </template>

@@ -126,16 +126,16 @@ const handleSubmit = async () => {
             </draggable>
           </el-scrollbar>
         </el-aside>
-        <el-container class="border-r border-l">
+        <el-container class="border-l border-r">
           <el-header height="auto" class="px-2 py-1">
             <el-button :loading="buttonLoading" type="primary" @click.prevent="handleSubmit">{{ $t('save') }}</el-button>
           </el-header>
-          <el-main class="border-t p-0">
-            <el-scrollbar class="drawing-board h-full p-2">
+          <el-main class="p-0 border-t">
+            <el-scrollbar class="h-full p-2 drawing-board">
               <el-form :model="drawingFormData" label-width="150px" class="h-full">
                 <draggable
                   :list="customs"
-                  class="min-h-full content-start mx-0"
+                  class="content-start min-h-full mx-0"
                   tag="el-row"
                   :component-data="{ gutter: 8 }"
                   :animation="250"
@@ -146,7 +146,7 @@ const handleSubmit = async () => {
                 >
                   <template #item="{ element: field }">
                     <el-col :span="field.double ? 12 : 24" class="relative">
-                      <el-form-item :prop="field.code" :required="field.required" class="mb-0 py-3">
+                      <el-form-item :required="field.required" :show-message="false" class="py-3 mb-0">
                         <template #label><label-tip :label="field.name" /></template>
                         <field-item v-model="field.defaultValue" v-model:model-key="field.defaultValueKey" :field="field"></field-item>
                       </el-form-item>
@@ -164,7 +164,7 @@ const handleSubmit = async () => {
             </el-scrollbar>
           </el-main>
         </el-container>
-        <el-aside class="right-panel w-64">
+        <el-aside class="w-64 right-panel">
           <el-scrollbar class="h-full pt-0.5 pb-3">
             <el-tabs v-model="currentTab" stretch>
               <el-tab-pane :label="$t('model.attribute')" name="attribute" class="px-2">

@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import echarts, { ECOption } from '@/utils/echarts';
 import { queryContentStat } from '@/api/personal';
-import { queryTrendStat, queryVisitorStat, queryProvinceStat } from '@/api/stat';
+import { queryTrendStat, queryVisitorStat, querySourceTypeStat } from '@/api/stat';
 
 const { t, n } = useI18n();
 dayjs.extend(duration);
@@ -52,26 +52,61 @@ const initTrendChart = async () => {
   });
 };
 
-const provinceChart = shallowRef<HTMLElement>();
-const initProvinceChart = async () => {
-  const list = await queryProvinceStat({ begin: dayjs().subtract(30, 'day').format('YYYY-MM-DD'), end: dayjs().format('YYYY-MM-DD') });
-  const total = list.reduce((acc, curr) => acc + curr.pvCount, 0);
+// const provinceChart = shallowRef<HTMLElement>();
+// const initProvinceChart = async () => {
+//   const list = await queryProvinceStat({ begin: dayjs().subtract(30, 'day').format('YYYY-MM-DD'), end: dayjs().format('YYYY-MM-DD') });
+//   const total = list.reduce((acc, curr) => acc + curr.pvCount, 0);
+//   const option: ECOption = {
+//     title: { text: t('menu.stat.visitRegion'), textStyle: { color: '#909399', fontWeight: 'normal', fontSize: 16 } },
+//     tooltip: { trigger: 'item', valueFormatter: (value: any) => n((value * 100) / total, 'decimal') + '%' },
+//     legend: { type: 'scroll', orient: 'vertical', right: '10%', top: 16, bottom: 16 },
+//     series: [
+//       {
+//         name: t('menu.stat.visitRegion'),
+//         type: 'pie',
+//         radius: '72%',
+//         center: ['40%', '56%'],
+//         data: list.map((item) => ({ value: item.pvCount, name: item.name })),
+//       },
+//     ],
+//   };
+//   const chartDom = provinceChart.value;
+//   if (chartDom == null) {
+//     return;
+//   }
+//   let chart = echarts.getInstanceByDom(chartDom);
+//   if (chart == null) {
+//     chart = echarts.init(chartDom);
+//   }
+//   chart.setOption(option);
+//   window.addEventListener('resize', function () {
+//     chart && chart.resize();
+//   });
+// };
+
+const sourceTypeChart = shallowRef<HTMLElement>();
+const initSourceTypeChart = async () => {
+  const list = await querySourceTypeStat({ begin: dayjs().subtract(30, 'day').format('YYYY-MM-DD'), end: dayjs().format('YYYY-MM-DD') });
   const option: ECOption = {
-    title: { text: t('menu.stat.visitRegion'), textStyle: { color: '#909399', fontWeight: 'normal', fontSize: 16 } },
-    tooltip: { trigger: 'item', valueFormatter: (value: any) => n((value * 100) / total, 'decimal') + '%' },
+    title: { text: t('menu.stat.visitSource'), textStyle: { color: '#909399', fontWeight: 'normal', fontSize: 16 } },
     legend: { type: 'scroll', orient: 'vertical', right: '10%', top: 16, bottom: 16 },
+    tooltip: { trigger: 'item', valueFormatter: (value: any) => n(value) },
     series: [
       {
-        name: t('menu.stat.visitRegion'),
+        name: t('menu.stat.visitSource'),
         type: 'pie',
-        radius: '72%',
-        center: ['40%', '56%'],
-        data: list.map((item) => ({ value: item.pvCount, name: item.name })),
+        radius: ['44%', '80%'],
+        center: ['40%', '54%'],
+        avoidLabelOverlap: false,
+        itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+        label: { show: false },
+        emphasis: { label: { show: false } },
+        labelLine: { show: false },
+        data: list.map((item) => ({ value: item.pvCount, name: t(`visitSource.type.${item.name}`) })),
       },
     ],
   };
-
-  const chartDom = provinceChart.value;
+  const chartDom = sourceTypeChart.value;
   if (chartDom == null) {
     return;
   }
@@ -108,7 +143,8 @@ const fetchContentStat = async () => {
 
 onMounted(async () => {
   initTrendChart();
-  initProvinceChart();
+  // initProvinceChart();
+  initSourceTypeChart();
   fetchVisitorStat();
   fetchContentStat();
 });
@@ -253,7 +289,7 @@ onMounted(async () => {
               <el-row :gutter="24">
                 <el-col :span="12" class="text-right">{{ $t('visit.averageDuration') }}</el-col>
                 <el-col :span="12">
-                  <span v-if="newVisitor.uvCount > 0">{{ dayjs.duration(oldVisitor.duration / oldVisitor.uvCount, 'seconds').format('HH:mm:ss') }}</span>
+                  <span v-if="oldVisitor.uvCount > 0">{{ dayjs.duration(oldVisitor.duration / oldVisitor.uvCount, 'seconds').format('HH:mm:ss') }}</span>
                   <span v-else>-</span>
                 </el-col>
               </el-row>
@@ -270,7 +306,8 @@ onMounted(async () => {
       </el-col>
       <el-col :span="12">
         <div class="p-3 mt-3 app-block">
-          <div ref="provinceChart" class="w-full h-64"></div>
+          <!-- <div ref="provinceChart" class="w-full h-64"></div> -->
+          <div ref="sourceTypeChart" class="w-full h-64"></div>
         </div>
       </el-col>
     </el-row>

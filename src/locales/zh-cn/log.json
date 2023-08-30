@@ -118,6 +118,21 @@
   "log.messageBoard.updateStatus": "修改留言状态",
   "log.messageBoard.delete": "删除留言",
 
+  "log.vote": "投票管理",
+  "log.vote.create": "新增投票",
+  "log.vote.update": "修改投票",
+  "log.vote.delete": "删除投票",
+
+  "log.survey": "调查问卷管理",
+  "log.survey.create": "新增调查问卷",
+  "log.survey.update": "修改调查问卷",
+  "log.survey.delete": "删除调查问卷",
+
+  "log.example": "示例管理",
+  "log.example.create": "新增示例",
+  "log.example.update": "修改示例",
+  "log.example.delete": "删除示例",
+
   "log.webFileTemplate": "模板文件",
   "log.webFileTemplate.create": "新建文件",
   "log.webFileTemplate.update": "修改文件",
@@ -204,6 +219,7 @@
   "log.role.create": "新增角色",
   "log.role.update": "修改角色",
   "log.role.updateOrder": "修改角色顺序",
+  "log.role.updatePermission": "修改角色权限",
   "log.role.delete": "删除角色",
 
   "log.org": "组织管理",

@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie';
+import { findTreeItem } from './tree';
 
 const UJCMS_LOCALE = 'ujcms-locale';
 const UJCMS_SITE_ID = 'ujcms-site-id';
@@ -63,6 +64,7 @@ export const moveTreeList = (selected: any[], data: any[], type: 'top' | 'up' | 
     .sort((a, b) => a.order - b.order)
     .map((item) => item.id);
   const list = data.filter((item) => item.parentId === parentId).map((item) => item.id);
+  console.log(parentId, ids, list, data);
   const top = 0;
   const bottom = list.length;
   let up = list.indexOf(ids[0]);

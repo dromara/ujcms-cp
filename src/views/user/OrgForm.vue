@@ -15,7 +15,7 @@ const props = defineProps({
   parentId: { type: Number, required: true },
   showGlobalData: { type: Boolean, required: true },
 });
-const { showGlobalData, modelValue: visible } = toRefs(props);
+const { parentId, beanId, showGlobalData, modelValue: visible } = toRefs(props);
 const emit = defineEmits({ 'update:modelValue': null, finished: null });
 
 const focus = ref<any>();
@@ -47,7 +47,7 @@ watch(visible, () => {
     :bean-id="beanId"
     :bean-ids="beanIds"
     :focus="focus"
-    :init-values="(bean: any): any => ({ parentId: bean?.id !== parentId ? (bean?.parentId ?? parentId) : parentId})"
+    :init-values="(bean: any): any => ({ parentId: parentId})"
     :to-values="(bean) => ({ ...bean })"
     :disable-delete="(bean) => bean.id <= 1 || bean.id === orgList[0]?.id"
     perms="org"

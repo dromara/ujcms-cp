@@ -1,5 +1,5 @@
 <script lang="ts">
-export default { name: 'TagList' };
+export default { name: 'ExampleList' };
 </script>
 
 <script setup lang="ts">
@@ -10,10 +10,10 @@ import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
 import { perm } from '@/store/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
-import { deleteTag, queryTagPage } from '@/api/content';
+import { deleteExample, queryExamplePage } from '@/api/interaction';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
-import TagForm from './TagForm.vue';
+import ExampleForm from './ExampleForm.vue';
 
 const { t } = useI18n();
 const params = ref<any>({});
@@ -31,7 +31,7 @@ const beanIds = computed(() => data.value.map((row) => row.id));
 const fetchData = async () => {
   loading.value = true;
   try {
-    const { content, totalElements } = await queryTagPage({ ...toParams(params.value), Q_OrderBy: sort.value, page: currentPage.value, pageSize: pageSize.value });
+    const { content, totalElements } = await queryExamplePage({ ...toParams(params.value), Q_OrderBy: sort.value, page: currentPage.value, pageSize: pageSize.value });
     data.value = content;
     total.value = totalElements;
   } finally {
@@ -65,7 +65,7 @@ const handleEdit = (id: number) => {
   formVisible.value = true;
 };
 const handleDelete = async (ids: number[]) => {
-  await deleteTag(ids);
+  await deleteExample(ids);
   fetchData();
   ElMessage.success(t('success'));
 };
@@ -74,37 +74,45 @@ const handleDelete = async (ids: number[]) => {
 <template>
   <div>
     <div class="mb-3">
-      <query-form :params="params" @search="handleSearch" @reset="handleReset">
-        <query-item :label="$t('tag.name')" name="Q_Contains_name"></query-item>
+      <query-form :params="params" @search="handleSearch" @reset="() => handleReset()">
+        <query-item :label="$t('example.name')" name="Q_Contains_name"></query-item>
+        <query-item :label="$t('example.description')" name="Q_Contains_description"></query-item>
+        <query-item :label="$t('example.height')" name="Q_GE_height_Int,Q_LE_height_Int" type="number"></query-item>
+        <query-item :label="$t('example.birthday')" name="Q_GE_birthday_DateTime,Q_LE_birthday_DateTime" type="datetime"></query-item>
+        <query-item :label="$t('example.enabled')" name="Q_In_enabled" :options="['1', '0'].map((item) => ({ label: $t(item === '1' ? 'yes' : 'no'), value: item }))"></query-item>
       </query-form>
     </div>
     <div>
-      <el-button type="primary" :disabled="perm('tag:create')" :icon="Plus" @click="() => handleAdd()">{{ $t('add') }}</el-button>
+      <el-button type="primary" :disabled="perm('example:create')" :icon="Plus" @click="() => handleAdd()">{{ $t('add') }}</el-button>
       <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete(selection.map((row) => row.id))">
         <template #reference>
-          <el-button :disabled="selection.length <= 0 || perm('tag:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
+          <el-button :disabled="selection.length <= 0 || perm('example:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
         </template>
       </el-popconfirm>
-      <column-setting name="tag" class="ml-2" />
+      <column-setting name="example" class="ml-2" />
     </div>
-    <div class="app-block mt-3">
+    <div class="mt-3 app-block">
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
-        <column-list name="tag">
+        <column-list name="example">
           <el-table-column type="selection" width="45"></el-table-column>
           <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
-          <el-table-column property="name" :label="$t('tag.name')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="description" :label="$t('tag.description')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="created" :label="$t('tag.created')" sortable="custom" show-overflow-tooltip>
-            <template #default="{ row }">{{ dayjs(row.created).format('YYYY-MM-DD HH:mm') }}</template>
+          <el-table-column property="name" :label="$t('example.name')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="description" :label="$t('example.description')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="height" :label="$t('example.height')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="birthday" :label="$t('example.birthday')" sortable="custom" show-overflow-tooltip>
+            <template #default="{ row }">{{ dayjs(row.publishDate).format('YYYY-MM-DD HH:mm') }}</template>
           </el-table-column>
-          <el-table-column property="user.username" :label="$t('tag.user')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="refers" :label="$t('tag.refers')" sortable="refers" show-overflow-tooltip></el-table-column>
+          <el-table-column property="enabled" :label="$t('example.enabled')" sortable="custom">
+            <template #default="{ row }">
+              <el-tag :type="row.enabled ? 'success' : 'info'" size="small">{{ $t(row.enabled ? 'yes' : 'no') }}</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">
-              <el-button type="primary" :disabled="perm('tag:update')" size="small" link @click="() => handleEdit(row.id)">{{ $t('edit') }}</el-button>
+              <el-button type="primary" :disabled="perm('example:update')" size="small" link @click="() => handleEdit(row.id)">{{ $t('edit') }}</el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
                 <template #reference>
-                  <el-button type="primary" :disabled="perm('tag:delete')" size="small" link>{{ $t('delete') }}</el-button>
+                  <el-button type="primary" :disabled="perm('example:delete')" size="small" link>{{ $t('delete') }}</el-button>
                 </template>
               </el-popconfirm>
             </template>
@@ -117,13 +125,13 @@ const handleDelete = async (ids: number[]) => {
         :total="total"
         :page-sizes="pageSizes"
         :layout="pageLayout"
+        class="justify-end px-3 py-2"
         small
         background
-        class="px-3 py-2 justify-end"
         @size-change="() => fetchData()"
         @current-change="() => fetchData()"
       ></el-pagination>
     </div>
-    <tag-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" @finished="fetchData" />
+    <example-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" @finished="fetchData" />
   </div>
 </template>

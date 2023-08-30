@@ -76,9 +76,27 @@ export const routes: Array<RouteRecordRaw> = [
       {
         path: 'message-board',
         name: 'MessageBoardList',
-        component: () => import('@/views/EnterprisePage.vue'),
+        component: () => import('@/views/interaction/MessageBoardList.vue'),
         meta: { title: 'menu.interaction.messageBoard', requiresPermission: 'messageBoard:page' },
       },
+      {
+        path: 'vote',
+        name: 'VoteList',
+        component: () => import('@/views/interaction/VoteList.vue'),
+        meta: { title: 'menu.interaction.vote', requiresPermission: 'vote:page' },
+      },
+      {
+        path: 'survey',
+        name: 'SurveyList',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.interaction.survey', requiresPermission: 'survey:page' },
+      },
+      // {
+      //   path: 'example',
+      //   name: 'ExampleList',
+      //   component: () => import('@/views/interaction/ExampleList.vue'),
+      //   meta: { title: 'menu.interaction.example', requiresPermission: 'example:page' },
+      // },
     ],
   },
   {
@@ -207,13 +225,13 @@ export const routes: Array<RouteRecordRaw> = [
       {
         path: 'login-log',
         name: 'LoginLogList',
-        component: () => import('@/views/EnterprisePage.vue'),
+        component: () => import('@/views/log/LoginLogList.vue'),
         meta: { title: 'menu.log.loginLog', requiresPermission: 'loginLog:page' },
       },
       {
         path: 'operation-log',
         name: 'OperationLogList',
-        component: () => import('@/views/EnterprisePage.vue'),
+        component: () => import('@/views/log/OperationLogList.vue'),
         meta: { title: 'menu.log.operationLog', requiresPermission: 'operationLog:page' },
       },
     ],
@@ -241,6 +259,18 @@ export const routes: Array<RouteRecordRaw> = [
         name: 'ProcessHistoryList',
         component: () => import('@/views/EnterprisePage.vue'),
         meta: { title: 'menu.system.processHistory', requiresPermission: 'processHistory:page' },
+      },
+      {
+        path: 'sensitive-word',
+        name: 'SensitiveWordList',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.system.sensitiveWord', requiresPermission: 'sensitiveWord:page' },
+      },
+      {
+        path: 'error-word',
+        name: 'ErrorWordList',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.system.errorWord', requiresPermission: 'errorWord:page' },
       },
       // { path: 'task', name: 'TaskList', component: () => import('@/views/system/TaskList.vue'), meta: { title: 'menu.system.task', requiresPermission: 'task:page' } },
     ],

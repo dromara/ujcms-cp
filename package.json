@@ -1,6 +1,6 @@
 {
   "name": "ujcms-cp",
-  "version": "7.0.4",
+  "version": "8.0.2",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -50,7 +50,7 @@
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
-    "@intlify/unplugin-vue-i18n": "^0.9.2",
+    "@intlify/unplugin-vue-i18n": "^0.12.2",
     "@types/crypto-js": "^4.1.1",
     "@types/file-saver": "^2.0.5",
     "@types/js-cookie": "^3.0.1",

@@ -9,6 +9,7 @@ import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import { moveTreeList, toParams, resetParams } from '@/utils/common';
+import { toTree, flatTree, findTreeItem } from '@/utils/tree';
 import { deleteOrg, queryOrgList, updateOrgOrder } from '@/api/user';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
@@ -28,12 +29,16 @@ const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
 const parentId = ref<number>(1);
 const showGlobalData = ref<boolean>(false);
+const expandRowKeys = ref<string[]>(['1']);
 
 const fetchData = async () => {
   loading.value = true;
   try {
     data.value = await queryOrgList({ ...toParams(params.value), current: !showGlobalData.value, Q_OrderBy: sort.value });
     filtered.value = Object.values(params.value).filter((v) => v !== undefined && v !== '').length > 0 || sort.value !== undefined;
+    if (!filtered.value) {
+      data.value = toTree(data.value);
+    }
     parentId.value = data.value[0]?.id;
   } finally {
     loading.value = false;
@@ -42,7 +47,7 @@ const fetchData = async () => {
 onMounted(fetchData);
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
-  if (prop) {
+  if (prop && order) {
     sort.value = (column.sortBy ?? prop) + (order === 'descending' ? '_desc' : '');
   } else {
     sort.value = undefined;
@@ -69,6 +74,7 @@ const handleEdit = (id: number) => {
   formVisible.value = true;
 };
 const handleDelete = async (ids: number[]) => {
+  console.log(ids);
   await deleteOrg(ids);
   fetchData();
   ElMessage.success(t('success'));
@@ -76,11 +82,11 @@ const handleDelete = async (ids: number[]) => {
 const deletable = (bean: any) => bean.id > 1;
 
 const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => {
-  const list = moveTreeList(selected, data.value, type);
+  const list = moveTreeList(selected, flatTree(data.value), type);
   await updateOrgOrder(list);
   await fetchData();
   selected.forEach((row) => {
-    table.value.toggleRowSelection(data.value.find((item) => item.id === row.id));
+    table.value.toggleRowSelection(findTreeItem(data.value, (item) => item.id === row.id));
   });
 };
 </script>
@@ -103,29 +109,30 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
         </template>
       </el-popconfirm>
       <list-move class="ml-2" :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" />
-      <el-checkbox v-if="currentUser.globalPermission" v-model="showGlobalData" class="ml-2 align-middle" :label="$t('globalData')" border @change="() => fetchData()" />
+      <el-checkbox v-if="currentUser.globalPermission" v-model="showGlobalData" class="ml-2 align-middle" :label="$t('globalData')" :border="true" @change="() => fetchData()" />
       <column-setting name="org" class="ml-2" />
     </div>
-    <div class="app-block mt-3">
+    <div class="mt-3 app-block">
       <el-table
         ref="table"
         v-loading="loading"
         row-key="id"
         :data="data"
+        :expand-row-keys="expandRowKeys"
         @selection-change="(rows) => (selection = rows)"
         @row-dblclick="(row) => handleEdit(row.id)"
         @sort-change="handleSort"
       >
         <column-list name="org">
           <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('org.name')" sortable="custom" min-width="120" show-overflow-tooltip>
-            <template #default="{ row }">{{ row.names.join(' / ') }}</template>
+            <template #default="{ row }">{{ filtered ? row.names?.join(' / ') : row.name }}</template>
           </el-table-column>
           <el-table-column property="address" :label="$t('org.address')" sortable="custom" display="none" min-width="100" show-overflow-tooltip></el-table-column>
           <el-table-column property="phone" :label="$t('org.phone')" sortable="custom" min-width="100" show-overflow-tooltip></el-table-column>
           <el-table-column property="contacts" :label="$t('org.contacts')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column :label="$t('table.action')">
+          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column :label="$t('table.action')" width="160">
             <template #default="{ row }">
               <el-button type="primary" :disabled="perm('org:create')" size="small" link @click="() => handleAdd(row.id)">{{ $t('addChild') }}</el-button>
               <el-button type="primary" :disabled="perm('org:update')" size="small" link @click="() => handleEdit(row.id)">{{ $t('edit') }}</el-button>

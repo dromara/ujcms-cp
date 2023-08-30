@@ -75,7 +75,7 @@ export default defineComponent({
     const { disabled, modelValue } = toRefs(props);
     const { t } = useI18n();
     const element = ref<any>();
-    let vueEditor: any = null;
+    const vueEditor = ref<any>();
     const elementId: string = props.id || uuid('tiny-vue');
     const inlineEditor: boolean = (props.init && props.init.inline) || props.inline;
     let mounting = true;
@@ -157,6 +157,8 @@ export default defineComponent({
 
           const formData = new FormData();
           formData.append('file', blobInfo.blob(), blobInfo.filename());
+          // 需要水印
+          formData.append('isWatermark', 'true');
 
           Object.entries(getAuthHeaders()).forEach(([key, value]: any) => xhr.setRequestHeader(key, value));
           xhr.send(formData);
@@ -255,7 +257,7 @@ export default defineComponent({
         // toolbar: props.toolbar || (props.init && props.init.toolbar),
         inline: inlineEditor,
         setup: (editor: any) => {
-          vueEditor = editor;
+          vueEditor.value = editor;
           editor.on('init', (e: Event) => initEditor(e, props, ctx, editor, modelValue, formItem));
           if (props.init && typeof props.init.setup === 'function') {
             props.init.setup(editor);
@@ -344,15 +346,15 @@ export default defineComponent({
       mounting = false;
     };
     watch(disabled, () => {
-      if (vueEditor != null) {
-        vueEditor.setMode(disabled.value ? 'readonly' : 'design');
+      if (vueEditor.value != null) {
+        vueEditor.value.setMode(disabled.value ? 'readonly' : 'design');
       }
     });
     onMounted(async () => {
       initWrapper();
     });
     onBeforeUnmount(() => {
-      tinymce.remove(vueEditor);
+      tinymce.remove(vueEditor.value);
     });
     if (!inlineEditor) {
       onActivated(() => {
@@ -361,10 +363,10 @@ export default defineComponent({
         }
       });
       onDeactivated(() => {
-        tinymce.remove(vueEditor);
+        tinymce.remove(vueEditor.value);
       });
     }
-    return { element, elementId };
+    return { element, elementId, editor: vueEditor };
   },
 });
 </script>

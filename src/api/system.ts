@@ -1,6 +1,6 @@
 import axios from '@/utils/request';
 
-export const queryCurrentSite = async (): Promise<any> => (await axios.get(`/backend/core/site/current`)).data;
+export const queryCurrentSite = async (): Promise<any> => (await axios.get('/backend/core/site/current')).data;
 
 export const querySiteList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/site', { params })).data;
 export const querySite = async (id: number): Promise<any> => (await axios.get(`/backend/core/site/${id}`)).data;
@@ -43,3 +43,17 @@ export const deleteProcessInstance = async (data: string[]): Promise<any> => (aw
 
 export const queryProcessHistoryList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/process-history', { params })).data;
 export const deleteProcessHistory = async (data: string[]): Promise<any> => (await axios.post('/backend/core/process-history?_method=delete', data)).data;
+
+export const querySensitiveWordPage = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/sensitive-word', { params })).data;
+export const querySensitiveWord = async (id: number): Promise<any> => (await axios.get(`/backend/core/sensitive-word/${id}`)).data;
+export const createSensitiveWord = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/sensitive-word', data)).data;
+export const updateSensitiveWord = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/sensitive-word?_method=put', data)).data;
+export const deleteSensitiveWord = async (data: number[]): Promise<any> => (await axios.post('/backend/core/sensitive-word?_method=delete', data)).data;
+export const validateSensitiveWord = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/sensitive-word/validate-sensitive-word', data)).data;
+
+export const queryErrorWordPage = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/error-word', { params })).data;
+export const queryErrorWord = async (id: number): Promise<any> => (await axios.get(`/backend/core/error-word/${id}`)).data;
+export const createErrorWord = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/error-word', data)).data;
+export const updateErrorWord = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/error-word?_method=put', data)).data;
+export const deleteErrorWord = async (data: number[]): Promise<any> => (await axios.post('/backend/core/error-word?_method=delete', data)).data;
+export const validateErrorWord = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/error-word/validate-error-word', data)).data;

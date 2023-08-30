@@ -42,7 +42,7 @@ onMounted(fetchData);
 const disabled = (bean: any): boolean => (bean.global && !currentUser.globalPermission) || currentUser.rank > bean.rank;
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
-  if (prop) {
+  if (prop && order) {
     sort.value = (column.sortBy ?? prop) + (order === 'descending' ? '_desc' : '');
   } else {
     sort.value = undefined;

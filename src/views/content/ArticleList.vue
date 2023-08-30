@@ -148,7 +148,7 @@ onMounted(() => {
 });
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
-  if (prop) {
+  if (prop && order) {
     sort.value = (column.sortBy ?? prop) + (order === 'descending' ? '_desc' : '');
   } else {
     sort.value = undefined;
@@ -246,7 +246,7 @@ const cancelSticky = async (id: number) => {
 
 <template>
   <el-container>
-    <el-aside width="200px" class="pr-3">
+    <el-aside width="220px" class="pr-3">
       <el-scrollbar class="p-2 bg-white rounded-sm">
         <div class="mb-1 ml-2">
           <el-button
@@ -288,7 +288,7 @@ const cancelSticky = async (id: number) => {
           <query-item :label="$t('article.publishDate')" name="Q_GE_publishDate_DateTime,Q_LE_publishDate_DateTime" type="datetime"></query-item>
           <query-item
             :label="$t('article.status')"
-            name="Q_In_status_Int"
+            name="Q_In_status_Short"
             :options="[0, 1, 10, 11, 12, 15, 20, 21, 22].map((item) => ({ label: $t(`article.status.${item}`), value: item }))"
           ></query-item>
           <query-item
@@ -349,7 +349,17 @@ const cancelSticky = async (id: number) => {
                 >
                   {{ item.block.name }}
                 </el-tag>
-                <el-tag v-if="row.sticky > 0" type="danger" class="mx-1" effect="light" size="small" round :closable="!perm('article:sticky')" @close="() => cancelSticky(row.id)">
+                <el-tag
+                  v-if="row.sticky > 0"
+                  type="danger"
+                  class="mx-1"
+                  effect="light"
+                  :title="$t('article.sticky')"
+                  size="small"
+                  round
+                  :closable="!perm('article:sticky')"
+                  @close="() => cancelSticky(row.id)"
+                >
                   {{ row.sticky }}
                 </el-tag>
                 <el-tooltip v-if="row.srcId != null" placement="top">
@@ -363,16 +373,31 @@ const cancelSticky = async (id: number) => {
               </template>
             </el-table-column>
             <el-table-column property="channel.name" :label="$t('article.channel')" sort-by="channel-name" sortable="custom" show-overflow-tooltip></el-table-column>
-            <el-table-column property="org.name" :label="$t('article.org')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
-            <el-table-column property="author" :label="$t('article.author')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
-            <el-table-column property="editor" :label="$t('article.editor')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
-            <el-table-column property="source" :label="$t('article.source')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
+            <el-table-column property="org.name" :label="$t('article.org')" sort-by="org-name" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
+            <el-table-column property="author" :label="$t('article.author')" sort-by="@articleExt-author" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
+            <el-table-column property="editor" :label="$t('article.editor')" sort-by="@articleExt-editor" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
+            <el-table-column property="source" :label="$t('article.source')" sort-by="@articleExt-source" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
             <el-table-column property="user.username" :label="$t('article.user')" sort-by="user-username" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
-            <el-table-column property="created" :label="$t('article.created')" min-width="120" sortable="custom" display="none" show-overflow-tooltip>
+            <el-table-column property="created" :label="$t('article.created')" sort-by="@articleExt-created" min-width="120" sortable="custom" display="none" show-overflow-tooltip>
               <template #default="{ row }">{{ dayjs(row.created).format('YYYY-MM-DD HH:mm') }}</template>
             </el-table-column>
-            <el-table-column property="modifiedUser.username" :label="$t('article.modifiedUser')" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
-            <el-table-column property="modified" :label="$t('article.modified')" min-width="120" sortable="custom" display="none" show-overflow-tooltip>
+            <el-table-column
+              property="modifiedUser.username"
+              :label="$t('article.modifiedUser')"
+              sort-by="modifiedUser@user-username"
+              sortable="custom"
+              display="none"
+              show-overflow-tooltip
+            ></el-table-column>
+            <el-table-column
+              property="modified"
+              :label="$t('article.modified')"
+              sort-by="@articleExt-modified"
+              min-width="120"
+              sortable="custom"
+              display="none"
+              show-overflow-tooltip
+            >
               <template #default="{ row }">{{ dayjs(row.modified).format('YYYY-MM-DD HH:mm') }}</template>
             </el-table-column>
             <el-table-column property="publishDate" :label="$t('article.publishDate')" min-width="120" sortable="custom" show-overflow-tooltip>
