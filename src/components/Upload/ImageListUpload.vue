@@ -7,7 +7,7 @@ import draggable from 'vuedraggable';
 import { handleError } from '@/utils/request';
 import { getAuthHeaders } from '@/utils/auth';
 import { getSiteHeaders } from '@/utils/common';
-import { uploadSettings } from '@/store/useConfig';
+import { useSysConfigStore } from '@/stores/sysConfigStore';
 import { imageUploadUrl } from '@/api/config';
 import ImageCropper from './ImageCropper.vue';
 
@@ -25,6 +25,7 @@ const emit = defineEmits({ 'update:modelValue': null });
 
 const { modelValue, maxWidth, maxHeight, fileAccept, fileMaxSize } = toRefs(props);
 const { t } = useI18n();
+const sysConfig = useSysConfigStore();
 const dragging = ref<boolean>(false);
 const progressFile = ref<any>({});
 const currentFile = ref<any>({});
@@ -63,8 +64,8 @@ const getData = () => {
   }
   return data;
 };
-const accept = computed(() => fileAccept?.value ?? uploadSettings.imageInputAccept);
-const maxSize = computed(() => fileMaxSize?.value ?? uploadSettings.imageLimitByte);
+const accept = computed(() => fileAccept?.value ?? sysConfig.upload.imageInputAccept);
+const maxSize = computed(() => fileMaxSize?.value ?? sysConfig.upload.imageLimitByte);
 const beforeUpload = (file: any) => {
   if (maxSize.value > 0 && file.size > maxSize.value) {
     ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024} MB` }));
@@ -92,10 +93,10 @@ const onError = (error: Error) => {
     >
       <template #item="{ element: file }">
         <li class="el-upload-list__item is-success">
-          <div :class="listType === 'picture' ? ['w-32', 'h-32'] : ['w-full', 'h-full']" class="bg-gray-50 flex justify-center items-center relative">
-            <img class="max-w-full max-h-full block" :src="file.url" alt="" />
+          <div :class="listType === 'picture' ? ['w-32', 'h-32'] : ['w-full', 'h-full']" class="relative flex items-center justify-center bg-gray-50">
+            <img class="block max-w-full max-h-full" :src="file.url" alt="" />
             <div
-              class="full-flex-center absolute rounded-md cursor-move bg-black bg-opacity-50 opacity-0 space-x-4"
+              class="absolute space-x-4 bg-black bg-opacity-50 rounded-md opacity-0 cursor-move full-flex-center"
               :class="dragging ? undefined : 'hover:opacity-100'"
               @click.stop
             >

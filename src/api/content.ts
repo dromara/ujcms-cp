@@ -16,12 +16,17 @@ export const queryArticleTemplates = async (): Promise<any> => (await axios.get(
 export const channelAliasExist = async (alias?: string): Promise<any> => (await axios.get('/backend/core/channel/alias-exist', { params: { alias } })).data;
 
 export const queryArticlePage = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/article', { params })).data;
+export const queryArticleRejectCount = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/article/reject-count', { params })).data;
 export const queryArticle = async (id: number): Promise<any> => (await axios.get(`/backend/core/article/${id}`)).data;
+export const queryArticleTitleSimilarity = async (similarity: number, title: string, excludeId?: number): Promise<any> =>
+  (await axios.get('/backend/core/article/title-similarity', { params: { similarity, title, excludeId } })).data;
 export const createArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/article', data)).data;
 export const updateArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/article?_method=put', data)).data;
+export const updateArticleOrder = async (fromId: number, toId: number): Promise<any> => (await axios.post('/backend/core/article/update-order', { fromId, toId })).data;
 export const internalPushArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/article/internal-push', data)).data;
 export const externalPushArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/article/external-push', data)).data;
-export const stickyArticle = async (ids: number[], sticky: number): Promise<any> => (await axios.post('/backend/core/article/sticky?_method=put', { ids, sticky })).data;
+export const stickyArticle = async (ids: number[], sticky: number, stickyDate?: Date): Promise<any> =>
+  (await axios.post('/backend/core/article/sticky?_method=put', { ids, sticky, stickyDate })).data;
 export const deleteArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article/delete?_method=put', data)).data;
 export const submitArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article/submit?_method=put', data)).data;
 export const archiveArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article/archive?_method=put', data)).data;
@@ -29,6 +34,7 @@ export const offlineArticle = async (data: number[]): Promise<any> => (await axi
 export const completelyDeleteArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article?_method=delete', data)).data;
 
 export const queryArticleReviewPage = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/article-review', { params })).data;
+export const queryArticlePendingCount = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/article-review/pending-count', { params })).data;
 export const passArticle = async (data: number[]): Promise<any> => (await axios.post('/backend/core/article-review/pass?_method=put', data)).data;
 export const rejectArticle = async (ids: number[], reason: string): Promise<any> => (await axios.post('/backend/core/article-review/reject?_method=put', { ids, reason })).data;
 

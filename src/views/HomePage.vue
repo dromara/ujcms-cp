@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Document, Files, FolderOpened, User, UserFilled } from '@element-plus/icons-vue';
+import { Document, Files, FolderOpened, User, UserFilled, BellFilled } from '@element-plus/icons-vue';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import echarts, { ECOption } from '@/utils/echarts';
+import { currentUser } from '@/stores/useCurrentUser';
 import { queryContentStat } from '@/api/personal';
 import { queryTrendStat, queryVisitorStat, querySourceTypeStat } from '@/api/stat';
+import { queryArticlePendingCount, queryArticleRejectCount } from '@/api/content';
+import { queryMessageBoardUnreviewedCount } from '@/api/interaction';
 
 const { t, n } = useI18n();
 dayjs.extend(duration);
@@ -51,38 +54,6 @@ const initTrendChart = async () => {
     chart && chart.resize();
   });
 };
-
-// const provinceChart = shallowRef<HTMLElement>();
-// const initProvinceChart = async () => {
-//   const list = await queryProvinceStat({ begin: dayjs().subtract(30, 'day').format('YYYY-MM-DD'), end: dayjs().format('YYYY-MM-DD') });
-//   const total = list.reduce((acc, curr) => acc + curr.pvCount, 0);
-//   const option: ECOption = {
-//     title: { text: t('menu.stat.visitRegion'), textStyle: { color: '#909399', fontWeight: 'normal', fontSize: 16 } },
-//     tooltip: { trigger: 'item', valueFormatter: (value: any) => n((value * 100) / total, 'decimal') + '%' },
-//     legend: { type: 'scroll', orient: 'vertical', right: '10%', top: 16, bottom: 16 },
-//     series: [
-//       {
-//         name: t('menu.stat.visitRegion'),
-//         type: 'pie',
-//         radius: '72%',
-//         center: ['40%', '56%'],
-//         data: list.map((item) => ({ value: item.pvCount, name: item.name })),
-//       },
-//     ],
-//   };
-//   const chartDom = provinceChart.value;
-//   if (chartDom == null) {
-//     return;
-//   }
-//   let chart = echarts.getInstanceByDom(chartDom);
-//   if (chart == null) {
-//     chart = echarts.init(chartDom);
-//   }
-//   chart.setOption(option);
-//   window.addEventListener('resize', function () {
-//     chart && chart.resize();
-//   });
-// };
 
 const sourceTypeChart = shallowRef<HTMLElement>();
 const initSourceTypeChart = async () => {
@@ -141,9 +112,28 @@ const fetchContentStat = async () => {
   contentStat.value = await queryContentStat();
 };
 
+const pendingArticle = ref<number>(0);
+const fetchPendingArticle = async () => {
+  if (currentUser.epRank >= 1) {
+    pendingArticle.value = await queryArticlePendingCount();
+  }
+};
+const rejectedArticle = ref<number>(0);
+const fetchRejectArticle = async () => {
+  if (currentUser.epRank >= 1) {
+    rejectedArticle.value = await queryArticleRejectCount();
+  }
+};
+const unreviewedMessageBoard = ref<number>(0);
+const fetchUnreviewedMessageBoard = async () => {
+  unreviewedMessageBoard.value = await queryMessageBoardUnreviewedCount();
+};
+
 onMounted(async () => {
+  fetchPendingArticle();
+  fetchRejectArticle();
+  fetchUnreviewedMessageBoard();
   initTrendChart();
-  // initProvinceChart();
   initSourceTypeChart();
   fetchVisitorStat();
   fetchContentStat();
@@ -152,6 +142,59 @@ onMounted(async () => {
 
 <template>
   <div>
+    <el-row :gutter="12">
+      <el-col v-if="pendingArticle > 0" :span="6">
+        <div class="mb-3 shadow-md bg-warning-lighter">
+          <div class="flex items-center justify-between px-4 py-3 text-xl text-warning">
+            <div class="flex items-center">
+              <el-icon><BellFilled /></el-icon>
+              <el-link class="ml-1 text-base" type="warning" :underline="false" @click="() => $router.push({ path: '/content/article-review' })">
+                {{ $t('todo.pendingArticle') }}
+              </el-link>
+            </div>
+            <div>
+              <el-link class="ml-1 text-xl" type="warning" :underline="false" @click="() => $router.push({ path: '/content/article-review' })">
+                {{ pendingArticle }}
+              </el-link>
+            </div>
+          </div>
+        </div>
+      </el-col>
+      <el-col v-if="rejectedArticle > 0" :span="6">
+        <div class="mb-3 shadow-md bg-warning-lighter">
+          <div class="flex items-center justify-between px-4 py-3 text-xl text-warning">
+            <div class="flex items-center">
+              <el-icon><BellFilled /></el-icon>
+              <el-link class="ml-1 text-base" type="warning" :underline="false" @click="() => $router.push({ path: '/content/article', query: { status: 22 } })">
+                {{ $t('todo.rejectedArticle') }}
+              </el-link>
+            </div>
+            <div>
+              <el-link class="ml-1 text-xl" type="warning" :underline="false" @click="() => $router.push({ path: '/content/article', query: { status: 22 } })">
+                {{ rejectedArticle }}
+              </el-link>
+            </div>
+          </div>
+        </div>
+      </el-col>
+      <el-col v-if="unreviewedMessageBoard > 0" :span="6">
+        <div class="mb-3 shadow-md bg-warning-lighter">
+          <div class="flex items-center justify-between px-4 py-3 text-xl text-warning">
+            <div class="flex items-center">
+              <el-icon><BellFilled /></el-icon>
+              <el-link class="ml-1 text-base" type="warning" :underline="false" @click="() => $router.push({ path: '/interaction/message-board', query: { status: 1 } })">
+                {{ $t('todo.unreviewedMessageBoard') }}
+              </el-link>
+            </div>
+            <div>
+              <el-link class="ml-1 text-xl" type="warning" :underline="false" @click="() => $router.push({ path: '/interaction/message-board', query: { status: 1 } })">
+                {{ unreviewedMessageBoard }}
+              </el-link>
+            </div>
+          </div>
+        </div>
+      </el-col>
+    </el-row>
     <el-row :gutter="12">
       <el-col :span="6">
         <div class="p-3 app-block">
@@ -306,7 +349,6 @@ onMounted(async () => {
       </el-col>
       <el-col :span="12">
         <div class="p-3 mt-3 app-block">
-          <!-- <div ref="provinceChart" class="w-full h-64"></div> -->
           <div ref="sourceTypeChart" class="w-full h-64"></div>
         </div>
       </el-col>

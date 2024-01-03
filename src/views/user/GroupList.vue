@@ -7,7 +7,7 @@ import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { perm, currentUser } from '@/store/useCurrentUser';
+import { perm, currentUser } from '@/stores/useCurrentUser';
 import { moveList, toParams, resetParams } from '@/utils/common';
 import { deleteGroup, queryGroupList, updateGroupOrder } from '@/api/user';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -105,7 +105,7 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="group">
           <el-table-column type="selection" width="50"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('group.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="description" :label="$t('group.description')" min-width="150" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="allAccessPermission" :label="$t('group.allAccessPermission')" sortable="custom">

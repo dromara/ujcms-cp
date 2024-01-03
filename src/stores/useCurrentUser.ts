@@ -4,7 +4,7 @@ import { Action, ElMessageBox, MessageBoxState } from 'element-plus';
 import i18n from '@/i18n';
 import { sm2Encrypt } from '@/utils/sm';
 import { queryClientPublicKey } from '@/api/login';
-import { appState, setLoginBoxDisplay } from '@/store/useAppState';
+import { useAppStateStore } from '@/stores/appStateStore';
 import { accountLogin, accountLogout, accountRefreshToken, LoginParam, queryCurrentUser } from '@/api/login';
 import {
   setAccessToken,
@@ -24,6 +24,7 @@ import {
 } from '@/utils/auth';
 
 export interface CurrentUser {
+  databaseType?: string;
   username?: string;
   avatar?: string;
   rank: number;
@@ -32,6 +33,7 @@ export interface CurrentUser {
   globalPermission: boolean;
   allChannelPermission: boolean;
   allArticlePermission: boolean;
+  allStatusPermission: boolean;
   loginDate?: Date;
   loginIp?: string;
   epExcludes: string[];
@@ -45,6 +47,7 @@ const defaultUser: CurrentUser = {
   globalPermission: false,
   allChannelPermission: true,
   allArticlePermission: true,
+  allStatusPermission: false,
   epExcludes: [],
   epDisplay: false,
   epRank: 0,
@@ -63,7 +66,7 @@ export const login = async (params: LoginParam): Promise<any> => {
   const data = await accountLogin(params);
   if (data.status === 0) {
     const { result } = data;
-    const now = new Date().getTime();
+    const now = Date.now();
     setAccessToken(result.accessToken);
     setRefreshToken(result.refreshToken);
     setSessionTimeout(result.sessionTimeout);
@@ -91,11 +94,12 @@ const {
 } = i18n;
 
 const showLoginBox = () => {
+  const appState = useAppStateStore();
   if (appState.messageBoxDisplay) {
     ElMessageBox.close();
   }
   if (!appState.loginBoxDisplay) {
-    setLoginBoxDisplay(true);
+    appState.setLoginBoxDisplay(true);
     ElMessageBox.prompt(state.username, t('enterPassword'), {
       cancelButtonText: t('backToLogin'),
       confirmButtonText: t('login'),
@@ -126,7 +130,7 @@ const showLoginBox = () => {
             instance.validateError = true;
             return;
           }
-          setLoginBoxDisplay(false);
+          appState.setLoginBoxDisplay(false);
           done();
         }
       },
@@ -151,7 +155,7 @@ const runRefreshToken = async () => {
     return;
   }
   const accessAt = getAccessAt();
-  const now = new Date().getTime();
+  const now = Date.now();
   // 超过时间没有访问，退出登录。默认为 30 分钟。
   const sessionTimeout = getSessionTimeout() * 60 * 1000;
   if (now - accessAt > sessionTimeout) {
@@ -162,6 +166,8 @@ const runRefreshToken = async () => {
   // 记录刷新时间，用于重新加载页面时，初始化Interval。
   setRefreshAt(now);
   const data = await accountRefreshToken({ refreshToken });
+  // accountRefreshToken 会把 accessAt 修改为当前时间，这里需要进行重置
+  setAccessAt(accessAt);
   if (data.status !== 0) {
     removeRefreshToken();
     return;
@@ -172,7 +178,7 @@ const runRefreshToken = async () => {
 };
 
 export const initRefreshInterval = (): void => {
-  let afterTime = getRefreshAt() + interval - new Date().getTime();
+  let afterTime = getRefreshAt() + interval - Date.now();
   if (afterTime < 0) afterTime = 0;
   setTimeout(() => {
     runRefreshToken();
@@ -186,6 +192,7 @@ export const fetchCurrentUser = async (): Promise<any> => {
   const user = await queryCurrentUser();
   if (user) {
     setCurrentUser({
+      databaseType: user.databaseType,
       username: user.username,
       avatar: user.avatar,
       rank: user.rank,
@@ -194,6 +201,7 @@ export const fetchCurrentUser = async (): Promise<any> => {
       globalPermission: user.globalPermission,
       allChannelPermission: user.allChannelPermission,
       allArticlePermission: user.allArticlePermission,
+      allStatusPermission: user.allStatusPermission,
       loginDate: user.loginDate,
       loginIp: user.loginIp,
       epExcludes: user.epExcludes,

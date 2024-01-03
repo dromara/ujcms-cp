@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n';
 import { handleError } from '@/utils/request';
 import { getAuthHeaders } from '@/utils/auth';
 import { getSiteHeaders } from '@/utils/common';
-import { uploadSettings } from '@/store/useConfig';
+import { useSysConfigStore } from '@/stores/sysConfigStore';
 import { imageUploadUrl, videoUploadUrl, audioUploadUrl, docUploadUrl, fileUploadUrl } from '@/api/config';
 
 const props = defineProps({
@@ -26,6 +26,7 @@ const props = defineProps({
 
 const { type, uploadAction, fileAccept, fileMaxSize } = toRefs(props);
 const { t } = useI18n();
+const sysConfig = useSysConfigStore();
 const progressFile = ref<any>({});
 const action = computed(() => {
   if (uploadAction?.value != null) {
@@ -54,17 +55,17 @@ const accept = computed(() => {
   }
   switch (type.value) {
     case 'image':
-      return uploadSettings.imageInputAccept;
+      return sysConfig.upload.imageInputAccept;
     case 'video':
-      return uploadSettings.videoInputAccept;
+      return sysConfig.upload.videoInputAccept;
     case 'audio':
-      return uploadSettings.audioInputAccept;
+      return sysConfig.upload.audioInputAccept;
     case 'library':
-      return uploadSettings.libraryInputAccept;
+      return sysConfig.upload.libraryInputAccept;
     case 'doc':
-      return uploadSettings.docInputAccept;
+      return sysConfig.upload.docInputAccept;
     case 'file':
-      return uploadSettings.fileInputAccept;
+      return sysConfig.upload.fileInputAccept;
     case 'any':
       return undefined;
     default:
@@ -77,17 +78,17 @@ const maxSize = computed(() => {
   }
   switch (type.value) {
     case 'image':
-      return uploadSettings.imageLimitByte;
+      return sysConfig.upload.imageLimitByte;
     case 'video':
-      return uploadSettings.videoLimitByte;
+      return sysConfig.upload.videoLimitByte;
     case 'audio':
-      return uploadSettings.audioLimitByte;
+      return sysConfig.upload.audioLimitByte;
     case 'library':
-      return uploadSettings.libraryLimitByte;
+      return sysConfig.upload.libraryLimitByte;
     case 'doc':
-      return uploadSettings.docLimitByte;
+      return sysConfig.upload.docLimitByte;
     case 'file':
-      return uploadSettings.fileLimitByte;
+      return sysConfig.upload.fileLimitByte;
     default:
       return 0;
   }

@@ -9,7 +9,7 @@ import { Delete, Folder, FolderAdd, Document, DocumentAdd, DocumentCopy, Picture
 import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
 import { saveAs } from 'file-saver';
-import { currentUser, perm } from '@/store/useCurrentUser';
+import { currentUser, perm } from '@/stores/useCurrentUser';
 import { toParams, resetParams } from '@/utils/common';
 import { queryCurrentSite } from '@/api/system';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -58,13 +58,17 @@ const batchType = ref<'copy' | 'move'>('copy');
 const batchIds = ref<string[]>([]);
 const batchNames = ref<string[]>([]);
 
-const fetchData = async () => {
-  loading.value = true;
+const fetchData = async (showLoading?: boolean) => {
+  if (showLoading == null || showLoading) {
+    loading.value = true;
+  }
   try {
     data.value = await props.queryWebFileList({ ...toParams(params.value), parentId: parentId.value, sort: sort.value });
     filtered.value = Object.values(params.value).filter((v) => v !== undefined && v !== '').length > 0 || sort.value !== undefined;
   } finally {
-    loading.value = false;
+    if (showLoading == null || showLoading) {
+      loading.value = false;
+    }
   }
 };
 
@@ -110,7 +114,7 @@ const handleAdd = () => {
   formVisible.value = true;
 };
 const handleEdit = (id: string, fileType: string) => {
-  if (fileType === 'directory') {
+  if (fileType === 'DIRECTORY') {
     changeParentId(id);
     return;
   }
@@ -242,7 +246,7 @@ const uploadSuccess = async () => {
           multiple
           class="inline-block"
         >
-          <el-icon class="align-middle text-sm"><Files /></el-icon> <span class="leading-7">{{ $t('webFile.op.upload') }}</span>
+          <el-icon class="text-sm align-middle"><Files /></el-icon> <span class="leading-7">{{ $t('webFile.op.upload') }}</span>
         </base-upload>
         <base-upload
           :disabled="perm(`webFile${type}:uploadZip`)"
@@ -253,7 +257,7 @@ const uploadSuccess = async () => {
           :on-success="uploadSuccess"
           class="inline-block ml-1"
         >
-          <el-icon class="align-middle text-sm"><Collection /></el-icon> <span class="leading-7">{{ $t('webFile.op.uploadZip') }}</span>
+          <el-icon class="text-sm align-middle"><Collection /></el-icon> <span class="leading-7">{{ $t('webFile.op.uploadZip') }}</span>
         </base-upload>
       </el-button-group>
       <column-setting :name="`webFile${type}`" />
@@ -279,7 +283,7 @@ const uploadSuccess = async () => {
         >{{ item }}</el-button
       >
     </div>
-    <div class="app-block mt-3">
+    <div class="mt-3 app-block">
       <el-table
         ref="table"
         v-loading="loading"
@@ -289,14 +293,14 @@ const uploadSuccess = async () => {
         @sort-change="handleSort"
       >
         <column-list :name="`webFile${type}`">
-          <el-table-column type="selection" width="45"></el-table-column>
+          <el-table-column type="selection" width="38"></el-table-column>
           <el-table-column property="name" :label="$t('webFile.name')" sortable="custom" show-overflow-tooltip min-width="360">
             <template #default="{ row }">
               <el-link type="primary" :underline="false" @click="() => handleEdit(row.id, row.fileType)">
-                <el-icon v-if="row.fileType === 'directory'" class="mr-1"><Folder class="text-warning" /></el-icon>
-                <el-icon v-else-if="row.fileType === 'zip'" class="mr-1"><Collection /></el-icon>
-                <el-icon v-else-if="row.fileType === 'text'" class="mr-1"><Document /></el-icon>
-                <el-icon v-else-if="row.fileType === 'image'" class="mr-1"><Picture /></el-icon>
+                <el-icon v-if="row.fileType === 'DIRECTORY'" class="mr-1"><Folder class="text-warning" /></el-icon>
+                <el-icon v-else-if="row.fileType === 'ZIP'" class="mr-1"><Collection /></el-icon>
+                <el-icon v-else-if="row.fileType === 'TEXT'" class="mr-1"><Document /></el-icon>
+                <el-icon v-else-if="row.fileType === 'IMAGE'" class="mr-1"><Picture /></el-icon>
                 <span>{{ row.name }}</span>
               </el-link>
             </template>
@@ -345,7 +349,7 @@ const uploadSuccess = async () => {
       :create-web-file="createWebFile"
       :update-web-file="updateWebFile"
       :delete-web-file="deleteWebFile"
-      @finished="fetchData"
+      @finished="() => fetchData(!formVisible)"
     />
     <web-file-batch
       v-model="batchFormVisible"
@@ -357,7 +361,7 @@ const uploadSuccess = async () => {
       :move-web-file="moveWebFile"
       :copy-web-file="copyWebFile"
       :query-web-file-list="queryWebFileList"
-      @finished="fetchData"
+      @finished="() => fetchData(!batchFormVisible)"
     />
   </div>
 </template>

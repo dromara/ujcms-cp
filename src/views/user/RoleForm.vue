@@ -5,7 +5,7 @@ export default { name: 'RoleForm' };
 <script setup lang="ts">
 import { ref, PropType } from 'vue';
 import { queryRole, createRole, updateRole, deleteRole, roleScopeNotAllowed } from '@/api/user';
-import { currentUser } from '@/store/useCurrentUser';
+import { currentUser } from '@/stores/useCurrentUser';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 

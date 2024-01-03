@@ -8,7 +8,7 @@ import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
-import { perm } from '@/store/useCurrentUser';
+import { perm } from '@/stores/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
 import { deleteExample, queryExamplePage } from '@/api/interaction';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -94,8 +94,8 @@ const handleDelete = async (ids: number[]) => {
     <div class="mt-3 app-block">
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="example">
-          <el-table-column type="selection" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column type="selection" width="38"></el-table-column>
+          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('example.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="description" :label="$t('example.description')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="height" :label="$t('example.height')" sortable="custom" show-overflow-tooltip></el-table-column>
@@ -120,7 +120,7 @@ const handleDelete = async (ids: number[]) => {
         </column-list>
       </el-table>
       <el-pagination
-        v-model:currentPage="currentPage"
+        v-model:current-page="currentPage"
         v-model:pageSize="pageSize"
         :total="total"
         :page-sizes="pageSizes"

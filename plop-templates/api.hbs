@@ -3,6 +3,6 @@ export const query{{pascalCase name}} = async (id: number): Promise<any> => (awa
 export const create{{pascalCase name}} = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/{{kebabCase sub}}/{{kebabCase name}}', data)).data;
 export const update{{pascalCase name}} = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/{{kebabCase sub}}/{{kebabCase name}}?_method=put', data)).data;
 {{#if isList}}
-export const update{{pascalCase name}}Order = async (data: number[]): Promise<any> => (await axios.post('/backend/{{kebabCase sub}}/{{kebabCase name}}/order?_method=put', data)).data;
+export const update{{pascalCase name}}Order = async (fromId: number, toId: number): Promise<any> => (await axios.post('/backend/{{kebabCase sub}}/{{kebabCase name}}/update-order', { fromId, toId })).data;
 {{/if}}
 export const delete{{pascalCase name}} = async (data: number[]): Promise<any> => (await axios.post('/backend/{{kebabCase sub}}/{{kebabCase name}}?_method=delete', data)).data;

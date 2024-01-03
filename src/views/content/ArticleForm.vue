@@ -5,12 +5,13 @@ export default { name: 'ArticleForm' };
 <script setup lang="ts">
 import { computed, ref, toRefs, watch, PropType } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Finished, Box, Hide, DocumentRemove, Delete, CircleCheck, CircleClose } from '@element-plus/icons-vue';
+import { Finished, Box, DocumentRemove, Delete, CircleCheck, CircleClose, View } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import * as htmlparser2 from 'htmlparser2';
 import * as domutils from 'domutils';
-import { baseSettings } from '@/store/useConfig';
-import { perm, currentUser } from '@/store/useCurrentUser';
+import { useSysConfigStore } from '@/stores/sysConfigStore';
+import { useCurrentSiteStore } from '@/stores/currentSiteStore';
+import { perm, currentUser } from '@/stores/useCurrentUser';
 import {
   queryArticle,
   createArticle,
@@ -24,6 +25,7 @@ import {
   rejectArticle,
   queryChannelList,
   queryArticleTemplates,
+  queryArticleTitleSimilarity,
 } from '@/api/content';
 import { queryModelList } from '@/api/config';
 import { validateErrorWord, validateSensitiveWord } from '@/api/system';
@@ -38,6 +40,7 @@ import { TuiEditor } from '@/components/TuiEditor';
 import LabelTip from '@/components/LabelTip.vue';
 import { BaseUpload, ImageUpload, ImageListUpload, FileListUpload } from '@/components/Upload';
 import ImageExtractor from './components/ImageExtractor.vue';
+import { openArticleLink } from './components/articleUtils';
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
@@ -51,6 +54,8 @@ defineEmits({ 'update:modelValue': null, finished: null });
 
 const { modelValue: visible, channel } = toRefs(props);
 const { t } = useI18n();
+const sysConfig = useSysConfigStore();
+const currentSiteStore = useCurrentSiteStore();
 const dialog = ref<any>();
 const showSubtitle = ref<boolean>(false);
 const showFullTitle = ref<boolean>(false);
@@ -123,7 +128,7 @@ const initCustoms = (customs: any) => {
 };
 
 const preventSubmit = async (bean: any) => {
-  if (currentUser.epRank <= 0) {
+  if (currentUser.epRank <= 1) {
     return false;
   }
 
@@ -224,8 +229,19 @@ const extractImage = () => {
   imageExtractorVisible.value = true;
   const dom = htmlparser2.parseDocument(values.value.text);
   const imgs = domutils.getElementsByTagName('img', dom);
-  const urls = imgs.map((img: any) => domutils.getAttributeValue(img, 'src')).filter((src: string | undefined) => src?.startsWith(baseSettings.uploadUrlPrefix)) as string[];
+  const urls = imgs.map((img: any) => domutils.getAttributeValue(img, 'src')).filter((src: string | undefined) => src?.startsWith(sysConfig.base.uploadUrlPrefix)) as string[];
   imageExtractorUrls.value = [...(values.value.imageList?.map((img: any) => img.url) ?? []), ...urls];
+};
+
+const titleSimilarityVisible = ref<boolean>(false);
+const titleSimilarityList = ref<any[]>([]);
+const titleSimilarity = async (title: string, excludeId?: number) => {
+  titleSimilarityList.value = await queryArticleTitleSimilarity(0.6, title, excludeId);
+  if (titleSimilarityList.value.length > 0) {
+    titleSimilarityVisible.value = true;
+  } else {
+    ElMessage.success(t('article.success.titleSimilarity'));
+  }
 };
 </script>
 
@@ -257,7 +273,7 @@ const extractImage = () => {
       perms="article"
       :model-value="modelValue"
       :addable="!isReview"
-      :disable-edit="(bean) => bean.id != null && !bean.editable"
+      :disable-edit="(bean) => bean.id != null && !bean.editable && !currentUser.allStatusPermission && !isReview"
       :prevent-submit="preventSubmit"
       label-width="140px"
       large
@@ -294,10 +310,11 @@ const extractImage = () => {
           </el-popconfirm>
           <el-popconfirm v-if="isEdit" :title="$t('confirmExecute')" @confirm="() => handleExecute('offline', bean.id)">
             <template #reference>
-              <el-button :disabled="![0, 1, 5, 11, 12].includes(bean.status) || perm('article:offline') || unsaved" :icon="Hide">{{ $t('article.op.offline') }}</el-button>
+              <el-button :disabled="![0, 1, 5, 11, 12].includes(bean.status) || perm('article:offline') || unsaved" :icon="CircleClose">{{ $t('article.op.offline') }}</el-button>
             </template>
           </el-popconfirm>
         </el-button-group>
+        <el-button v-if="isEdit" :icon="View" @click="() => openArticleLink(values.status, values.url, values.dynamicUrl)">{{ $t('article.op.preview') }}</el-button>
         <el-button-group>
           <el-popconfirm v-if="isEdit && !isReview" :title="$t('confirmDelete')" @confirm="() => handleDelete()">
             <template #reference>
@@ -336,51 +353,21 @@ const extractImage = () => {
               </el-col>
               <el-col :span="mains['title'].double ? 12 : 24">
                 <el-form-item prop="title" :label="mains['title'].name ?? $t('article.title')" :rules="{ required: true, message: () => $t('v.required') }">
-                  <el-input ref="focus" v-model="values.title" maxlength="150">
-                    <template
-                      v-if="
-                        (!mains['subtitle'].required || !mains['fullTitle'].required || !mains['linkUrl'].required) &&
-                        (mains['subtitle'].show || mains['fullTitle'].show || mains['linkUrl'].show)
-                      "
-                      #append
-                    >
-                      <el-button
-                        v-if="mains['subtitle'].show && !mains['subtitle'].required"
-                        :class="showSubtitle ? 'text-primary' : undefined"
-                        @click="
-                          () => {
-                            showSubtitle = !showSubtitle;
-                            values.subtitle = undefined;
-                          }
-                        "
-                        >{{ mains['subtitle'].name ?? $t('article.subtitle') }}
-                      </el-button>
-                      <el-button
-                        v-if="mains['fullTitle'].show && !mains['fullTitle'].required"
-                        :class="showFullTitle ? 'text-primary' : undefined"
-                        @click="
-                          () => {
-                            showFullTitle = !showFullTitle;
-                            values.fullTitle = undefined;
-                          }
-                        "
-                        >{{ mains['fullTitle'].name ?? $t('article.fullTitle') }}
-                      </el-button>
-                      <el-button
-                        v-if="mains['linkUrl'].show && !mains['linkUrl'].required"
-                        :class="() => (showLinkUrl ? 'text-primary' : undefined)"
-                        :disabled="values.src != null && values.type === 3"
-                        @click="
-                          () => {
-                            showLinkUrl = !showLinkUrl;
-                            values.linkUrl = undefined;
-                            values.targetBlank = false;
-                          }
-                        "
-                        >{{ mains['linkUrl'].name ?? $t('article.linkUrl') }}
-                      </el-button>
-                    </template>
-                  </el-input>
+                  <el-input ref="focus" v-model="values.title" maxlength="150"></el-input>
+                  <el-button :disabled="!values.title" class="mr-5" @click="() => titleSimilarity(values.title, values.id)">{{ $t('article.op.titleSimilarity') }}</el-button>
+                  <el-checkbox v-if="mains['subtitle'].show && !mains['subtitle'].required" v-model="showSubtitle" @click="() => (values.subtitle = undefined)">
+                    {{ mains['subtitle'].name ?? $t('article.subtitle') }}
+                  </el-checkbox>
+                  <el-checkbox v-if="mains['fullTitle'].show && !mains['fullTitle'].required" v-model="showFullTitle" @click="() => (values.fullTitle = undefined)">
+                    {{ mains['fullTitle'].name ?? $t('article.fullTitle') }}
+                  </el-checkbox>
+                  <el-checkbox
+                    v-if="mains['linkUrl'].show && !mains['linkUrl'].required"
+                    v-model="showLinkUrl"
+                    @click="() => ((values.linkUrl = undefined), (values.targetBlank = false))"
+                  >
+                    {{ mains['linkUrl'].name ?? $t('article.linkUrl') }}
+                  </el-checkbox>
                 </el-form-item>
               </el-col>
               <el-col
@@ -454,11 +441,8 @@ const extractImage = () => {
                 </el-form-item>
               </el-col>
               <el-col v-if="mains['seoKeywords'].show" :span="mains['seoKeywords'].double ? 12 : 24">
-                <el-form-item
-                  prop="seoKeywords"
-                  :label="mains['seoKeywords'].name ?? $t('article.seoKeywords')"
-                  :rules="mains['seoKeywords'].required ? { required: true, message: () => $t('v.required') } : undefined"
-                >
+                <el-form-item prop="seoKeywords" :rules="mains['seoKeywords'].required ? { required: true, message: () => $t('v.required') } : undefined">
+                  <template #label><label-tip :label="mains['seoKeywords'].name ?? $t('article.seoKeywords')" message="article.seoKeywords" help /></template>
                   <el-input v-model="values.seoKeywords" maxlength="150"></el-input>
                 </el-form-item>
               </el-col>
@@ -702,7 +686,7 @@ const extractImage = () => {
                       <el-button type="primary" @click="() => $alert($t('error.enterprise'), { dangerouslyUseHTMLString: true })">{{ $t('article.op.docImport') }}</el-button>
                     </div>
                     <tui-editor v-if="values.editorType === 2" v-model="values.markdown" v-model:html="values.text" class="leading-6" />
-                    <tinymce v-else ref="tinyText" v-model="values.text" :disabled="disabled" />
+                    <tinymce v-else ref="tinyText" v-model="values.text" :disabled="disabled" :init="{ typesetting_options: currentSiteStore.currentSite.editor?.typesetting }" />
                   </div>
                 </el-form-item>
               </el-col>
@@ -753,12 +737,8 @@ const extractImage = () => {
                 <el-form-item v-if="isEdit && asides['org'].show" :label="asides['org'].name ?? $t('article.org')" required>
                   <el-input :value="values.org?.name" disabled></el-input>
                 </el-form-item>
-                <el-form-item
-                  v-if="asides['publishDate'].show"
-                  prop="publishDate"
-                  :label="asides['publishDate'].name ?? $t('article.publishDate')"
-                  :rules="isEdit ? { required: true, message: () => $t('v.required') } : undefined"
-                >
+                <el-form-item v-if="asides['publishDate'].show" prop="publishDate" :rules="isEdit ? { required: true, message: () => $t('v.required') } : undefined">
+                  <template #label><label-tip :label="asides['publishDate'].name ?? $t('article.publishDate')" message="article.publishDate" help /></template>
                   <el-date-picker
                     v-model="values.publishDate"
                     type="datetime"
@@ -771,16 +751,22 @@ const extractImage = () => {
                     "
                   ></el-date-picker>
                 </el-form-item>
-                <!--
                 <el-form-item
-                  prop="offlineDate"
-                  :label="asides['offlineDate'].name ?? $t('article.offlineDate')"
-                  :rules="asides['offlineDate'].required ? { required: true, message: () => $t('v.required') } : undefined"
-                  v-if="asides['offlineDate'].show"
+                  v-if="asides['onlineDate'].show"
+                  prop="onlineDate"
+                  :rules="asides['onlineDate'].required ? { required: true, message: () => $t('v.required') } : undefined"
                 >
+                  <template #label><label-tip :label="asides['onlineDate'].name ?? $t('article.onlineDate')" message="article.onlineDate" help /></template>
+                  <el-date-picker v-model="values.onlineDate" type="datetime" class="w-full"></el-date-picker>
+                </el-form-item>
+                <el-form-item
+                  v-if="asides['offlineDate'].show"
+                  prop="offlineDate"
+                  :rules="asides['offlineDate'].required ? { required: true, message: () => $t('v.required') } : undefined"
+                >
+                  <template #label><label-tip :label="asides['offlineDate'].name ?? $t('article.offlineDate')" message="article.offlineDate" help /></template>
                   <el-date-picker v-model="values.offlineDate" type="datetime" class="w-full"></el-date-picker>
                 </el-form-item>
-                 -->
                 <el-form-item
                   v-if="asides['source'].show"
                   prop="source"
@@ -854,6 +840,20 @@ const extractImage = () => {
       </template>
     </dialog-form>
     <image-extractor v-model="imageExtractorVisible" :urls="imageExtractorUrls" :append-to-body="true" @finished="(urls) => (values.image = urls[0])" />
+    <el-dialog v-model="titleSimilarityVisible" :title="$t('article.op.titleSimilarity')" width="820px">
+      <el-table :data="titleSimilarityList">
+        <el-table-column property="id" label="ID" width="100px" />
+        <el-table-column property="title" :label="$t('article.similarity.title')" show-overflow-tooltip />
+        <el-table-column
+          property="channel.name"
+          :label="$t('article.channel')"
+          :formatter="(row) => row.channel.paths.map((it) => it.name).join(' / ')"
+          width="180px"
+          show-overflow-tooltip
+        />
+        <el-table-column property="score" :label="$t('article.similarity.score')" :formatter="(row) => $n(row.score, 'percent', { minimumFractionDigits: 0 })" width="100px" />
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 

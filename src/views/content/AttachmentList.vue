@@ -8,7 +8,7 @@ import { ElMessage } from 'element-plus';
 import { Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
-import { perm } from '@/store/useCurrentUser';
+import { perm } from '@/stores/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
 import { deleteAttachment, queryAttachmentPage } from '@/api/system';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -80,11 +80,11 @@ const handleDelete = async (ids: number[]) => {
       </el-popconfirm>
       <column-setting name="attachment" class="ml-2" />
     </div>
-    <div class="app-block mt-3">
+    <div class="mt-3 app-block">
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="attachment">
           <el-table-column type="selection" :selectable="(row) => !row.used" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('attachment.name')" sortable="custom" min-width="130" show-overflow-tooltip></el-table-column>
           <el-table-column property="path" :label="$t('attachment.path')" sortable="custom" min-width="200" display="none" show-overflow-tooltip></el-table-column>
           <el-table-column property="url" :label="$t('attachment.url')" sortable="custom" min-width="350" display="none" show-overflow-tooltip></el-table-column>
@@ -94,7 +94,7 @@ const handleDelete = async (ids: number[]) => {
           <el-table-column property="created" :label="$t('attachment.created')" sortable="custom" min-width="120" show-overflow-tooltip>
             <template #default="{ row }">{{ dayjs(row.created).format('YYYY-MM-DD HH:mm') }}</template>
           </el-table-column>
-          <el-table-column property="user.username" :label="$t('attachment.user')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="user.username" :label="$t('attachment.user')" sort-by="user-username" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column :label="$t('attachment.refer')" show-overflow-tooltip>
             <template #default="{ row }">
               <div v-for="refer in row.referList" :key="`${refer.referType}-${refer.referId}`">{{ `${refer.referType}-${refer.referId}` }}</div>
@@ -117,14 +117,14 @@ const handleDelete = async (ids: number[]) => {
         </column-list>
       </el-table>
       <el-pagination
-        v-model:currentPage="currentPage"
+        v-model:current-page="currentPage"
         v-model:pageSize="pageSize"
         :total="total"
         :page-sizes="pageSizes"
         :layout="pageLayout"
         small
         background
-        class="px-3 py-2 justify-end"
+        class="justify-end px-3 py-2"
         @size-change="() => fetchData()"
         @current-change="() => fetchData()"
       ></el-pagination>

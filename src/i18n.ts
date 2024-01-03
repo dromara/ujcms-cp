@@ -22,12 +22,20 @@ const numberFormats = {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     },
+    percent: {
+      style: 'percent',
+      useGrouping: false,
+    },
   },
   en: {
     decimal: {
       style: 'decimal',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
+    },
+    percent: {
+      style: 'percent',
+      useGrouping: false,
     },
   },
 };

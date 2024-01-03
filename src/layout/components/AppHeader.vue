@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { storeToRefs } from 'pinia';
 import { Fold, Expand, HomeFilled, User, SwitchButton } from '@element-plus/icons-vue';
-import { setCookieLocale, getSessionSiteId, setSessionSiteId } from '@/utils/common';
+import { setCookieLocale } from '@/utils/common';
 import { languages } from '@/i18n';
 import { queryCurrentSiteList } from '@/api/login';
-import { currentUser, perm, hasPermission, isInclude, logout } from '@/store/useCurrentUser';
-import { appState, toggleSidebar } from '@/store/useAppState';
+import { currentUser, perm, hasPermission, isInclude, logout } from '@/stores/useCurrentUser';
+import { useAppStateStore } from '@/stores/appStateStore';
+import { useCurrentSiteStore } from '@/stores/currentSiteStore';
 import BreadCrumb from '@/components/BreadCrumb/index.vue';
 import PasswordForm from '@/views/personal/PasswordForm.vue';
 import MachineCode from '@/views/personal/MachineCode.vue';
@@ -17,14 +19,17 @@ import GeneratedKey from '@/views/personal/GeneratedKey.vue';
 
 const { locale } = useI18n({ useScope: 'global' });
 
+const appState = useAppStateStore();
 const siteList = ref<any[]>([]);
-const site = ref<any>({});
+const currentSiteStore = useCurrentSiteStore();
+const { getCurrentSiteId, setCurrentSiteId } = currentSiteStore;
+const { currentSite } = storeToRefs(currentSiteStore);
 const fetchSiteList = async () => {
   siteList.value = await queryCurrentSiteList();
-  site.value = siteList.value.find((item) => item.id === getSessionSiteId()) ?? siteList.value[0];
+  currentSite.value = siteList.value.find((item) => item.id === getCurrentSiteId()) ?? siteList.value[0];
 };
 const changeSiteId = (id: number) => {
-  setSessionSiteId(id);
+  setCurrentSiteId(id);
   window.location.reload();
 };
 onMounted(() => {
@@ -52,24 +57,24 @@ const generatedKeyVisible = ref<boolean>(false);
 <template>
   <div class="flex items-center justify-between h-12 overflow-hidden bg-white shadow">
     <div class="flex items-center h-full">
-      <div class="flex items-center h-full px-4 align-middle cursor-pointer hover:bg-gray-100" @click="toggleSidebar">
+      <div class="flex items-center h-full px-4 align-middle cursor-pointer hover:bg-gray-100" @click="() => appState.toggleSidebar()">
         <el-icon :size="18"><component :is="appState.sidebar ? Fold : Expand"></component></el-icon>
       </div>
       <bread-crumb class="inline-block" />
     </div>
     <div class="h-full">
-      <div v-if="site" class="inline-block h-full">
-        <el-link class="h-full px-3 hover:bg-gray-100" :href="site?.url" :underline="false" :title="$t('siteHome')" target="_blank">
+      <div v-if="currentSite" class="inline-block h-full">
+        <el-link class="h-full px-3 hover:bg-gray-100" :href="currentSite.url" :underline="false" :title="$t('siteHome')" target="_blank">
           <el-icon :size="16" class="align-text-top"><HomeFilled /></el-icon>
         </el-link>
       </div>
-      <el-dropdown v-if="site" class="h-full">
+      <el-dropdown v-if="currentSite" class="h-full">
         <div class="flex items-center h-full px-3 hover:bg-gray-100">
-          {{ site?.name }}
+          {{ currentSite.name }}
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item v-for="item in siteList" :key="item.id" :disabled="site?.id === item.id" @click="() => changeSiteId(item.id)">
+            <el-dropdown-item v-for="item in siteList" :key="item.id" :disabled="currentSite?.id === item.id" @click="() => changeSiteId(item.id)">
               <span :style="{ 'margin-left': item.depth * 16 + 'px' }">{{ item.name }}</span>
             </el-dropdown-item>
           </el-dropdown-menu>

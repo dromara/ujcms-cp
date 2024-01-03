@@ -7,7 +7,7 @@ import { ref, watch, computed, onMounted, toRefs } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { toTree } from '@/utils/tree';
-import { currentUser } from '@/store/useCurrentUser';
+import { currentUser } from '@/stores/useCurrentUser';
 import { queryGroup, updateGroupPermission, groupAccessPermissions } from '@/api/user';
 import { queryChannelList } from '@/api/content';
 import LabelTip from '@/components/LabelTip.vue';

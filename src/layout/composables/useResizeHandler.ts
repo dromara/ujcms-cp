@@ -1,12 +1,13 @@
 import { watch, onBeforeMount, onBeforeUnmount, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { appState, closeSidebar } from '@/store/useAppState';
+import { useAppStateStore } from '@/stores/appStateStore';
 
 const { body } = document;
 const WIDTH = 992; // refer to Bootstrap's responsive design
 
 export default function useResizeHandler() {
   const route = useRoute();
+  const appState = useAppStateStore();
 
   const isMobile = () => {
     const rect = body.getBoundingClientRect();
@@ -14,13 +15,13 @@ export default function useResizeHandler() {
   };
 
   const resizeHandler = () => {
-    if (!document.hidden && isMobile()) closeSidebar();
+    if (!document.hidden && isMobile()) appState.closeSidebar();
   };
 
   watch(
     () => route.path,
     () => {
-      if (isMobile() && appState.sidebar) closeSidebar();
+      if (isMobile() && appState.sidebar) appState.closeSidebar();
     },
   );
 
@@ -33,7 +34,9 @@ export default function useResizeHandler() {
   });
 
   onMounted(() => {
-    if (isMobile()) closeSidebar();
+    if (isMobile()) {
+      appState.closeSidebar();
+    }
   });
 
   return { isMobile, resizeHandler };

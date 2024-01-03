@@ -8,7 +8,7 @@ import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { getPermsTreeData } from '@/data';
 import { toTree, flatTree, disablePermissionTree } from '@/utils/tree';
-import { currentUser } from '@/store/useCurrentUser';
+import { currentUser } from '@/stores/useCurrentUser';
 import { queryRole, updateRolePermission, roleArticlePermissions, roleChannelPermissions } from '@/api/user';
 import { queryChannelList } from '@/api/content';
 import LabelTip from '@/components/LabelTip.vue';
@@ -226,6 +226,10 @@ const getPermission = (checkedNodes: any[], halfCheckedNodes: any[]) =>
                   <el-option v-for="item in [1, 2, 3]" :key="item" :label="$t(`role.dataScope.${item}`)" :value="item" />
                 </el-select>
               </el-form-item>
+              <el-form-item prop="allStatusPermission" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip message="role.allStatusPermission" help /></template>
+                <el-switch v-model="values.allStatusPermission" :disabled="!currentUser.allStatusPermission"></el-switch>
+              </el-form-item>
             </template>
             <template v-else>
               <el-alert type="warning" :closable="false" :show-icon="true">
@@ -322,7 +326,7 @@ const getPermission = (checkedNodes: any[], halfCheckedNodes: any[]) =>
       </el-form>
     </template>
     <template #footer>
-      <div class="flex justify-between items-center">
+      <div class="flex items-center justify-between">
         <div>
           <el-tag>{{ values?.name }}</el-tag>
         </div>

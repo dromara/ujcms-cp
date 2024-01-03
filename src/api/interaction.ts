@@ -1,6 +1,8 @@
 import axios from '@/utils/request';
 
 export const queryMessageBoardPage = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/ext/message-board', { params })).data;
+export const queryMessageBoardUnreviewedCount = async (params?: Record<string, any>): Promise<any> =>
+  (await axios.get('/backend/ext/message-board/unreviewed-count', { params })).data;
 export const queryMessageBoard = async (id: number): Promise<any> => (await axios.get(`/backend/ext/message-board/${id}`)).data;
 export const createMessageBoard = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/ext/message-board', data)).data;
 export const updateMessageBoard = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/ext/message-board?_method=put', data)).data;

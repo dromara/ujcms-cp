@@ -7,7 +7,7 @@ import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { perm } from '@/store/useCurrentUser';
+import { perm } from '@/stores/useCurrentUser';
 import { moveList, toParams, resetParams } from '@/utils/common';
 import { deleteDictType, queryDictTypeList, updateDictTypeOrder } from '@/api/config';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -94,7 +94,7 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="dictType">
           <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('dictType.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="alias" :label="$t('dictType.alias')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="scope" :label="$t('dictType.scope')" sortable="custom">

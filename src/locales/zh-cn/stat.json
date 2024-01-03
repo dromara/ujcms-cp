@@ -32,5 +32,18 @@
   "visitOs.name": "操作系统",
   "visitBrowser.name": "浏览器",
 
+  "articleStat.user":"用户",
+  "articleStat.org":"组织",
+  "articleStat.channel":"栏目",
+  "articleStat.total":"总录入数",
+  "articleStat.published":"已发布数",
+  "articleStat.unpublished":"未发布数",
+
+  "performanceStat.user":"用户",
+  "performanceStat.org":"组织",
+  "performanceStat.score":"分",
+  "performanceStat.totalCount":"总发布数",
+  "performanceStat.totalScore":"总绩效分",
+
   "": ""
 }

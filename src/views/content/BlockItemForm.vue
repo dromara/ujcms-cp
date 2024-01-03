@@ -48,7 +48,7 @@ const imageExtractorVisible = ref<boolean>(false);
       :bean-id="beanId"
       :bean-ids="beanIds"
       :focus="focus"
-      :init-values="(): any => ({ blockId: blockId, articleId: articleId, title: title, description: description, video: video })"
+      :init-values="() => ({ blockId: blockId, articleId: articleId, title: title, description: description, video: video, enabled: true })"
       :to-values="(bean) => ({ ...bean, articleTitle: bean.article?.title, articleId: bean.article?.id })"
       :addable="block?.enabled"
       perms="blockItem"
@@ -102,7 +102,7 @@ const imageExtractorVisible = ref<boolean>(false);
         </el-form-item>
         <el-form-item v-if="block?.withImage" prop="image" :label="$t('blockItem.image')" :rules="{ required: block?.imageRequired, message: () => $t('v.required') }">
           <image-upload v-model="values.image" :width="block.imageWidth" :height="block.imageHeight" mode="manual"></image-upload>
-          <el-button v-if="images.length > 0" class="ml-2 self-start" @click="() => (imageExtractorVisible = true)">{{ $t('article.extractImage') }}</el-button>
+          <el-button v-if="images.length > 0" class="self-start ml-2" @click="() => (imageExtractorVisible = true)">{{ $t('article.extractImage') }}</el-button>
         </el-form-item>
         <el-form-item
           v-if="block?.withMobileImage"

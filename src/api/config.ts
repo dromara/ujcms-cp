@@ -4,6 +4,7 @@ export const imageUploadUrl = `${import.meta.env.VITE_BASE_API}/backend/image-up
 export const avatarUploadUrl = `${import.meta.env.VITE_BASE_API}/backend/avatar-upload`;
 export const videoUploadUrl = `${import.meta.env.VITE_BASE_API}/backend/video-upload`;
 export const audioUploadUrl = `${import.meta.env.VITE_BASE_API}/backend/audio-upload`;
+export const mediaUploadUrl = `${import.meta.env.VITE_BASE_API}/backend/media-upload`;
 export const docUploadUrl = `${import.meta.env.VITE_BASE_API}/backend/doc-upload`;
 export const fileUploadUrl = `${import.meta.env.VITE_BASE_API}/backend/file-upload`;
 
@@ -30,11 +31,13 @@ export const sendTestEmail = async (data: Record<string, any>): Promise<any> => 
 export const updateUploadStorage = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/config/upload-storage?_method=put', data)).data;
 export const updateHtmlStorage = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/config/html-storage?_method=put', data)).data;
 export const updateTemplateStorage = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/config/template-storage?_method=put', data)).data;
+export const storagePathAllowed = async (path: string): Promise<any> => (await axios.get('/backend/core/config/storage-path-allowed', { params: { path } })).data;
 
 export const querySiteSettings = async (): Promise<any> => (await axios.get('/backend/core/site-settings')).data;
 export const updateSiteBaseSettings = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/site-settings/base?_method=put', data)).data;
 export const updateSiteCustomsSettings = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/site-settings/customs?_method=put', data)).data;
 export const updateSiteWatermarkSettings = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/site-settings/watermark?_method=put', data)).data;
+export const updateSiteEditorSettings = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/site-settings/editor?_method=put', data)).data;
 export const updateSiteMessageBoardSettings = async (data: Record<string, any>): Promise<any> =>
   (await axios.post('/backend/core/site-settings/message-board?_method=put', data)).data;
 export const querySiteHtmlSettings = async (): Promise<any> => (await axios.get('/backend/core/site-settings/html')).data;
@@ -64,3 +67,19 @@ export const updateBlockOrder = async (data: number[]): Promise<any> => (await a
 export const deleteBlock = async (data: number[]): Promise<any> => (await axios.post('/backend/core/block?_method=delete', data)).data;
 export const blockAliasExist = async (alias: string, scope: number): Promise<any> => (await axios.get('/backend/core/block/alias-exist', { params: { alias, scope } })).data;
 export const blockScopeNotAllowed = async (scope: number): Promise<any> => (await axios.get('/backend/core/block/scope-not-allowed', { params: { scope } })).data;
+
+export const queryMessageBoardTypeList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/ext/message-board-type', { params })).data;
+export const queryMessageBoardType = async (id: number): Promise<any> => (await axios.get(`/backend/ext/message-board-type/${id}`)).data;
+export const createMessageBoardType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/ext/message-board-type', data)).data;
+export const updateMessageBoardType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/ext/message-board-type?_method=put', data)).data;
+export const updateMessageBoardTypeOrder = async (fromId: number, toId: number): Promise<any> =>
+  (await axios.post('/backend/ext/message-board-type/update-order', { fromId, toId })).data;
+export const deleteMessageBoardType = async (data: number[]): Promise<any> => (await axios.post('/backend/ext/message-board-type?_method=delete', data)).data;
+
+export const queryPerformanceTypeList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/performance-type', { params })).data;
+export const queryPerformanceType = async (id: number): Promise<any> => (await axios.get(`/backend/core/performance-type/${id}`)).data;
+export const createPerformanceType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/performance-type', data)).data;
+export const updatePerformanceType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/performance-type?_method=put', data)).data;
+export const updatePerformanceTypeOrder = async (fromId: number, toId: number): Promise<any> =>
+  (await axios.post('/backend/core/performance-type/update-order', { fromId, toId })).data;
+export const deletePerformanceType = async (data: number[]): Promise<any> => (await axios.post('/backend/core/performance-type?_method=delete', data)).data;

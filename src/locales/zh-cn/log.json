@@ -68,6 +68,7 @@
   "log.article.create": "新增文章",
   "log.article.update": "修改文章",
   "log.article.submit": "提交文章",
+  "log.article.offline": "下线文章",
   "log.article.pass": "审核通过文章",
   "log.article.reject": "审核驳回文章",
   "log.article.completelyDelete": "彻底删除文章",
@@ -75,6 +76,7 @@
   "log.article.internalPush": "站内推送",
   "log.article.externalPush": "站群推送",
   "log.article.sticky": "置顶文章",
+  "log.article.updateOrder": "修改文章顺序",
 
   "log.channel": "栏目管理",
   "log.channel.create": "新增栏目",
@@ -117,6 +119,12 @@
   "log.messageBoard.update": "修改留言",
   "log.messageBoard.updateStatus": "修改留言状态",
   "log.messageBoard.delete": "删除留言",
+
+  "log.messageBoardType": "留言类型管理",
+  "log.messageBoardType.create": "新增留言类型",
+  "log.messageBoardType.update": "修改留言类型",
+  "log.messageBoardType.updateOrder": "修改留言类型顺序",
+  "log.messageBoardType.delete": "删除留言类型",
 
   "log.vote": "投票管理",
   "log.vote.create": "新增投票",
@@ -166,6 +174,27 @@
   "log.webFileHtml.uploadZip": "上传ZIP文件",
   "log.webFileHtml.delete": "删除文件",
 
+  "log.backupDatabase": "数据库备份",
+  "log.backupDatabase.backup": "数据库备份",
+  "log.backupDatabase.restore": "数据库恢复",
+  "log.backupDatabase.delete": "数据库删除",
+
+  "log.backupTemplates": "模板备份",
+  "log.backupTemplates.backup": "模板备份",
+  "log.backupTemplates.restore": "模板恢复",
+  "log.backupTemplates.delete": "模板删除",
+
+  "log.backupUploads": "上传备份",
+  "log.backupUploads.backup": "上传备份",
+  "log.backupUploads.restore": "上传恢复",
+  "log.backupUploads.delete": "上传删除",
+
+  "log.incrementalUploads": "上传增量备份",
+  "log.incrementalUploads.backup": "上传增量备份",
+  "log.incrementalUploads.restore": "上传增量恢复",
+  "log.incrementalUploads.merge": "上传增量合并",
+  "log.incrementalUploads.delete": "上传增量删除",
+
   "log.config": "全局设置",
   "log.config.updateBase": "修改全局基础设置",
   "log.config.updateUpload": "修改全局上传设置",
@@ -182,7 +211,8 @@
 
   "log.siteSettings": "站点设置",
   "log.siteSettings.updateBase": "修改站点基础设置",
-  "log.siteSettings.updateWatermark": "修改站点啊水印设置",
+  "log.siteSettings.updateWatermark": "修改站点水印设置",
+  "log.siteSettings.updateEditor": "修改站点编辑器设置",
   "log.siteSettings.updateMessageBoard": "修改站点留言板设置",
   "log.siteSettings.updateCustoms": "修改站点自定义设置",
   "log.siteSettings.updateHtml": "修改站点静态页设置",
@@ -206,6 +236,12 @@
   "log.dictType.update": "修改字典类型",
   "log.dictType.updateOrder": "修改字典类型顺序",
   "log.dictType.delete": "删除字典类型",
+
+  "log.performanceType": "绩效类型管理",
+  "log.performanceType.create": "新增绩效类型",
+  "log.performanceType.update": "修改绩效类型",
+  "log.performanceType.updateOrder": "修改绩效类型顺序",
+  "log.performanceType.delete": "删除绩效类型",
 
   "log.user": "用户管理",
   "log.user.create": "新增用户",

@@ -7,7 +7,7 @@ import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { perm } from '@/store/useCurrentUser';
+import { perm } from '@/stores/useCurrentUser';
 import { moveList, toParams, resetParams } from '@/utils/common';
 import { queryDictTypeList } from '@/api/config';
 import { deleteDict, queryDictList, updateDictOrder } from '@/api/content';
@@ -118,7 +118,7 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
         >
           <column-list name="dict">
             <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-            <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+            <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
             <el-table-column property="name" :label="$t('dict.name')" sortable="custom" show-overflow-tooltip></el-table-column>
             <el-table-column property="value" :label="$t('dict.value')" sortable="custom" show-overflow-tooltip></el-table-column>
             <el-table-column property="enabled" :label="$t('dict.enabled')" sortable="custom">

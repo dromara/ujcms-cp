@@ -8,7 +8,7 @@ import { ElMessage } from 'element-plus';
 import { Plus, Delete, ArrowDown } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
-import { currentUser, perm } from '@/store/useCurrentUser';
+import { currentUser, perm } from '@/stores/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
 import { toTree } from '@/utils/tree';
 import { deleteUser, updateUserStatus, queryUserList, queryOrgList } from '@/api/user';
@@ -123,7 +123,7 @@ const handleStatus = async (ids: number[], status: number) => {
 <template>
   <el-container>
     <el-aside width="200px" class="pr-3">
-      <el-scrollbar class="bg-white rounded-sm p-2">
+      <el-scrollbar class="p-2 bg-white rounded-sm">
         <div v-if="currentUser.globalPermission" class="ml-2">
           <el-checkbox
             v-model="showGlobalData"
@@ -196,7 +196,7 @@ const handleStatus = async (ids: number[], status: number) => {
         </el-popconfirm>
         <column-setting name="user" class="ml-2" />
       </div>
-      <div class="app-block mt-3">
+      <div class="mt-3 app-block">
         <el-table
           ref="table"
           v-loading="loading"
@@ -206,12 +206,12 @@ const handleStatus = async (ids: number[], status: number) => {
           @sort-change="handleSort"
         >
           <column-list name="user">
-            <el-table-column type="selection" :selectable="deletable" width="50"></el-table-column>
-            <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+            <el-table-column type="selection" :selectable="deletable" width="38"></el-table-column>
+            <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
             <el-table-column property="username" :label="$t('user.username')" sortable="custom" min-width="100"></el-table-column>
             <el-table-column property="mobile" :label="$t('user.mobile')" sortable="custom" display="none" min-width="100" show-overflow-tooltip></el-table-column>
             <el-table-column property="email" :label="$t('user.email')" sortable="custom" display="none" min-width="100" show-overflow-tooltip></el-table-column>
-            <el-table-column property="realName" :label="$t('user.realName')" sort-by="@userExt-realName" display="none" sortable="custom" min-width="100" show-overflow-tooltip />
+            <el-table-column property="realName" :label="$t('user.realName')" sort-by="@userExt-realName" sortable="custom" min-width="100" show-overflow-tooltip />
             <el-table-column property="gender" :label="$t('user.gender')" sort-by="@userExt-gender" sortable="custom" display="none">
               <template #default="{ row }">{{ $t(`gender.${row.gender}`) }}</template>
             </el-table-column>
@@ -234,9 +234,9 @@ const handleStatus = async (ids: number[], status: number) => {
                 </el-space>
               </template>
             </el-table-column>
-            <el-table-column property="group.name" :label="$t('user.group')" sort-by="group-name" sortable="custom" show-overflow-tooltip></el-table-column>
-            <el-table-column property="rank" :label="$t('user.rank')" sortable="custom" show-overflow-tooltip></el-table-column>
-            <el-table-column property="status" :label="$t('user.status')" sortable="custom" show-overflow-tooltip>
+            <el-table-column property="group.name" :label="$t('user.group')" sort-by="group-name" show-overflow-tooltip></el-table-column>
+            <el-table-column property="rank" :label="$t('user.rank')" sortable="custom" width="80" show-overflow-tooltip></el-table-column>
+            <el-table-column property="status" :label="$t('user.status')" width="80" show-overflow-tooltip>
               <template #default="{ row }">
                 <el-tag v-if="row.status === 0" type="success" size="small">{{ $t(`user.status.${row.status}`) }}</el-tag>
                 <el-tag v-else-if="row.status === 1" type="info" size="small">{{ $t(`user.status.${row.status}`) }}</el-tag>
@@ -264,14 +264,14 @@ const handleStatus = async (ids: number[], status: number) => {
           </column-list>
         </el-table>
         <el-pagination
-          v-model:currentPage="currentPage"
+          v-model:current-page="currentPage"
           v-model:pageSize="pageSize"
           :total="total"
           :page-sizes="pageSizes"
           :layout="pageLayout"
           small
           background
-          class="px-3 py-2 justify-end"
+          class="justify-end px-3 py-2"
           @size-change="() => fetchData()"
           @current-change="() => fetchData()"
         ></el-pagination>

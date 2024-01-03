@@ -4,8 +4,8 @@ export default { name: 'UserForm' };
 
 <script setup lang="ts">
 import { onMounted, ref, toRefs, watch, PropType } from 'vue';
-import { registerSettings } from '@/store/useConfig';
-import { currentUser } from '@/store/useCurrentUser';
+import { useSysConfigStore } from '@/stores/sysConfigStore';
+import { currentUser } from '@/stores/useCurrentUser';
 import { queryUser, createUser, updateUser, deleteUser, usernameExist, emailExist, mobileExist, queryGroupList, queryOrgList } from '@/api/user';
 import { toTree } from '@/utils/tree';
 import DialogForm from '@/components/DialogForm.vue';
@@ -22,6 +22,7 @@ const props = defineProps({
 const { showGlobalData, modelValue: visible } = toRefs(props);
 defineEmits({ 'update:modelValue': null, finished: null });
 
+const sysConfig = useSysConfigStore();
 const focus = ref<any>();
 const values = ref<any>({});
 const groupList = ref<any[]>([]);
@@ -189,8 +190,8 @@ watch(visible, () => {
           <el-form-item prop="avatar" :label="$t('user.avatar')">
             <image-upload
               v-model="values.avatar"
-              :width="registerSettings.largeAvatarSize"
-              :height="registerSettings.largeAvatarSize"
+              :width="sysConfig.register.largeAvatarSize"
+              :height="sysConfig.register.largeAvatarSize"
               mode="manual"
               type="avatar"
               :disabled="disabled"

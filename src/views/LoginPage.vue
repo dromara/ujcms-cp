@@ -7,7 +7,7 @@ import { User, Lock, Picture, Cellphone } from '@element-plus/icons-vue';
 import { sm2Encrypt } from '@/utils/sm';
 import { removeAccessToken, removeRefreshToken } from '@/utils/auth';
 import { queryClientPublicKey, queryIsDisplayCaptcha, queryIsMfaLogin, queryCaptcha, tryCaptcha } from '@/api/login';
-import { login } from '@/store/useCurrentUser';
+import { login } from '@/stores/useCurrentUser';
 import ChangePassword from '@/views/ChangePassword.vue';
 import GetShortMessage from '@/views/GetShortMessage.vue';
 
@@ -26,6 +26,7 @@ const redirect = ref<string | null>();
 const route = useRoute();
 const router = useRouter();
 const title = import.meta.env.VITE_APP_TITLE || 'UJCMS';
+const envMode = import.meta.env.MODE;
 
 const changePasswordVisible = ref<boolean>(false);
 const getShortMessageVisible = ref<boolean>(false);
@@ -36,9 +37,9 @@ const shortMessageText = ref<string>(t('getShortMessage'));
 removeAccessToken();
 removeRefreshToken();
 
-if (import.meta.env.MODE === 'development') {
+if (envMode === 'development') {
   bean.value = { username: 'admin', password: 'password' };
-} else if (import.meta.env.MODE === 'staging') {
+} else if (envMode === 'staging') {
   bean.value = { username: 'demo', password: '123' };
 }
 
@@ -116,8 +117,8 @@ const handleLogin = () => {
 </script>
 <template>
   <div class="h-full p-3 bg-gray-100">
+    <h3 class="py-5 text-3xl font-bold text-center text-primary">{{ title }}</h3>
     <el-form ref="form" :model="bean" class="mx-auto md:max-w-xs">
-      <h3 class="py-5 text-center text-3xl font-bold text-primary">{{ title }}</h3>
       <el-alert v-if="error" :title="error" type="error" class="mb-3" :closable="false" show-icon />
       <el-form-item prop="username" :rules="[{ required: true, message: () => $t('v.required') }]">
         <el-input ref="focus" v-model="bean.username" name="username" :placeholder="$t('username')" :prefix-icon="User" autocomplete="on" />
@@ -167,6 +168,9 @@ const handleLogin = () => {
         <el-button type="primary" link @click="() => (changePasswordVisible = true)">{{ $t('changePassword') }}</el-button>
       </div>
     </el-form>
+    <div v-if="envMode === 'staging'" class="mt-5 text-sm text-center text-gray-secondary">
+      <p>为避免数据被删改，演示用户登录后只拥有浏览后台功能，操作数据会显示无权访问（403）。</p>
+    </div>
     <change-password v-model="changePasswordVisible" />
     <get-short-message v-model="getShortMessageVisible" @finish="finishGetShortMessage" />
   </div>

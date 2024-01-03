@@ -2,7 +2,7 @@
 import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { logout } from '@/store/useCurrentUser';
+import { logout } from '@/stores/useCurrentUser';
 
 export default defineComponent({
   name: 'ErrorPage403',

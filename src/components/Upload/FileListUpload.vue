@@ -6,7 +6,7 @@ import { useI18n } from 'vue-i18n';
 import { handleError } from '@/utils/request';
 import { getAuthHeaders } from '@/utils/auth';
 import { getSiteHeaders } from '@/utils/common';
-import { uploadSettings } from '@/store/useConfig';
+import { useSysConfigStore } from '@/stores/sysConfigStore';
 import { fileUploadUrl } from '@/api/config';
 
 const props = defineProps({
@@ -17,9 +17,9 @@ const props = defineProps({
 });
 const emit = defineEmits({ 'update:modelValue': null });
 
-const { fileAccept, fileMaxSize } = toRefs(props);
+const { fileAccept, fileMaxSize, modelValue } = toRefs(props);
 const { t } = useI18n();
-const { modelValue } = toRefs(props);
+const sysConfig = useSysConfigStore();
 const progressFile = ref<any>({});
 const fileList = computed({
   get: (): any[] => modelValue.value,
@@ -51,8 +51,8 @@ const handleSubmit = () => {
     previewVisible.value = false;
   });
 };
-const accept = computed(() => fileAccept?.value ?? uploadSettings.fileInputAccept);
-const maxSize = computed(() => fileMaxSize?.value ?? uploadSettings.fileLimitByte);
+const accept = computed(() => fileAccept?.value ?? sysConfig.upload.fileInputAccept);
+const maxSize = computed(() => fileMaxSize?.value ?? sysConfig.upload.fileLimitByte);
 const beforeUpload = (file: any) => {
   if (maxSize.value > 0 && file.size > maxSize.value) {
     ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024} MB` }));

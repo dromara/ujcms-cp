@@ -7,7 +7,7 @@ import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { perm, currentUser } from '@/store/useCurrentUser';
+import { perm, currentUser } from '@/stores/useCurrentUser';
 import { deleteRole, queryRoleList, updateRoleOrder } from '@/api/user';
 import { moveList, toParams, resetParams } from '@/utils/common';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -109,7 +109,7 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
     >
       <column-list name="role">
         <el-table-column type="selection" :selectable="(bean) => !disabled(bean)" width="50"></el-table-column>
-        <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+        <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
         <el-table-column property="name" :label="$t('role.name')" sortable="custom" show-overflow-tooltip></el-table-column>
         <el-table-column property="description" :label="$t('role.description')" sortable="custom" show-overflow-tooltip></el-table-column>
         <el-table-column property="rank" :label="$t('role.rank')" sortable="custom" show-overflow-tooltip></el-table-column>

@@ -76,14 +76,14 @@ const values = ref<any>({});
         <el-col :span="12">
           <el-form-item prop="type">
             <template #label><label-tip message="operationLog.type" /></template>
-            <el-tag size="small">{{ values.type && $t(`operationLog.type.${values.type}`) }}</el-tag>
+            <el-tag size="small">{{ values.type != null && $t(`operationLog.type.${values.type}`) }}</el-tag>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item prop="status">
             <template #label><label-tip message="operationLog.status" /></template>
             <el-tag v-if="values.status === 1" type="success" size="small">{{ values.status && $t(`operationLog.status.${values.status}`) }}</el-tag>
-            <el-tag v-else type="danger" size="small">{{ values.status && $t(`operationLog.status.${values.status}`) }}</el-tag>
+            <el-tag v-else type="danger" size="small">{{ values.status != null && $t(`operationLog.status.${values.status}`) }}</el-tag>
           </el-form-item>
         </el-col>
         <el-col :span="24">
@@ -98,13 +98,13 @@ const values = ref<any>({});
             <el-input :model-value="values.requestBody" type="textarea" :autosize="{ minRows: 3, maxRows: 18 }" readonly></el-input>
           </el-form-item>
         </el-col>
-        <el-col v-if="values.status === 1" :span="24">
+        <el-col :span="24">
           <el-form-item prop="responseEntity">
             <template #label><label-tip message="operationLog.responseEntity" /></template>
-            <el-input :model-value="values.responseEntity" type="textarea" rows="3" readonly></el-input>
+            <el-input :model-value="values.responseEntity" type="textarea" :autosize="{ minRows: 3, maxRows: 24 }" readonly></el-input>
           </el-form-item>
         </el-col>
-        <el-col v-if="values.status === 0" :span="24">
+        <el-col v-if="values.exceptionStack != null" :span="24">
           <el-form-item prop="exceptionStack">
             <template #label><label-tip message="operationLog.exceptionStack" /></template>
             <el-input :model-value="values.exceptionStack" type="textarea" :autosize="{ minRows: 3, maxRows: 18 }" readonly></el-input>

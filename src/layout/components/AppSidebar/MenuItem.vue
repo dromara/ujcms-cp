@@ -2,7 +2,7 @@
 import { computed, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
 import { isExternalPath } from '@/utils/common';
-import { isShowMenu } from '@/store/useCurrentUser';
+import { isShowMenu } from '@/stores/useCurrentUser';
 
 const props = defineProps({ route: { type: Object, required: true }, basePath: { type: String, default: '' } });
 const { route, basePath } = toRefs(props);

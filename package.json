@@ -1,6 +1,6 @@
 {
   "name": "ujcms-cp",
-  "version": "8.0.2",
+  "version": "9.0.3",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -33,7 +33,7 @@
     "dayjs": "^1.10.7",
     "domutils": "^3.0.1",
     "echarts": "^5.4.2",
-    "element-plus": "^2.2.36",
+    "element-plus": "^2.4.2",
     "entities": "^4.3.0",
     "file-saver": "^2.0.5",
     "htmlparser2": "^8.0.1",
@@ -41,6 +41,8 @@
     "lodash": "^4.17.21",
     "nprogress": "^0.2.0",
     "path-to-regexp": "^6.2.0",
+    "pinia": "^2.1.6",
+    "pinia-plugin-persistedstate": "^3.2.0",
     "sm-crypto": "^0.3.7",
     "tinymce": "~5.9.2",
     "vue": "^3.2.47",

@@ -20,8 +20,8 @@ export const queryClientPublicKey = async (): Promise<any> => (await axios.get('
 export const queryConfig = async (): Promise<any> => (await axios.get('/env/config')).data;
 export const queryCaptcha = async (): Promise<any> => (await axios.get('/captcha')).data;
 export const queryIsDisplayCaptcha = async (): Promise<any> => (await axios.get('/captcha/is-display')).data;
-export const sendMobileMessage = async (token: string, captcha: string, mobile: string, usage: number): Promise<any> =>
-  (await axios.post('/sms/mobile', { token, captcha, receiver: mobile, usage })).data;
+export const sendMobileMessage = async (captchaToken: string, captcha: string, mobile: string, usage: number): Promise<any> =>
+  (await axios.post('/sms/mobile', { captchaToken, captcha, receiver: mobile, usage })).data;
 export const queryIsMfaLogin = async (): Promise<any> => (await axios.get('/env/is-mfa-login')).data;
 export const tryCaptcha = async (token: string, captcha: string): Promise<any> => (await axios.get('/captcha/try', { params: { token, captcha } })).data;
 export const mobileNotExist = async (mobile: string): Promise<any> => (await axios.get('/user/mobile-not-exist', { params: { mobile } })).data;

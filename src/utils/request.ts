@@ -4,13 +4,15 @@ import dayjs from 'dayjs';
 import { ElMessageBox } from 'element-plus';
 import i18n from '@/i18n';
 import { getAuthHeaders, removeAccessToken, removeRefreshToken, setAccessAt } from '@/utils/auth';
-import { getSiteHeaders, removeSessionSiteId } from '@/utils/common';
-import { appState } from '@/store/useAppState';
+import { getSiteHeaders } from '@/utils/common';
+import { useCurrentSiteStore } from '@/stores/currentSiteStore';
+import { useAppStateStore } from '@/stores/appStateStore';
 
 const {
   global: { t },
 } = i18n;
 const showMessageBox = () => {
+  const appState = useAppStateStore();
   if (!appState.loginBoxDisplay && !appState.messageBoxDisplay) {
     window.location.reload();
     // session超时会自动显示登录界面，应该不需要保留在原页面的提示框
@@ -40,7 +42,7 @@ const service = axios.create({
 
 service.interceptors.request.use(
   (config) => {
-    setAccessAt(new Date().getTime());
+    setAccessAt(Date.now());
     // eslint-disable-next-line
     config.headers = { ...config.headers, ...getAuthHeaders(), ...getSiteHeaders() };
     return config;
@@ -61,7 +63,7 @@ export interface ErrorInfo {
 export const handleError = ({ timestamp, message, path, error, exception, trace, status }: ErrorInfo): void => {
   if (exception === 'com.ujcms.cms.core.web.support.SiteForbiddenException') {
     //没有当前站点权限，清空站点信息，刷新页面以获取默认站点
-    removeSessionSiteId();
+    useCurrentSiteStore().setCurrentSiteId(null);
     window.location.reload();
   } else if (exception === 'com.ujcms.commons.web.exception.LogicException') {
     ElMessageBox.alert(message, { type: 'warning' });

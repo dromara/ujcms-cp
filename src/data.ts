@@ -1,5 +1,5 @@
 import i18n from '@/i18n';
-import { isShowPerm } from '@/store/useCurrentUser';
+import { isShowPerm } from '@/stores/useCurrentUser';
 
 function filterExcludePerms(arr: any[]): any[] {
   const resultes = arr.filter((item) => (item.perms?.findIndex((perm: string) => !isShowPerm(perm)) ?? -1) === -1);
@@ -69,6 +69,7 @@ export function getPermsTreeData(): any[] {
             { label: t('edit'), key: 'article:update', perms: ['article:update', 'article.submit', 'article:show', 'jodConvert:doc', 'jodConvert:library'] },
             { label: t('article.op.internalPush'), key: 'article:internalPush', perms: ['article:internalPush'] },
             { label: t('article.op.externalPush'), key: 'article:externalPush', perms: ['article:externalPush'] },
+            { label: t('article.op.updateOrder'), key: 'article:updateOrder', perms: ['article:updateOrder'] },
             { label: t('article.op.sticky'), key: 'article:sticky', perms: ['article:sticky'] },
             { label: t('article.op.submit'), key: 'article:submit', perms: ['article:submit'] },
             { label: t('article.op.archive'), key: 'article:archive', perms: ['article:archive'] },
@@ -263,6 +264,51 @@ export function getPermsTreeData(): any[] {
             { label: t('delete'), key: 'webFileHtml:delete', perms: ['webFileHtml:delete'] },
           ],
         },
+        {
+          label: t('menu.file.backupTemplates'),
+          key: 'backupTemplates.key',
+          perms: ['backupTemplates:page', 'backupTemplates:list'],
+          children: [
+            { label: t('list'), key: 'backupTemplates:page' },
+            { label: t('backupTemplates.op.backup'), key: 'backupTemplates:backup', perms: ['backupTemplates:backup'] },
+            { label: t('backupTemplates.op.restore'), key: 'backupTemplates:restore', perms: ['backupTemplates:restore'] },
+            { label: t('delete'), key: 'backupTemplates:delete', perms: ['backupTemplates:delete'] },
+          ],
+        },
+        {
+          label: t('menu.file.backupUploads'),
+          key: 'backupUploads.key',
+          perms: ['backupUploads:page', 'backupUploads:list'],
+          children: [
+            { label: t('list'), key: 'backupUploads:page' },
+            { label: t('backupUploads.op.backup'), key: 'backupUploads:backup', perms: ['backupUploads:backup'] },
+            { label: t('backupUploads.op.restore'), key: 'backupUploads:restore', perms: ['backupUploads:restore'] },
+            { label: t('delete'), key: 'backupUploads:delete', perms: ['backupUploads:delete'] },
+          ],
+        },
+        {
+          label: t('menu.file.incrementalUploads'),
+          key: 'incrementalUploads.key',
+          perms: ['incrementalUploads:page', 'incrementalUploads:list'],
+          children: [
+            { label: t('list'), key: 'incrementalUploads:page' },
+            { label: t('incrementalUploads.op.backup'), key: 'incrementalUploads:backup', perms: ['incrementalUploads:backup'] },
+            { label: t('incrementalUploads.op.merge'), key: 'incrementalUploads:merge', perms: ['incrementalUploads:merge'] },
+            { label: t('incrementalUploads.op.restore'), key: 'incrementalUploads:restore', perms: ['incrementalUploads:restore'] },
+            { label: t('delete'), key: 'incrementalUploads:delete', perms: ['incrementalUploads:delete'] },
+          ],
+        },
+        {
+          label: t('menu.file.backupDatabase'),
+          key: 'backupDatabase.key',
+          perms: ['backupDatabase:page', 'backupDatabase:list'],
+          children: [
+            { label: t('list'), key: 'backupDatabase:page' },
+            { label: t('backupDatabase.op.backup'), key: 'backupDatabase:backup', perms: ['backupDatabase:backup'] },
+            { label: t('backupDatabase.op.restore'), key: 'backupDatabase:restore', perms: ['backupDatabase:restore'] },
+            { label: t('delete'), key: 'backupDatabase:delete', perms: ['backupDatabase:delete'] },
+          ],
+        },
       ],
     },
     {
@@ -306,6 +352,7 @@ export function getPermsTreeData(): any[] {
           children: [
             { label: t('site.settings.base'), key: 'siteSettings:base:update', perms: ['siteSettings:base:update', 'site:theme'] },
             { label: t('site.settings.watermark'), key: 'siteSettings:watermark:update', perms: ['siteSettings:watermark:update'] },
+            { label: t('site.settings.editor'), key: 'siteSettings:editor:update', perms: ['siteSettings:editor:update'] },
             { label: t('site.settings.messageBoard'), key: 'siteSettings:messageBoard:update', perms: ['siteSettings:messageBoard:update'] },
             { label: t('site.settings.customs'), key: 'siteSettings:customs:update', perms: ['siteSettings:customs:update'] },
           ],
@@ -343,6 +390,28 @@ export function getPermsTreeData(): any[] {
             { label: t('delete'), key: 'dictType:delete', perms: ['dictType:delete'] },
           ],
         },
+        {
+          label: t('menu.config.performanceType'),
+          key: 'performanceType.key',
+          perms: ['performanceType:page', 'performanceType:list'],
+          children: [
+            { label: t('list'), key: 'performanceType:page' },
+            { label: t('add'), key: 'performanceType:create', perms: ['performanceType:create'] },
+            { label: t('edit'), key: 'performanceType:update', perms: ['performanceType:update', 'performanceType:show'] },
+            { label: t('delete'), key: 'performanceType:delete', perms: ['performanceType:delete'] },
+          ],
+        },
+        {
+          label: t('menu.config.messageBoardType'),
+          key: 'messageBoardType.key',
+          perms: ['messageBoardType:page', 'messageBoardType:list'],
+          children: [
+            { label: t('list'), key: 'messageBoardType:page' },
+            { label: t('add'), key: 'messageBoardType:create', perms: ['messageBoardType:create'] },
+            { label: t('edit'), key: 'messageBoardType:update', perms: ['messageBoardType:update', 'messageBoardType:show'] },
+            { label: t('delete'), key: 'messageBoardType:delete', perms: ['messageBoardType:delete'] },
+          ],
+        },
       ],
     },
     {
@@ -351,39 +420,92 @@ export function getPermsTreeData(): any[] {
       perms: ['menu.stat'],
       children: [
         {
-          label: t('menu.stat.visitTrend'),
-          key: 'visitTrend:page',
-          perms: ['visitTrend:page', 'visitTrend:list'],
+          label: t('menu.stat.visit'),
+          key: 'menu.stat.visit.key',
+          perms: ['menu.stat.visit'],
+          children: [
+            {
+              label: t('menu.stat.visitTrend'),
+              key: 'visitTrend:page',
+              perms: ['visitTrend:page', 'visitTrend:list'],
+            },
+            {
+              label: t('menu.stat.visitedPage'),
+              key: 'visitedPage:page',
+              perms: ['visitedPage:page', 'visitedPage:list'],
+            },
+            {
+              label: t('menu.stat.entryPage'),
+              key: 'entryPage:page',
+              perms: ['entryPage:page', 'entryPage:list'],
+            },
+            {
+              label: t('menu.stat.visitSource'),
+              key: 'visitSource:page',
+              perms: ['visitSource:page', 'visitSource:list'],
+            },
+          ],
         },
         {
-          label: t('menu.stat.visitedPage'),
-          key: 'visitedPage:page',
-          perms: ['visitedPage:page', 'visitedPage:list'],
+          label: t('menu.stat.visitor'),
+          key: 'menu.stat.visitor.key',
+          perms: ['menu.stat.visitor'],
+          children: [
+            {
+              label: t('menu.stat.visitVisitor'),
+              key: 'visitVisitor:page',
+              perms: ['visitVisitor:page', 'visitVisitor:list'],
+            },
+            {
+              label: t('menu.stat.visitRegion'),
+              key: 'visitRegion:page',
+              perms: ['visitRegion:page', 'visitCountry:list', 'visitProvince:list'],
+            },
+            {
+              label: t('menu.stat.visitEnv'),
+              key: 'visitEnv:page',
+              perms: ['visitEnv:page', 'visitDevice:list', 'visitOs:list', 'visitBrowser:list'],
+            },
+          ],
         },
         {
-          label: t('menu.stat.entryPage'),
-          key: 'entryPage:page',
-          perms: ['entryPage:page', 'entryPage:list'],
+          label: t('menu.stat.articleStat'),
+          key: 'menu.stat.articleStat.key',
+          perms: ['menu.stat.articleStat'],
+          children: [
+            {
+              label: t('menu.stat.articleStat.byUser'),
+              key: 'articleStatByUser:page',
+              perms: ['articleStatByUser:page', 'articleStatByUser:list'],
+            },
+            {
+              label: t('menu.stat.articleStat.byOrg'),
+              key: 'articleStatByOrg:page',
+              perms: ['articleStatByOrg:page', 'articleStatByOrg:list'],
+            },
+            {
+              label: t('menu.stat.articleStat.byChannel'),
+              key: 'articleStatByChannel:page',
+              perms: ['articleStatByChannel:page', 'articleStatByChannel:list'],
+            },
+          ],
         },
         {
-          label: t('menu.stat.visitSource'),
-          key: 'visitSource:page',
-          perms: ['visitSource:page', 'visitSource:list'],
-        },
-        {
-          label: t('menu.stat.visitVisitor'),
-          key: 'visitVisitor:page',
-          perms: ['visitVisitor:page', 'visitVisitor:list'],
-        },
-        {
-          label: t('menu.stat.visitRegion'),
-          key: 'visitRegion:page',
-          perms: ['visitRegion:page', 'visitCountry:list', 'visitProvince:list'],
-        },
-        {
-          label: t('menu.stat.visitEnv'),
-          key: 'visitEnv:page',
-          perms: ['visitEnv:page', 'visitDevice:list', 'visitOs:list', 'visitBrowser:list'],
+          label: t('menu.stat.performanceStat'),
+          key: 'menu.stat.performanceStat.key',
+          perms: ['menu.stat.performanceStat'],
+          children: [
+            {
+              label: t('menu.stat.performanceStat.byUser'),
+              key: 'performanceStatByUser:page',
+              perms: ['performanceStatByUser:page', 'performanceStatByUser:list'],
+            },
+            {
+              label: t('menu.stat.performanceStat.byOrg'),
+              key: 'performanceStatByOrg:page',
+              perms: ['performanceStatByOrg:page', 'performanceStatByOrg:list'],
+            },
+          ],
         },
       ],
     },
@@ -588,7 +710,8 @@ export function getModelData(): any {
         { code: 'channel', must: true, show: true, required: true },
         { code: 'org', must: false, show: true, required: true },
         { code: 'publishDate', must: true, show: true, required: true },
-        // { code: 'offlineDate', must: false, show: true, required: false },
+        { code: 'onlineDate', must: false, show: true, required: false },
+        { code: 'offlineDate', must: false, show: true, required: false },
         { code: 'source', must: false, show: true, required: false },
         { code: 'articleTemplate', must: false, show: true, required: false },
         { code: 'allowComment', must: false, show: true, required: true },
@@ -621,7 +744,9 @@ export function getModelData(): any {
         { code: 'parent', must: true, show: true, required: false },
         { code: 'type', must: true, show: true, required: true },
         { code: 'processKey', must: false, show: true, required: false },
+        { code: 'performanceType', must: false, show: true, required: false, epRank: 3 },
         { code: 'pageSize', must: true, show: true, required: true },
+        { code: 'orderDesc', must: true, show: true, required: true },
       ],
     },
   };
@@ -662,17 +787,23 @@ export const logModules = [
   'fulltext',
   'html',
   'messageBoard',
+  'messageBoardType',
   'vote',
   'survey',
   'example',
   'webFileTemplate',
   'webFileUpload',
   'webFileHtml',
+  'backupTemplates',
+  'backupUploads',
+  'incrementalUploads',
+  'backupDatabase',
   'config',
   'siteSettings',
   'model',
   'block',
   'dictType',
+  'performanceType',
   'user',
   'role',
   'org',
@@ -694,6 +825,7 @@ export const logNames = [
   'article.reject',
   'article.completelyDelete',
   'article.delete',
+  'article.updateOrder',
   'article.sticky',
   'article.internalPush',
   'article.externalPush',
@@ -727,6 +859,11 @@ export const logNames = [
   'messageBoard.update',
   'messageBoard.updateStatus',
   'messageBoard.delete',
+
+  'messageBoardType.create',
+  'messageBoardType.update',
+  'messageBoardType.updateOrder',
+  'messageBoardType.delete',
 
   'vote.create',
   'vote.update',
@@ -770,6 +907,23 @@ export const logNames = [
   'webFileHtml.uploadZip',
   'webFileHtml.delete',
 
+  'backupTemplates.backup',
+  'backupTemplates.restore',
+  'backupTemplates.delete',
+
+  'backupUploads.backup',
+  'backupUploads.restore',
+  'backupUploads.delete',
+
+  'incrementalUploads.backup',
+  'incrementalUploads.restore',
+  'incrementalUploads.merge',
+  'incrementalUploads.delete',
+
+  'backupDatabase.backup',
+  'backupDatabase.restore',
+  'backupDatabase.delete',
+
   'config.updateBase',
   'config.updateUpload',
   'config.updateRegister',
@@ -785,6 +939,7 @@ export const logNames = [
 
   'siteSettings.updateBase',
   'siteSettings.updateWatermark',
+  'siteSettings.updateEditor',
   'siteSettings.updateMessageBoard',
   'siteSettings.updateCustoms',
   'siteSettings.updateHtml',
@@ -803,6 +958,11 @@ export const logNames = [
   'dictType.update',
   'dictType.updateOrder',
   'dictType.delete',
+
+  'performanceType.create',
+  'performanceType.update',
+  'performanceType.updateOrder',
+  'performanceType.delete',
 
   'user.create',
   'user.update',

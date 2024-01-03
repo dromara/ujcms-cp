@@ -1,5 +1,5 @@
 import { defineConfig, loadEnv } from 'vite';
-import path from 'path';
+import { resolve } from 'path';
 import vue from '@vitejs/plugin-vue';
 import legacy from '@vitejs/plugin-legacy';
 import vueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
@@ -12,7 +12,7 @@ export default defineConfig(({ mode, command }) => {
     base: env.VITE_PUBLIC_PATH,
     resolve: {
       alias: {
-        '@/': `${path.resolve(__dirname, 'src')}/`,
+        '@/': `${resolve(__dirname, 'src')}/`,
       },
     },
     server: {
@@ -41,7 +41,7 @@ export default defineConfig(({ mode, command }) => {
         targets: ['defaults', 'not IE 11'],
       }),
       vueI18nPlugin({
-        include: [path.resolve(__dirname, './locales/**')],
+        include: [resolve(__dirname, './locales/**')],
       }),
       viteMockServe({
         ignore: /^_/,

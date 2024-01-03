@@ -6,6 +6,8 @@ export default { name: 'WebFileForm' };
 import { ref, PropType } from 'vue';
 import { Codemirror } from 'vue-codemirror';
 import { html } from '@codemirror/lang-html';
+import { ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 
@@ -21,12 +23,39 @@ defineProps({
   deleteWebFile: { type: Function as PropType<(data: string[]) => Promise<any>>, required: true },
 });
 defineEmits({ 'update:modelValue': null, finished: null });
+const { t } = useI18n();
 const focus = ref<any>();
 const values = ref<any>({});
+const dialog = ref<any>();
+
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.ctrlKey == true) {
+    e.preventDefault();
+    dialog.value.submit(
+      async (
+        values: any,
+        { isEdit, focus, emit, props, form, resetOrigValues }: { isEdit: boolean; focus: any; emit: any; props: any; form: any; resetOrigValues: () => void },
+      ) => {
+        emit('beforeSubmit', values);
+        if (isEdit) {
+          await props.updateBean(values);
+          resetOrigValues();
+        } else {
+          await props.createBean(values);
+          focus?.focus?.();
+          emit('update:values', props.initValues(values));
+          form.resetFields();
+        }
+        ElMessage.success(t('success'));
+      },
+    );
+  }
+};
 </script>
 
 <template>
   <dialog-form
+    ref="dialog"
     v-model:values="values"
     :name="$t(`menu.file.webFile${type}`)"
     :query-bean="queryWebFile"
@@ -68,7 +97,7 @@ const values = ref<any>({});
         <el-col v-if="!isEdit || values.editable" :span="24">
           <el-form-item prop="text">
             <template #label><label-tip message="webFile.text" /></template>
-            <codemirror v-model="values.text" :extensions="[html()]" :style="{ minHeight: '200px', width: '100%', border: '1px solid silver' }" />
+            <codemirror v-model="values.text" :extensions="[html()]" :style="{ minHeight: '200px', width: '100%', border: '1px solid silver' }" @keydown.s="handleKeydown" />
           </el-form-item>
         </el-col>
         <el-col v-if="bean.image">

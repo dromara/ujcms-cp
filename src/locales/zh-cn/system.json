@@ -28,7 +28,7 @@
   "site.logo": "LOGO",
   "site.logo.tooltip": "模板调用代码：{'${site.logo}'}",
   "site.seoTitle": "SEO标题",
-  "site.seoTitle.tooltip": "模板调用代码：{'${site.title}'}。如该值未设置，则获取站点名称",
+  "site.seoTitle.tooltip": "模板调用代码：{'${site.title}'}。如该值未设置，则获取站点名称。可用于HTML页面中的 title 标签，有利于搜索引擎优化",
   "site.seoKeywords": "SEO关键词",
   "site.seoKeywords.tooltip": "模板调用代码：{'${site.seoKeywords!}'}",
   "site.seoDescription": "SEO描述",

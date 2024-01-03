@@ -3,7 +3,7 @@ import 'nprogress/nprogress.css';
 import { RouteLocationNormalized } from 'vue-router';
 import i18n from '@/i18n';
 import { getAccessToken } from '@/utils/auth';
-import { hasCurrentUser, fetchCurrentUser, hasPermission } from '@/store/useCurrentUser';
+import { hasCurrentUser, fetchCurrentUser, hasPermission } from '@/stores/useCurrentUser';
 import router from './router';
 
 NProgress.configure({ showSpinner: false });

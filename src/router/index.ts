@@ -1,6 +1,6 @@
 import { Component } from 'vue';
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
-import { Document, Tools, UserFilled, Operation, Tickets, Connection, Folder } from '@element-plus/icons-vue';
+import { Document, Tools, UserFilled, Histogram, Operation, Connection, Folder, List } from '@element-plus/icons-vue';
 import Layout from '@/layout/index.vue';
 
 declare module 'vue-router' {
@@ -122,6 +122,30 @@ export const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/file/WebFileHtmlList.vue'),
         meta: { title: 'menu.file.webFileHtml', requiresPermission: 'webFileHtml:page' },
       },
+      {
+        path: 'backup-templates',
+        name: 'BackupTemplatesList',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.file.backupTemplates', requiresPermission: 'backupTemplates:page' },
+      },
+      {
+        path: 'backup-uploads',
+        name: 'BackupUploadsList',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.file.backupUploads', requiresPermission: 'backupUploads:page' },
+      },
+      {
+        path: 'incremental-uploads',
+        name: 'IncrementalUploadsList',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.file.incrementalUploads', requiresPermission: 'incrementalUploads:page' },
+      },
+      {
+        path: 'backup-database',
+        name: 'BackupDatabaseList',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.file.backupDatabase', requiresPermission: 'backupDatabase:page' },
+      },
     ],
   },
   {
@@ -149,54 +173,120 @@ export const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/config/DictTypeList.vue'),
         meta: { title: 'menu.config.dictType', requiresPermission: 'dictType:page' },
       },
+      {
+        path: 'performance-type',
+        name: 'PerformanceTypeList',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.config.performanceType', requiresPermission: 'performanceType:page' },
+      },
+      {
+        path: 'message-board-type',
+        name: 'MessageBoardTypeList',
+        component: () => import('@/views/config/MessageBoardTypeList.vue'),
+        meta: { title: 'menu.config.messageBoardType', requiresPermission: 'messageBoardType:page' },
+      },
     ],
   },
   {
     path: '/stat',
     component: Layout,
-    meta: { title: 'menu.stat', icon: UserFilled, requiresPermission: 'menu.stat' },
+    meta: { title: 'menu.stat', icon: Histogram, requiresPermission: 'menu.stat' },
     children: [
       {
-        path: 'visit-trend',
-        name: 'VisitTrend',
-        component: () => import('@/views/stat/VisitTrend.vue'),
-        meta: { title: 'menu.stat.visitTrend', requiresPermission: 'visitTrend:page' },
+        path: 'visit',
+        meta: { title: 'menu.stat.visit', requiresPermission: 'menu.stat.visit' },
+        children: [
+          {
+            path: 'visit-trend',
+            name: 'VisitTrend',
+            component: () => import('@/views/stat/VisitTrend.vue'),
+            meta: { title: 'menu.stat.visitTrend', requiresPermission: 'visitTrend:page' },
+          },
+          {
+            path: 'visited-page',
+            name: 'VisitedPage',
+            component: () => import('@/views/EnterprisePage.vue'),
+            meta: { title: 'menu.stat.visitedPage', requiresPermission: 'visitedPage:page' },
+          },
+          {
+            path: 'entry-page',
+            name: 'EntryPage',
+            component: () => import('@/views/EnterprisePage.vue'),
+            meta: { title: 'menu.stat.entryPage', requiresPermission: 'entryPage:page' },
+          },
+          {
+            path: 'visit-source',
+            name: 'VisitSource',
+            component: () => import('@/views/EnterprisePage.vue'),
+            meta: { title: 'menu.stat.visitSource', requiresPermission: 'visitSource:page' },
+          },
+        ],
       },
       {
-        path: 'visited-page',
-        name: 'VisitedPage',
-        component: () => import('@/views/EnterprisePage.vue'),
-        meta: { title: 'menu.stat.visitedPage', requiresPermission: 'visitedPage:page' },
+        path: 'visitor',
+        meta: { title: 'menu.stat.visitor', requiresPermission: 'menu.stat.visitor' },
+        children: [
+          {
+            path: 'visit-visitor',
+            name: 'VisitVisitor',
+            component: () => import('@/views/stat/VisitVisitor.vue'),
+            meta: { title: 'menu.stat.visitVisitor', requiresPermission: 'visitVisitor:page' },
+          },
+          {
+            path: 'visit-region',
+            name: 'VisitRegion',
+            component: () => import('@/views/stat/VisitRegion.vue'),
+            meta: { title: 'menu.stat.visitRegion', requiresPermission: 'visitRegion:page' },
+          },
+          {
+            path: 'visit-env',
+            name: 'VisitEnv',
+            component: () => import('@/views/EnterprisePage.vue'),
+            meta: { title: 'menu.stat.visitEnv', requiresPermission: 'visitEnv:page' },
+          },
+        ],
       },
       {
-        path: 'entry-page',
-        name: 'EntryPage',
-        component: () => import('@/views/EnterprisePage.vue'),
-        meta: { title: 'menu.stat.entryPage', requiresPermission: 'entryPage:page' },
+        path: 'article-stat',
+        meta: { title: 'menu.stat.articleStat', requiresPermission: 'menu.stat.articleStat' },
+        children: [
+          {
+            path: 'by-user',
+            name: 'ArticleStatByUser',
+            component: () => import('@/views/EnterprisePage.vue'),
+            meta: { title: 'menu.stat.articleStat.byUser', requiresPermission: 'articleStatByUser:page' },
+          },
+          {
+            path: 'by-org',
+            name: 'ArticleStatByOrg',
+            component: () => import('@/views/EnterprisePage.vue'),
+            meta: { title: 'menu.stat.articleStat.byOrg', requiresPermission: 'articleStatByOrg:page' },
+          },
+          {
+            path: 'by-channel',
+            name: 'ArticleStatByChannel',
+            component: () => import('@/views/EnterprisePage.vue'),
+            meta: { title: 'menu.stat.articleStat.byChannel', requiresPermission: 'articleStatByChannel:page' },
+          },
+        ],
       },
       {
-        path: 'visit-source',
-        name: 'VisitSource',
-        component: () => import('@/views/EnterprisePage.vue'),
-        meta: { title: 'menu.stat.visitSource', requiresPermission: 'visitSource:page' },
-      },
-      {
-        path: 'visit-visitor',
-        name: 'VisitVisitor',
-        component: () => import('@/views/stat/VisitVisitor.vue'),
-        meta: { title: 'menu.stat.visitVisitor', requiresPermission: 'visitVisitor:page' },
-      },
-      {
-        path: 'visit-region',
-        name: 'VisitRegion',
-        component: () => import('@/views/stat/VisitRegion.vue'),
-        meta: { title: 'menu.stat.visitRegion', requiresPermission: 'visitRegion:page' },
-      },
-      {
-        path: 'visit-env',
-        name: 'VisitEnv',
-        component: () => import('@/views/EnterprisePage.vue'),
-        meta: { title: 'menu.stat.visitEnv', requiresPermission: 'visitEnv:page' },
+        path: 'performance-stat',
+        meta: { title: 'menu.stat.performanceStat', requiresPermission: 'menu.stat.performanceStat' },
+        children: [
+          {
+            path: 'by-user',
+            name: 'PerformanceStatByUser',
+            component: () => import('@/views/EnterprisePage.vue'),
+            meta: { title: 'menu.stat.performanceStat.byUser', requiresPermission: 'performanceStatByUser:page' },
+          },
+          {
+            path: 'by-org',
+            name: 'PerformanceStatByOrg',
+            component: () => import('@/views/EnterprisePage.vue'),
+            meta: { title: 'menu.stat.performanceStat.byOrg', requiresPermission: 'performanceStatByOrg:page' },
+          },
+        ],
       },
     ],
   },
@@ -214,7 +304,7 @@ export const routes: Array<RouteRecordRaw> = [
   {
     path: '/log',
     component: Layout,
-    meta: { title: 'menu.log', icon: Tickets, requiresPermission: 'menu.log' },
+    meta: { title: 'menu.log', icon: List, requiresPermission: 'menu.log' },
     children: [
       {
         path: 'short-message',
@@ -241,7 +331,7 @@ export const routes: Array<RouteRecordRaw> = [
     component: Layout,
     meta: { title: 'menu.system', icon: Operation, requiresPermission: 'menu.system' },
     children: [
-      { path: 'site', name: 'SiteList', component: () => import('@/views/EnterprisePage.vue'), meta: { title: 'menu.system.site', requiresPermission: 'site:page' } },
+      { path: 'site', name: 'SiteList', component: () => import('@/views/system/SiteList.vue'), meta: { title: 'menu.system.site', requiresPermission: 'site:page' } },
       {
         path: 'process-model',
         name: 'ProcessModelList',

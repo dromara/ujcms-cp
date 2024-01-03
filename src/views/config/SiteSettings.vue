@@ -3,21 +3,23 @@ export default { name: 'SiteSettings' };
 </script>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { toTree } from '@/utils/tree';
+import { useCurrentSiteStore } from '@/stores/currentSiteStore';
 import {
   querySiteSettings,
   updateSiteBaseSettings,
   updateSiteWatermarkSettings,
+  updateSiteEditorSettings,
   updateSiteMessageBoardSettings,
   updateSiteCustomsSettings,
   queryCurrentSiteThemeList,
   queryModelList,
 } from '@/api/config';
 import { queryOrgList } from '@/api/user';
-import { perm, hasPermission } from '@/store/useCurrentUser';
+import { perm, hasPermission, currentUser } from '@/stores/useCurrentUser';
 import LabelTip from '@/components/LabelTip.vue';
 import { ImageUpload } from '@/components/Upload';
 import FieldItem from '@/views/config/components/FieldItem.vue';
@@ -25,6 +27,7 @@ import FieldItem from '@/views/config/components/FieldItem.vue';
 defineEmits({ 'update:modelValue': null, finished: null });
 
 const { t } = useI18n();
+const currentSiteStore = useCurrentSiteStore();
 const form = ref<any>();
 const site = ref<any>();
 const values = ref<any>({});
@@ -38,23 +41,52 @@ const model = computed(() => modelList.value.find((item) => item.id === modelId.
 const fields = computed(() => JSON.parse(model.value?.customs || '[]'));
 
 const types: string[] = [];
-if (hasPermission('siteSettings:base:update')) types.push('base');
-if (hasPermission('siteSettings:watermark:update')) types.push('watermark');
-if (hasPermission('siteSettings:messageBoard:update')) types.push('messageBoard');
-if (hasPermission('siteSettings:customs:update')) types.push('customs');
+if (hasPermission('siteSettings:base:update')) {
+  types.push('base');
+}
+if (hasPermission('siteSettings:watermark:update')) {
+  types.push('watermark');
+}
+if (hasPermission('siteSettings:editor:update') && (currentUser.epRank >= 2 || currentUser.epDisplay)) {
+  types.push('editor');
+}
+if (hasPermission('siteSettings:messageBoard:update')) {
+  types.push('messageBoard');
+}
+if (hasPermission('siteSettings:customs:update')) {
+  types.push('customs');
+}
 const type = ref<string>(types[0]);
 
-const tabClick = (paneName?: string | number) => {
-  if (paneName === 'watermark') {
+const switchType = () => {
+  if (type.value === 'watermark') {
     values.value = site.value.watermark;
-  } else if (paneName === 'messageBoard') {
+  } else if (type.value === 'editor') {
+    values.value = site.value.editor;
+    if (values.value.typesetting == null) {
+      values.value.typesetting = {
+        fontFamily: '',
+        fontSize: '',
+        lineHeight: '',
+        textIndent: false,
+        imageCenterAlign: true,
+        tableFullWidth: true,
+        emptyLine: 'one',
+        halfWidthCharConversion: true,
+      };
+    }
+  } else if (type.value === 'messageBoard') {
     values.value = site.value.messageBoard;
-  } else if (paneName === 'customs') {
+  } else if (type.value === 'customs') {
     values.value = site.value.customs;
   } else {
     values.value = site.value;
   }
 };
+
+watch(type, () => switchType());
+
+// const tabClick = (paneName?: string | number) => {};
 
 const fetchThemeList = async () => {
   themeList.value = await queryCurrentSiteThemeList();
@@ -68,12 +100,12 @@ const fetchModelList = async () => {
 const fetchSiteSetting = async () => {
   site.value = await querySiteSettings();
   modelId.value = site.value.modelId;
-  tabClick(type.value);
 };
 onMounted(async () => {
   loading.value = true;
   try {
     await Promise.all([fetchThemeList(), fetchOrgList(), fetchModelList(), fetchSiteSetting()]);
+    switchType();
   } finally {
     loading.value = false;
   }
@@ -93,6 +125,8 @@ const handleSubmit = () => {
     try {
       if (type.value === 'watermark') {
         await updateSiteWatermarkSettings(values.value);
+      } else if (type.value === 'editor') {
+        await updateSiteEditorSettings(values.value);
       } else if (type.value === 'messageBoard') {
         await updateSiteMessageBoardSettings(values.value);
       } else if (type.value === 'customs') {
@@ -100,6 +134,7 @@ const handleSubmit = () => {
       } else {
         await updateSiteBaseSettings(values.value);
       }
+      currentSiteStore.currentSite = await querySiteSettings();
       ElMessage.success(t('success'));
     } finally {
       buttonLoading.value = false;
@@ -112,7 +147,7 @@ const handleSubmit = () => {
 <template>
   <el-container>
     <el-aside width="180px" class="pr-3">
-      <el-tabs v-model="type" tab-position="left" stretch class="bg-white" @tab-click="({ paneName }) => tabClick(paneName)">
+      <el-tabs v-model="type" tab-position="left" stretch class="bg-white">
         <el-tab-pane v-for="tp in types" :key="tp" :name="tp" :label="$t(`site.settings.${tp}`)"></el-tab-pane>
       </el-tabs>
     </el-aside>
@@ -156,6 +191,130 @@ const handleSubmit = () => {
               <el-form-item prop="minHeight" :rules="{ required: true, message: () => $t('v.required') }">
                 <template #label><label-tip message="site.watermark.minHeight" help /></template>
                 <el-input v-model.number="values.minHeight" :min="1" :max="65535"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </template>
+        <template v-else-if="type === 'editor' && currentUser.epRank < 2">
+          <el-alert type="warning" :closable="false" :show-icon="true">
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <template #title><span v-html="$t('error.enterprise')"></span></template>
+          </el-alert>
+        </template>
+        <template v-else-if="type === 'editor' && currentUser.epRank >= 2">
+          <el-divider>{{ $t('site.editor.typesetting') }}</el-divider>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item prop="typesetting.fontFamily">
+                <template #label><label-tip message="site.editor.typesetting.fontFamily" /></template>
+                <el-select v-model="values.typesetting.fontFamily">
+                  <el-option
+                    v-for="item in [
+                      { value: '', label: '默认' },
+                      { value: 'SimSun', label: '宋体' },
+                      { value: 'Microsoft YaHei', label: '微软雅黑' },
+                      { value: 'SimKai,KaiTi', label: '楷体' },
+                      { value: 'SimHei', label: '黑体' },
+                      { value: 'SimLi,LiSu', label: '隶书' },
+                      { value: 'andale mono,times', label: 'Andale Mono' },
+                      { value: 'arial,helvetica,sans-serif', label: 'Arial' },
+                      { value: 'arial black,avant garde', label: 'Arial Black' },
+                      { value: 'comic sans ms,sans-serif', label: 'Comic Sans MS' },
+                      { value: 'helvetica', label: 'Helvetica' },
+                      { value: 'impact,chicago', label: 'Impact' },
+                      { value: 'times new roman,times', label: 'Times New Roman' },
+                    ]"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="typesetting.fontSize">
+                <template #label><label-tip message="site.editor.typesetting.fontSize" /></template>
+                <el-select v-model="values.typesetting.fontSize">
+                  <el-option
+                    v-for="item in [
+                      { value: '', label: '默认' },
+                      { value: '12px', label: '小五' },
+                      { value: '14px', label: '五号' },
+                      { value: '16px', label: '小四' },
+                      { value: '18px', label: '四号' },
+                      { value: '20px', label: '小三' },
+                      { value: '22px', label: '三号' },
+                      { value: '24px', label: '小二' },
+                      { value: '28px', label: '二号' },
+                    ]"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="typesetting.lineHeight">
+                <template #label><label-tip message="site.editor.typesetting.lineHeight" /></template>
+                <el-select v-model="values.typesetting.lineHeight">
+                  <el-option
+                    v-for="item in [
+                      { value: '', label: '默认' },
+                      { value: '1.0', label: '1.0' },
+                      { value: '1.1', label: '1.1' },
+                      { value: '1.2', label: '1.2' },
+                      { value: '1.3', label: '1.3' },
+                      { value: '1.4', label: '1.4' },
+                      { value: '1.5', label: '1.5' },
+                      { value: '2.0', label: '2.0' },
+                    ]"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="typesetting.emptyLine">
+                <template #label><label-tip message="site.editor.typesetting.emptyLine" /></template>
+                <el-select v-model="values.typesetting.emptyLine">
+                  <el-option
+                    v-for="item in [
+                      { value: 'remain', label: '保留空行' },
+                      { value: 'one', label: '合并为一行' },
+                      { value: 'remove', label: '删除空行' },
+                    ]"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="typesetting.textIndent">
+                <template #label><label-tip message="site.editor.typesetting.textIndent" /></template>
+                <el-switch v-model="values.typesetting.textIndent" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="typesetting.imageCenterAlign">
+                <template #label><label-tip message="site.editor.typesetting.imageCenterAlign" /></template>
+                <el-switch v-model="values.typesetting.imageCenterAlign" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="typesetting.tableFullWidth">
+                <template #label><label-tip message="site.editor.typesetting.tableFullWidth" /></template>
+                <el-switch v-model="values.typesetting.tableFullWidth" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item prop="typesetting.halfWidthCharConversion">
+                <template #label><label-tip message="site.editor.typesetting.halfWidthCharConversion" /></template>
+                <el-switch v-model="values.typesetting.halfWidthCharConversion" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -290,7 +449,7 @@ const handleSubmit = () => {
             </el-col>
           </el-row>
         </template>
-        <div>
+        <div v-if="type !== 'editor' || currentUser.epRank >= 2">
           <el-button :disabled="perm(`siteSettings:${type}:update`)" :loading="buttonLoading" type="primary" native-type="submit" @click.prevent="handleSubmit">
             {{ $t('save') }}
           </el-button>

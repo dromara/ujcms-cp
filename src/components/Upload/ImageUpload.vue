@@ -6,7 +6,7 @@ import { useI18n } from 'vue-i18n';
 import { getAuthHeaders } from '@/utils/auth';
 import { getSiteHeaders } from '@/utils/common';
 import { handleError } from '@/utils/request';
-import { uploadSettings } from '@/store/useConfig';
+import { useSysConfigStore } from '@/stores/sysConfigStore';
 import { imageUploadUrl, avatarUploadUrl } from '@/api/config';
 import ImageCropper from './ImageCropper.vue';
 
@@ -33,6 +33,7 @@ const emit = defineEmits({ 'update:modelValue': null, cropSuccess: null });
 
 const { modelValue, type, width, height, mode, fileAccept, fileMaxSize } = toRefs(props);
 const { t } = useI18n();
+const sysConfig = useSysConfigStore();
 const progressFile = ref<any>({});
 const previewVisible = ref<boolean>(false);
 const cropperVisible = ref<boolean>(false);
@@ -61,8 +62,8 @@ const data = computed(() => {
   }
   return params;
 });
-const accept = computed(() => fileAccept.value ?? uploadSettings.imageInputAccept);
-const maxSize = computed(() => fileMaxSize.value ?? uploadSettings.imageLimitByte);
+const accept = computed(() => fileAccept.value ?? sysConfig.upload.imageInputAccept);
+const maxSize = computed(() => fileMaxSize.value ?? sysConfig.upload.imageLimitByte);
 const beforeUpload = (file: any) => {
   if (maxSize.value > 0 && file.size > maxSize.value) {
     ElMessage.error(t('error.fileMaxSize', { size: `${maxSize.value / 1024 / 1024} MB` }));
@@ -97,9 +98,9 @@ const onCropSuccess = (url: string) => {
     // 用于测试上传进度条
     action="https://jsonplaceholder.typicode.com/posts/"
      -->
-    <div v-if="src" class="full-flex-center rounded-border relative hover:border-opacity-0">
-      <img :src="src" class="max-w-full max-h-full block" />
-      <div class="full-flex-center absolute rounded-md cursor-default bg-black bg-opacity-50 opacity-0 hover:opacity-100 space-x-4" @click.stop>
+    <div v-if="src" class="relative full-flex-center rounded-border hover:border-opacity-0">
+      <img :src="src" class="block max-w-full max-h-full" />
+      <div class="absolute space-x-4 bg-black bg-opacity-50 rounded-md opacity-0 cursor-default full-flex-center hover:opacity-100" @click.stop>
         <el-icon class="image-action" :title="$t('cropImage')" @click="() => (cropperVisible = true)"><Crop /></el-icon>
         <el-icon class="image-action" :title="$t('previewImage')" @click="() => (previewVisible = true)"><View /></el-icon>
         <el-icon class="image-action" :title="$t('deleteImage')" @click="() => (src = undefined)"><Delete /></el-icon>

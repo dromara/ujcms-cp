@@ -181,12 +181,15 @@
 
   "config.error.channelUrlPattern": "必须以/开头，后面字符支持字母、数字、中划线、下划线",
   "config.error.articleUrlPattern": "必须以/开头，后面字符支持字母、数字、中划线、下划线",
+  "config.error.storagePathAllowed": "以 file: 开头的路径需要在 /WEB-INF/classes/application.yaml 中配置 ujcms.storageFilePrefix 白名单",
 
   "site.settings.base": "基础设置",
   "site.settings.watermark": "水印设置",
+  "site.settings.editor": "编辑器设置",
   "site.settings.messageBoard": "留言板设置",
   "site.settings.html": "静态化设置",
   "site.settings.customs": "自定义设置",
+
   "site.watermark.enabled": "是否开启",
   "site.watermark.enabled.tooltip": "开启水印后，在编辑器、文章图片集中上传的图片会增加水印",
   "site.watermark.overlay": "水印图片",
@@ -206,6 +209,17 @@
   "site.watermark.minWidth.tooltip": "小于该宽度的图片不加水印",
   "site.watermark.minHeight": "最小图片高度",
   "site.watermark.minHeight.tooltip": "小于该高度的图片不加水印",
+
+  "site.editor.typesetting": "一键排版",
+  "site.editor.typesetting.fontFamily": "字体",
+  "site.editor.typesetting.fontSize": "字号",
+  "site.editor.typesetting.lineHeight": "行高",
+  "site.editor.typesetting.textIndent": "首行缩进",
+  "site.editor.typesetting.imageCenterAlign": "图片居中",
+  "site.editor.typesetting.tableFullWidth": "表格百分百宽度",
+  "site.editor.typesetting.emptyLine": "空行",
+  "site.editor.typesetting.halfWidthCharConversion": "全角转半角",
+
   "site.html.enabled": "是否开启",
   "site.html.enabled.tooltip": "开启静态化后，会自动开始生成静态页，如此时立即访问栏目或文章页，可能出现页面找不到的404错误，需等待静态页生成完成后再访问；关闭静态页后，会自动删除已生成的静态页，如再次访问之前的静态页，会出现页面找不到的404错误",
   "site.html.auto": "是否自动生成",
@@ -216,6 +230,7 @@
   "site.html.channel.tooltip": "可用参数有，栏目ID：{'{channel_id}'}，栏目别名：{'{channel_alias}'}",
   "site.html.article": "文章静态化路径",
   "site.html.article.tooltip": "可用参数有，栏目ID：{'{channel_id}'}，栏目别名：{'{channel_alias}'}，文章ID：{'{article_id}'}，年：{'{year}'}，月：{'{month}'}，日：{'{day}'}",
+
   "site.messageBoard.enabled": "是否开启",
   "site.messageBoard.loginRequired": "是否需要登录",
 
@@ -342,6 +357,13 @@
   "dictType.scope.2": "全局共享",
   "dictType.sys": "系统字典",
   "dictType.error.aliasExist": "别名已存在",
+
+  "performanceType.name": "名称",
+  "performanceType.score": "分数",
+  "performanceType.score.tooltip": "每发表一篇文章能够得到的分数",
+
+  "messageBoardType.name": "名称",
+  "messageBoardType.description": "描述",
 
   "": ""
 }

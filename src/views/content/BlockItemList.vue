@@ -7,7 +7,7 @@ import { computed, watch, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Delete, Plus } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { perm } from '@/store/useCurrentUser';
+import { perm } from '@/stores/useCurrentUser';
 import { moveList, toParams, resetParams } from '@/utils/common';
 import { queryBlockList } from '@/api/config';
 import { deleteBlockItem, queryBlockItemList, updateBlockItem, updateBlockItemOrder } from '@/api/content';
@@ -112,10 +112,10 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
             <el-button :disabled="selection.length <= 0 || perm('blockItem:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
           </template>
         </el-popconfirm>
-        <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" class="ml-2" @move="(type) => move(selection, type)" />
+        <list-move :disabled="selection.length <= 0 || filtered || perm('blockItem:update')" class="ml-2" @move="(type) => move(selection, type)" />
         <column-setting name="blockItem" class="ml-2" />
       </div>
-      <div class="app-block mt-3">
+      <div class="mt-3 app-block">
         <el-table
           ref="table"
           v-loading="loading"
@@ -125,8 +125,8 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
           @sort-change="handleSort"
         >
           <column-list name="blockItem">
-            <el-table-column type="selection" width="45"></el-table-column>
-            <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+            <el-table-column type="selection" width="38"></el-table-column>
+            <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
             <el-table-column property="title" :label="$t('blockItem.title')" sortable="custom" min-width="200" show-overflow-tooltip></el-table-column>
             <el-table-column property="image" :label="$t('blockItem.image')">
               <template #default="{ row, $index }">

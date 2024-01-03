@@ -5,6 +5,10 @@
   "contentStat.attachment": "附件数量",
   "contentStat.last7day": "最近7天",
 
+  "todo.pendingArticle": "待审核文章",
+  "todo.rejectedArticle": "已退回文章",
+  "todo.unreviewedMessageBoard": "未审核留言",
+
   "systemInfo.version": "版本号",
   "systemInfo.os": "操作系统",
   "systemInfo.osName": "系统名称",

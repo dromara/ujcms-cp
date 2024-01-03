@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import _ from 'lodash';
-import { perm } from '@/store/useCurrentUser';
+import { perm } from '@/stores/useCurrentUser';
 
 const CONTINUOUS_SETTINGS = 'ujcms_continuous_settings';
 function fetchContinuous(): Record<string, boolean> {
@@ -145,6 +145,9 @@ const handleDelete = async () => {
     buttonLoading.value = false;
   }
 };
+const resetOrigValues = () => {
+  origValues.value = props.toValues(values.value);
+};
 const handleSubmit = async () => {
   await props.beforeValidate?.(values.value);
   form.value.validate(async (valid: boolean) => {
@@ -157,6 +160,7 @@ const handleSubmit = async () => {
       emit('beforeSubmit', values.value);
       if (isEdit.value) {
         await props.updateBean(values.value);
+        resetOrigValues();
       } else {
         await props.createBean(values.value);
         focus.value?.focus?.();
@@ -172,7 +176,10 @@ const handleSubmit = async () => {
   });
 };
 const submit = (
-  executor: (values: any, payload: { isEdit: boolean; continuous: boolean; form: any; props: any; focus: any; loadBean: () => Promise<any>; emit: any }) => Promise<any>,
+  executor: (
+    values: any,
+    payload: { isEdit: boolean; continuous: boolean; form: any; props: any; focus: any; loadBean: () => Promise<any>; resetOrigValues: () => void; emit: any },
+  ) => Promise<any>,
 ) => {
   form.value.validate(async (valid: boolean) => {
     if (!valid) return;
@@ -183,7 +190,7 @@ const submit = (
       }
       emit('beforeSubmit', values.value);
 
-      await executor(values.value, { isEdit: isEdit.value, continuous: continuous.value, form: form.value, props, focus: focus.value, loadBean, emit });
+      await executor(values.value, { isEdit: isEdit.value, continuous: continuous.value, form: form.value, props, focus: focus.value, loadBean, resetOrigValues, emit });
 
       if (!continuous.value) emit('update:modelValue', false);
       emit('finished', bean.value);

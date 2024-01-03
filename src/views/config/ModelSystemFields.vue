@@ -7,6 +7,7 @@ import { ref, toRefs, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { getModelData, mergeModelFields } from '@/data';
+import { currentUser } from '@/stores/useCurrentUser';
 import { queryModel, updateModel } from '@/api/config';
 
 const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null } });
@@ -21,15 +22,25 @@ watch(visible, async () => {
   if (visible.value && beanId.value) {
     bean.value = await queryModel(beanId.value as number);
     const modelData = getModelData()[bean.value.type];
-    mains.value = mergeModelFields(modelData.mains, bean.value.mains, bean.value.type);
+    mains.value = mergeModelFields(
+      modelData.mains.filter((item) => currentUser.epRank >= item.epRank ?? 0),
+      bean.value.mains,
+      bean.value.type,
+    );
     if (modelData.asides?.length > 0) {
-      asides.value = mergeModelFields(modelData.asides, bean.value.asides, bean.value.type);
+      asides.value = mergeModelFields(
+        modelData.asides.filter((item) => currentUser.epRank >= item.epRank ?? 0),
+        bean.value.asides,
+        bean.value.type,
+      );
     }
   }
 });
 const handleSubmit = async () => {
   buttonLoading.value = true;
   try {
+    mains.value = mains.value.map((item) => ({ ...item, name: item.name === '' ? null : item.name }));
+    asides.value = asides.value.map((item) => ({ ...item, name: item.name === '' ? null : item.name }));
     await updateModel({ ...bean.value, mains: JSON.stringify(mains.value), asides: JSON.stringify(asides.value) });
     ElMessage.success(t('success'));
   } finally {

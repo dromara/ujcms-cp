@@ -24,6 +24,8 @@
   "role.allArticlePermission.tooltip": "是否拥有所有文章的数据权限。不受数据权限范围限制",
   "role.allChannelPermission": "所有栏目数据",
   "role.allChannelPermission.tooltip": "是否拥有所有栏目的数据权限",
+  "role.allStatusPermission": "所有状态权限",
+  "role.allStatusPermission.tooltip": "是否拥有所有状态的数据权限（如已审核文章的修改权限）",
   "role.dataScope": "数据权限范围",
   "role.dataScope.tooltip": "在数据权限的范围内（如文章权限），进一步控制权限，拥有所有数据、本组织数据或自身数据的权限",
   "role.dataScope.1": "所有",

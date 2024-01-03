@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import { findTreeItem } from './tree';
+import { useCurrentSiteStore } from '@/stores/currentSiteStore';
 
 const UJCMS_LOCALE = 'ujcms-locale';
 const UJCMS_SITE_ID = 'ujcms-site-id';
@@ -8,22 +8,9 @@ export const getCookieLocale = (): string | undefined => Cookies.get(UJCMS_LOCAL
 export const setCookieLocale = (local: string): void => {
   Cookies.set(UJCMS_LOCALE, local);
 };
-export const getSessionSiteId = (): number | null => {
-  const siteId = sessionStorage.getItem(UJCMS_SITE_ID);
-  if (siteId != null) {
-    return Number(siteId);
-  }
-  return null;
-};
-export const setSessionSiteId = (siteId: number): void => {
-  sessionStorage.setItem(UJCMS_SITE_ID, String(siteId));
-};
-export const removeSessionSiteId = (): void => {
-  sessionStorage.removeItem(UJCMS_SITE_ID);
-};
 
 export const getSiteHeaders = (): any => {
-  const siteId = getSessionSiteId();
+  const siteId = useCurrentSiteStore().getCurrentSiteId();
   return siteId != null ? { [UJCMS_SITE_ID]: siteId } : {};
 };
 
@@ -64,7 +51,6 @@ export const moveTreeList = (selected: any[], data: any[], type: 'top' | 'up' | 
     .sort((a, b) => a.order - b.order)
     .map((item) => item.id);
   const list = data.filter((item) => item.parentId === parentId).map((item) => item.id);
-  console.log(parentId, ids, list, data);
   const top = 0;
   const bottom = list.length;
   let up = list.indexOf(ids[0]);

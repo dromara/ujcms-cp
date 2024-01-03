@@ -5,22 +5,24 @@
  * @returns 树形数据
  */
 export const toTree = (data: any[]): any[] => {
+  const root = [];
+  const tempMap = {};
   data.forEach((item) => {
-    // eslint-disable-next-line no-param-reassign
-    item.children = data.filter((child) => {
-      if (child.parentId === item.id) {
-        // eslint-disable-next-line no-param-reassign
-        child.root = false;
-        return true;
+    tempMap[item.id] = item;
+  });
+  data.forEach((item) => {
+    const parent = tempMap[item.parentId];
+    if (parent) {
+      if (parent.children) {
+        parent.children.push(item);
+      } else {
+        parent.children = [item];
       }
-      return false;
-    });
-    if (item.children.length <= 0) {
-      // eslint-disable-next-line no-param-reassign
-      item.leaf = true;
+    } else {
+      root.push(item);
     }
   });
-  return data.filter((item) => item.root !== false);
+  return root;
 };
 
 const doFlatTree = (data: any[], tree: any[], depth: number) => {
@@ -42,7 +44,7 @@ const doFlatTree = (data: any[], tree: any[], depth: number) => {
  * @returns  数组对象
  */
 export const flatTree = (tree: any[]): any[] => {
-  const data = new Array<any>();
+  const data: any[] = [];
   doFlatTree(data, tree, 0);
   return data;
 };
@@ -68,7 +70,9 @@ const doDisableSubtree = (data: any[], disabledId: string | number, disabled: bo
       // eslint-disable-next-line no-param-reassign
       item.disabled = true;
     }
-    doDisableSubtree(item.children, disabledId, item.disabled);
+    if (item.children) {
+      doDisableSubtree(item.children, disabledId, item.disabled);
+    }
   });
   return data;
 };
@@ -80,8 +84,12 @@ export const disableSubtree = (data: any[], disabledId?: string | number): any[]
 
 export const disableParentTree = (data: any[]): any[] => {
   data.forEach((item) => {
-    item.disabled = item.children.length > 0;
-    disableParentTree(item.children);
+    if (item.children) {
+      item.disabled = item.children.length > 0;
+      disableParentTree(item.children);
+    } else {
+      item.disabled = false;
+    }
   });
   return data;
 };
@@ -92,7 +100,9 @@ export const disableTree = (data: any[], disabledIds?: (string | number)[]): any
     if (disabledIds.includes(item.id)) {
       item.disabled = true;
     }
-    disableTree(item.children, disabledIds);
+    if (item.children) {
+      disableTree(item.children, disabledIds);
+    }
   });
   return data;
 };
@@ -103,7 +113,9 @@ const doDisableTreeWithPermission = (data: any[], permissionIds: any[]): any[] =
       // eslint-disable-next-line no-param-reassign
       item.disabled = true;
     }
-    doDisableTreeWithPermission(item.children, permissionIds);
+    if (item.children) {
+      doDisableTreeWithPermission(item.children, permissionIds);
+    }
   });
   return data;
 };

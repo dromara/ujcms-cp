@@ -17,9 +17,9 @@ import {
   channelAliasExist,
 } from '@/api/content';
 import { queryProcessDefinitionList } from '@/api/system';
-import { queryModelList } from '@/api/config';
+import { queryModelList, queryPerformanceTypeList } from '@/api/config';
 import { getModelData, mergeModelFields, arr2obj } from '@/data';
-import { currentUser } from '@/store/useCurrentUser';
+import { currentUser } from '@/stores/useCurrentUser';
 import FieldItem from '@/views/config/components/FieldItem.vue';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
@@ -39,6 +39,7 @@ const { modelValue: visible, parent } = toRefs(props);
 const focus = ref<any>();
 const values = ref<any>({});
 const processList = ref<any[]>([]);
+const performanceTypeList = ref<any[]>([]);
 const channelList = ref<any[]>([]);
 const channelModelList = ref<any[]>([]);
 const articleModelList = ref<any[]>([]);
@@ -64,6 +65,11 @@ const fetchChannelList = async () => {
 const fetchProcessList = async () => {
   if (currentUser.epRank > 0) {
     processList.value = await queryProcessDefinitionList({ category: 'sys_article', latestVersion: true });
+  }
+};
+const fetchPerformanceTypeList = async () => {
+  if (currentUser.epRank >= 3) {
+    performanceTypeList.value = await queryPerformanceTypeList();
   }
 };
 const finished = async () => {
@@ -97,8 +103,8 @@ watch(visible, () => {
     fetchArticleModelList();
     fetchChannelTemplates();
     fetchArticleTemplates();
-    fetchChannelList();
     fetchProcessList();
+    fetchPerformanceTypeList();
   }
 });
 watch(fields, () => {
@@ -140,6 +146,7 @@ const initCustoms = (customs: any) => {
       allowComment: bean?.allowComment ?? parent?.allowComment ?? true,
       allowContribute: bean?.allowContribute ?? parent?.allowContribute ?? true,
       allowSearch: bean?.allowSearch ?? parent?.allowSearch ?? true,
+      orderDesc: bean?.orderDesc ?? parent?.orderDesc ?? true,
       customs: {},
     })"
     :to-values="(bean) => ({ ...bean })"
@@ -151,9 +158,9 @@ const initCustoms = (customs: any) => {
     @update:model-value="(event) => $emit('update:modelValue', event)"
     @finished="finished"
     @bean-change="
-      (bean) => {
+      async (bean) => {
         channelModelId = bean?.channelModelId ?? parent?.channelModelId ?? articleModelList[0]?.id;
-        fetchChannelList();
+        await fetchChannelList();
       }
     "
   >
@@ -205,29 +212,20 @@ const initCustoms = (customs: any) => {
             </el-col>
             <template v-if="values.type < 3">
               <el-col v-if="mains['seoTitle'].show" :span="mains['seoTitle'].double ? 12 : 24">
-                <el-form-item
-                  prop="seoTitle"
-                  :label="mains['seoTitle'].name ?? $t('channel.seoTitle')"
-                  :rules="mains['seoTitle'].required ? { required: true, message: () => $t('v.required') } : undefined"
-                >
+                <el-form-item prop="seoTitle" :rules="mains['seoTitle'].required ? { required: true, message: () => $t('v.required') } : undefined">
+                  <template #label><label-tip :label="mains['seoTitle'].name ?? $t('channel.seoTitle')" message="channel.seoTitle" help /></template>
                   <el-input v-model="values.seoTitle" maxlength="150"></el-input>
                 </el-form-item>
               </el-col>
               <el-col v-if="mains['seoKeywords'].show" :span="mains['seoKeywords'].double ? 12 : 24">
-                <el-form-item
-                  prop="seoKeywords"
-                  :label="mains['seoKeywords'].name ?? $t('channel.seoKeywords')"
-                  :rules="mains['seoKeywords'].required ? { required: true, message: () => $t('v.required') } : undefined"
-                >
+                <el-form-item prop="seoKeywords" :rules="mains['seoKeywords'].required ? { required: true, message: () => $t('v.required') } : undefined">
+                  <template #label><label-tip :label="mains['seoKeywords'].name ?? $t('channel.seoKeywords')" message="channel.seoKeywords" help /></template>
                   <el-input v-model="values.seoKeywords" maxlength="150"></el-input>
                 </el-form-item>
               </el-col>
               <el-col v-if="mains['seoDescription'].show" :span="mains['seoDescription'].double ? 12 : 24">
-                <el-form-item
-                  prop="seoDescription"
-                  :label="mains['seoDescription'].name ?? $t('channel.seoDescription')"
-                  :rules="mains['seoDescription'].required ? { required: true, message: () => $t('v.required') } : undefined"
-                >
+                <el-form-item prop="seoDescription" :rules="mains['seoDescription'].required ? { required: true, message: () => $t('v.required') } : undefined">
+                  <template #label><label-tip :label="mains['seoDescription'].name ?? $t('channel.seoDescription')" message="channel.seoDescription" help /></template>
                   <el-input v-model="values.seoDescription" maxlength="1000"></el-input>
                 </el-form-item>
               </el-col>
@@ -312,11 +310,8 @@ const initCustoms = (customs: any) => {
               </el-form-item>
             </el-col>
             <el-col v-if="mains['allowSearch'].show" :span="mains['allowSearch'].double ? 12 : 24">
-              <el-form-item
-                prop="allowSearch"
-                :label="mains['allowSearch'].name ?? $t('channel.allowSearch')"
-                :rules="mains['allowSearch'].required ? { required: true, message: () => $t('v.required') } : undefined"
-              >
+              <el-form-item prop="allowSearch" :rules="mains['allowSearch'].required ? { required: true, message: () => $t('v.required') } : undefined">
+                <template #label><label-tip :label="mains['allowSearch'].name ?? $t('channel.allowSearch')" message="channel.allowSearch" help /></template>
                 <el-switch v-model="values.allowSearch"></el-switch>
               </el-form-item>
             </el-col>
@@ -374,8 +369,22 @@ const initCustoms = (customs: any) => {
                   <el-option v-for="item in processList" :key="item.key" :label="item.name" :value="item.key"></el-option>
                 </el-select>
               </el-form-item>
+              <el-form-item
+                v-if="currentUser.epRank >= 3"
+                prop="performanceType"
+                :label="asides['performanceType'].name ?? $t('channel.performanceType')"
+                :rules="asides['performanceType'].required ? { required: true, message: () => $t('v.required') } : undefined"
+              >
+                <el-select v-model="values.performanceTypeId" clearable class="w-full">
+                  <el-option v-for="item in performanceTypeList" :key="item.id" :label="item.name" :value="item.id"></el-option>
+                </el-select>
+              </el-form-item>
               <el-form-item prop="pageSize" :label="asides['pageSize'].name ?? $t('channel.pageSize')" :rules="{ required: true, message: () => $t('v.required') }">
                 <el-input-number v-model="values.pageSize" :min="1" :max="200"></el-input-number>
+              </el-form-item>
+              <el-form-item prop="orderDesc" :rules="{ required: true, message: () => $t('v.required') }">
+                <template #label><label-tip :label="asides['orderDesc'].name ?? $t('channel.orderDesc')" message="channel.orderDesc" help /></template>
+                <el-switch v-model="values.orderDesc" />
               </el-form-item>
             </el-tab-pane>
           </el-tabs>

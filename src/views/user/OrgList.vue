@@ -4,7 +4,7 @@ export default { name: 'OrgList' };
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { currentUser, perm } from '@/store/useCurrentUser';
+import { currentUser, perm } from '@/stores/useCurrentUser';
 import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
@@ -74,7 +74,6 @@ const handleEdit = (id: number) => {
   formVisible.value = true;
 };
 const handleDelete = async (ids: number[]) => {
-  console.log(ids);
   await deleteOrg(ids);
   fetchData();
   ElMessage.success(t('success'));
@@ -125,13 +124,13 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
       >
         <column-list name="org">
           <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-          <el-table-column property="name" :label="$t('org.name')" sortable="custom" min-width="120" show-overflow-tooltip>
+          <el-table-column property="name" :label="$t('org.name')" sortable="custom" min-width="120">
             <template #default="{ row }">{{ filtered ? row.names?.join(' / ') : row.name }}</template>
           </el-table-column>
-          <el-table-column property="address" :label="$t('org.address')" sortable="custom" display="none" min-width="100" show-overflow-tooltip></el-table-column>
-          <el-table-column property="phone" :label="$t('org.phone')" sortable="custom" min-width="100" show-overflow-tooltip></el-table-column>
-          <el-table-column property="contacts" :label="$t('org.contacts')" sortable="custom" show-overflow-tooltip></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="address" :label="$t('org.address')" sortable="custom" display="none" min-width="100"></el-table-column>
+          <el-table-column property="phone" :label="$t('org.phone')" sortable="custom" min-width="100"></el-table-column>
+          <el-table-column property="contacts" :label="$t('org.contacts')" sortable="custom"></el-table-column>
+          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
           <el-table-column :label="$t('table.action')" width="160">
             <template #default="{ row }">
               <el-button type="primary" :disabled="perm('org:create')" size="small" link @click="() => handleAdd(row.id)">{{ $t('addChild') }}</el-button>

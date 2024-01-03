@@ -3,7 +3,7 @@ export default { name: 'GlobalSettings' };
 </script>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { toTree } from '@/utils/tree';
@@ -28,13 +28,15 @@ import {
   updateUploadStorage,
   updateHtmlStorage,
   updateTemplateStorage,
+  storagePathAllowed,
 } from '@/api/config';
-import { perm, hasPermission, currentUser } from '@/store/useCurrentUser';
-import { initConfig, baseSettings } from '@/store/useConfig';
+import { perm, hasPermission, currentUser } from '@/stores/useCurrentUser';
+import { useSysConfigStore } from '@/stores/sysConfigStore';
 import LabelTip from '@/components/LabelTip.vue';
 import FieldItem from '@/views/config/components/FieldItem.vue';
 
 const { t } = useI18n();
+const sysConfig = useSysConfigStore();
 const form = ref<any>();
 const config = ref<any>({});
 const values = ref<any>({});
@@ -45,48 +47,69 @@ const model = ref<any>();
 const fields = computed(() => JSON.parse(model.value?.customs || '[]'));
 
 const types: string[] = [];
-if (hasPermission('config:base:update')) types.push('base');
-if (hasPermission('config:upload:update')) types.push('upload');
-if (hasPermission('config:register:update')) types.push('register');
-if (hasPermission('config:security:update') && (currentUser.epRank >= 1 || currentUser.epDisplay)) types.push('security');
-if (hasPermission('config:sms:update')) types.push('sms');
-if (hasPermission('config:email:update')) types.push('email');
-if (hasPermission('config:uploadStorage:update')) types.push('uploadStorage');
-if (hasPermission('config:htmlStorage:update')) types.push('htmlStorage');
-if (hasPermission('config:templateStorage:update')) types.push('templateStorage');
-if (hasPermission('config:customs:update')) types.push('customs');
+if (hasPermission('config:base:update')) {
+  types.push('base');
+}
+if (hasPermission('config:upload:update')) {
+  types.push('upload');
+}
+if (hasPermission('config:register:update')) {
+  types.push('register');
+}
+if (hasPermission('config:security:update') && (currentUser.epRank >= 1 || currentUser.epDisplay)) {
+  types.push('security');
+}
+if (hasPermission('config:sms:update')) {
+  types.push('sms');
+}
+if (hasPermission('config:email:update')) {
+  types.push('email');
+}
+if (hasPermission('config:uploadStorage:update')) {
+  types.push('uploadStorage');
+}
+if (hasPermission('config:htmlStorage:update')) {
+  types.push('htmlStorage');
+}
+if (hasPermission('config:templateStorage:update')) {
+  types.push('templateStorage');
+}
+if (hasPermission('config:customs:update')) {
+  types.push('customs');
+}
 const type = ref<string>(types[0]);
 
-const tabClick = async (paneName?: string | number) => {
-  if (paneName === 'upload') {
+const switchType = async () => {
+  if (type.value === 'upload') {
     values.value = config.value.upload;
-  } else if (paneName === 'register') {
+  } else if (type.value === 'register') {
     values.value = config.value.register;
-  } else if (paneName === 'security') {
+  } else if (type.value === 'security') {
     values.value = config.value.security;
-  } else if (paneName === 'customs') {
+  } else if (type.value === 'customs') {
     values.value = config.value.customs;
-  } else if (paneName === 'sms') {
+  } else if (type.value === 'sms') {
     values.value = await queryConfigSms();
-  } else if (paneName === 'email') {
+  } else if (type.value === 'email') {
     values.value = await queryConfigEmail();
-  } else if (paneName === 'uploadStorage') {
+  } else if (type.value === 'uploadStorage') {
     values.value = await queryUploadStorage();
-  } else if (paneName === 'htmlStorage') {
+  } else if (type.value === 'htmlStorage') {
     values.value = await queryHtmlStorage();
-  } else if (paneName === 'templateStorage') {
+  } else if (type.value === 'templateStorage') {
     values.value = await queryTemplateStorage();
   } else {
     values.value = config.value;
   }
 };
 
+watch(type, () => switchType());
+
 const fetchConfigModel = async () => {
   model.value = await queryConfigModel();
 };
 const fetchConfig = async () => {
   config.value = await queryConfig();
-  tabClick(type.value);
 };
 const fetchSiteList = async () => {
   siteList.value = toTree(await querySiteList());
@@ -95,6 +118,7 @@ onMounted(async () => {
   loading.value = true;
   try {
     await Promise.all([fetchConfig(), fetchConfigModel(), fetchSiteList()]);
+    switchType();
   } finally {
     loading.value = false;
   }
@@ -133,7 +157,7 @@ const handleSubmit = () => {
       } else {
         await updateConfigBase(values.value);
       }
-      initConfig();
+      sysConfig.initConfig();
       ElMessage.success(t('success'));
     } finally {
       buttonLoading.value = false;
@@ -176,7 +200,7 @@ const handleSendTestEmail = () => {
   });
 };
 const invalidExtension = (extensions: string) => {
-  const blacklist = baseSettings.uploadsExtensionBlacklist.split(',');
+  const blacklist = sysConfig.base.uploadsExtensionBlacklist.split(',');
   const extensionList = extensions.split(',');
   return blacklist.findIndex((item) => extensionList.includes(item)) >= 0;
 };
@@ -185,7 +209,7 @@ const invalidExtension = (extensions: string) => {
 <template>
   <el-container>
     <el-aside width="180px" class="pr-3">
-      <el-tabs v-model="type" tab-position="left" stretch class="bg-white" @tab-click="({ paneName }: any) => tabClick(paneName)">
+      <el-tabs v-model="type" tab-position="left" stretch class="bg-white">
         <el-tab-pane v-for="tp in types" :key="tp" :name="tp" :label="$t(`config.settings.${tp}`)"></el-tab-pane>
       </el-tabs>
     </el-aside>
@@ -736,7 +760,22 @@ const invalidExtension = (extensions: string) => {
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item prop="path" :rules="{ pattern: /^(?!.*\.\.).*$/, message: () => $t('v.url') }">
+              <el-form-item
+                prop="path"
+                :rules="[
+                  { pattern: /^(?!.*\.\.).*$/, message: () => $t('v.url') },
+                  {
+                    asyncValidator: async (rule, value, callback) => {
+                      if (!(await storagePathAllowed(value))) {
+                        callback($t('config.error.storagePathAllowed'));
+                        return;
+                      }
+                      callback();
+                    },
+                    trigger: 'blur',
+                  },
+                ]"
+              >
                 <template #label><label-tip message="config.storage.path" /></template>
                 <el-input v-model="values.path" maxlength="160"></el-input>
               </el-form-item>

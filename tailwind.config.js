@@ -43,7 +43,8 @@ module.exports = {
         primary: '#303133',
         regular: '#606266',
         secondary: '#909399',
-        placeholder: '#C0C4CC',
+        placeholder: '#A8ABB2',
+        disabled: '#C0C4CC',
       },
       primary: {
         DEFAULT: '#409eff',

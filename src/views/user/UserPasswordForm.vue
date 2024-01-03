@@ -7,7 +7,7 @@ import { ref, toRefs, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { sm2Encrypt } from '@/utils/sm';
-import { securitySettings } from '@/store/useConfig';
+import { useSysConfigStore } from '@/stores/sysConfigStore';
 import { queryClientPublicKey } from '@/api/login';
 import { updateUserPassword } from '@/api/user';
 
@@ -15,6 +15,7 @@ const props = defineProps({ modelValue: { type: Boolean, required: true }, beanI
 const emit = defineEmits({ 'update:modelValue': null });
 const { beanId, username } = toRefs(props);
 const { t } = useI18n();
+const sysConfig = useSysConfigStore();
 const values = ref<any>({});
 const form = ref<any>();
 const focus = ref<any>();
@@ -70,14 +71,14 @@ const handleSubmit = () => {
         :rules="[
           { required: true, message: () => $t('v.required') },
           {
-            min: securitySettings.passwordMinLength,
-            max: securitySettings.passwordMaxLength,
-            message: () => $t('user.error.passwordLength', { min: securitySettings.passwordMinLength, max: securitySettings.passwordMaxLength }),
+            min: sysConfig.security.passwordMinLength,
+            max: sysConfig.security.passwordMaxLength,
+            message: () => $t('user.error.passwordLength', { min: sysConfig.security.passwordMinLength, max: sysConfig.security.passwordMaxLength }),
           },
-          { pattern: new RegExp(securitySettings.passwordPattern), message: () => $t(`user.error.passwordPattern.${securitySettings.passwordStrength}`) },
+          { pattern: new RegExp(sysConfig.security.passwordPattern), message: () => $t(`user.error.passwordPattern.${sysConfig.security.passwordStrength}`) },
         ]"
       >
-        <el-input ref="focus" v-model="values.newPassword" :maxlength="securitySettings.passwordMaxLength" show-password></el-input>
+        <el-input ref="focus" v-model="values.newPassword" :maxlength="sysConfig.security.passwordMaxLength" show-password></el-input>
       </el-form-item>
       <el-form-item
         prop="passwordAgain"

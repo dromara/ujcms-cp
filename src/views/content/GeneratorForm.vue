@@ -9,7 +9,7 @@ import type { ElForm } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { querySiteHtmlSettings, updateSiteHtmlSettings } from '@/api/config';
 import { fulltextReindexAll, fulltextReindexSite, htmlAll, htmlHome, htmlChannel, htmlArticle } from '@/api/content';
-import { perm, isInclude } from '@/store/useCurrentUser';
+import { perm, isInclude } from '@/stores/useCurrentUser';
 import LabelTip from '@/components/LabelTip.vue';
 import TaskList from '@/views/system/TaskList.vue';
 

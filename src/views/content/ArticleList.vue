@@ -3,14 +3,16 @@ export default { name: 'ArticleList' };
 </script>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus, Cpu, MoreFilled, DocumentCopy } from '@element-plus/icons-vue';
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
+import { ElMessage } from 'element-plus';
+import { Plus, Cpu, MoreFilled, DocumentCopy, Grid } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
+import Sortable from 'sortablejs';
 import dayjs from 'dayjs';
 import * as htmlparser2 from 'htmlparser2';
 import * as domutils from 'domutils';
-import { perm, currentUser } from '@/store/useCurrentUser';
+import { perm, currentUser } from '@/stores/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
 import { toTree } from '@/utils/tree';
 import { queryBlockList } from '@/api/config';
@@ -21,16 +23,19 @@ import {
   offlineArticle,
   completelyDeleteArticle,
   stickyArticle,
+  updateArticleOrder,
   queryArticlePage,
   queryChannelList,
   deleteBlockItem,
 } from '@/api/content';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
+import LabelTip from '@/components/LabelTip.vue';
+import ProcessTaskList from '@/views/system/ProcessTaskList.vue';
 import ArticleForm from './ArticleForm.vue';
 import ArticlePushForm from './ArticlePushForm.vue';
 import BlockItemForm from './BlockItemForm.vue';
-import ProcessTaskList from '@/views/system/ProcessTaskList.vue';
+import { openArticleLink } from './components/articleUtils';
 
 const { t } = useI18n();
 const params = ref<any>({});
@@ -39,12 +44,13 @@ const currentPage = ref<number>(1);
 const pageSize = ref<number>(10);
 const total = ref<number>(0);
 const table = ref<any>();
-const data = ref<Array<any>>([]);
-const selection = ref<Array<any>>([]);
+const data = ref<any[]>([]);
+const selection = ref<any[]>([]);
 const tableLoading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
 const beanId = ref<number>();
 const beanIds = computed(() => data.value.map((row) => row.id));
+const isSorted = ref<boolean>(false);
 const action = ref<'add' | 'edit' | 'copy'>('edit');
 const blockList = ref<any[]>([]);
 const recommendVisible = ref<boolean>(false);
@@ -68,6 +74,9 @@ const batchAction = ref<string>(batchActions[0]);
 
 const pushFormVisible = ref<boolean>(false);
 const pushType = ref<'internal' | 'external'>('internal');
+
+const route = useRoute();
+const status = ref<number>(Number(route.query.status ?? '-1'));
 
 const selectable = (bean: any): boolean => {
   if (batchAction.value === 'delete') {
@@ -119,11 +128,13 @@ const fetchData = async () => {
   try {
     const { content, totalElements } = await queryArticlePage({
       ...toParams(params.value),
+      Q_EQ_status: status.value !== -1 ? status.value : undefined,
       subChannelId: channel.value?.id,
       Q_OrderBy: sort.value,
       page: currentPage.value,
       pageSize: pageSize.value,
     });
+    isSorted.value = sort.value !== undefined;
     data.value = content;
     total.value = totalElements;
   } finally {
@@ -141,10 +152,31 @@ const fetchChannel = async () => {
 const fetchBlockList = async () => {
   blockList.value = await queryBlockList();
 };
+let sortable;
+const initDragTable = () => {
+  const tbody = document.querySelector('#dataTable .el-table__body-wrapper tbody');
+  sortable = Sortable.create(tbody, {
+    handle: '.drag-handle',
+    onEnd: async function (event: any) {
+      const { oldIndex, newIndex } = event;
+      if (oldIndex !== newIndex) {
+        [data.value[oldIndex], data.value[newIndex]] = [data.value[newIndex], data.value[oldIndex]];
+        await updateArticleOrder(data.value[oldIndex].id, data.value[newIndex].id);
+        ElMessage.success(t('success'));
+      }
+    },
+  });
+};
 onMounted(() => {
   fetchData();
   fetchChannel();
   fetchBlockList();
+  initDragTable();
+});
+onBeforeUnmount(() => {
+  if (sortable !== undefined) {
+    sortable.destroy();
+  }
 });
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
@@ -221,24 +253,25 @@ const handleTask = (id: string) => {
   instanceId.value = id;
   taskListVisible.value = true;
 };
-const handleSticky = async (id: number, sticky: number) => {
-  try {
-    const { value } = await ElMessageBox.prompt(`${t('article.sticky')} (${t('article.sticky.tooltip')})`, {
-      confirmButtonText: t('ok'),
-      cancelButtonText: t('cancel'),
-      inputValue: String(sticky < 1 ? 1 : sticky),
-      inputPattern: /^\d{1,3}$/,
-      inputErrorMessage: t('article.error.sticky'),
-    });
-    await stickyArticle([id], Number(value));
+const stickyVisible = ref<boolean>(false);
+const stickyForm = ref<any>();
+const stickyValues = ref<any>({ id: 0, sticky: 0, stickyDate: null });
+
+const handleSticky = (id: number, sticky: number, stickyDate: Date) => {
+  stickyVisible.value = true;
+  stickyValues.value = { id, sticky: sticky < 1 ? 1 : sticky, stickyDate };
+};
+const submitSticky = async () => {
+  stickyForm.value.validate(async (valid: boolean) => {
+    if (!valid) return;
+    await stickyArticle([stickyValues.value.id], stickyValues.value.sticky, stickyValues.value.stickyDate);
     fetchData();
+    stickyVisible.value = false;
     ElMessage.success(t('success'));
-  } catch (e) {
-    /* empty */
-  }
+  });
 };
 const cancelSticky = async (id: number) => {
-  await stickyArticle([id], 0);
+  await stickyArticle([id], 0, undefined);
   fetchData();
   ElMessage.success(t('success'));
 };
@@ -287,20 +320,15 @@ const cancelSticky = async (id: number) => {
           <query-item :label="$t('article.text')" name="Q_Contains_@articleExt-text"></query-item>
           <query-item :label="$t('article.publishDate')" name="Q_GE_publishDate_DateTime,Q_LE_publishDate_DateTime" type="datetime"></query-item>
           <query-item
-            :label="$t('article.status')"
-            name="Q_In_status_Short"
-            :options="[0, 1, 10, 11, 12, 15, 20, 21, 22].map((item) => ({ label: $t(`article.status.${item}`), value: item }))"
-          ></query-item>
-          <query-item
             :label="$t('article.block')"
             name="Q_In_@BlockItem-blockId_Int"
             :options="blockList.filter((item) => item.recommendable).map((item) => ({ label: item.name, value: item.id }))"
           ></query-item>
           <query-item :label="$t('article.org')" name="Q_Like_org-name"></query-item>
           <query-item :label="$t('article.user')" name="Q_Like_user-username"></query-item>
-          <query-item :label="$t('article.created')" name="Q_GE_@articleExt-created_DateTime,Q_LE_@articleExt-created_DateTime" type="datetime"></query-item>
+          <query-item :label="$t('article.created')" name="Q_GE_created_DateTime,Q_LE_created_DateTime" type="datetime"></query-item>
           <query-item :label="$t('article.modifiedUser')" name="Q_Like_modifiedUser@user-username"></query-item>
-          <query-item :label="$t('article.modified')" name="Q_GE_@articleExt-modified_DateTime,Q_LE_@articleExt-modified_DateTime" type="datetime"></query-item>
+          <query-item :label="$t('article.modified')" name="Q_GE_modified_DateTime,Q_LE_modified_DateTime" type="datetime"></query-item>
           <query-item :label="$t('article.author')" name="Q_Contains_@articleExt-author"></query-item>
           <query-item :label="$t('article.editor')" name="Q_Contains_@articleExt-editor"></query-item>
           <query-item :label="$t('article.source')" name="Q_Contains_@articleExt-source"></query-item>
@@ -323,21 +351,45 @@ const cancelSticky = async (id: number) => {
         </el-popconfirm>
         <column-setting name="article" class="ml-2" />
       </div>
-      <div class="mt-3 app-block">
+      <el-radio-group v-model="status" class="mt-3" @change="() => fetchData()">
+        <el-radio-button :label="-1">{{ $t('all') }}</el-radio-button>
+        <el-radio-button :label="0">{{ $t('article.status.0') }}</el-radio-button>
+        <el-radio-button :label="1">{{ $t('article.status.1') }}</el-radio-button>
+        <el-radio-button :label="5">{{ $t('article.status.5') }}</el-radio-button>
+        <el-radio-button :label="10">{{ $t('article.status.10') }}</el-radio-button>
+        <el-radio-button :label="11">{{ $t('article.status.11') }}</el-radio-button>
+        <el-radio-button :label="12">{{ $t('article.status.12') }}</el-radio-button>
+        <el-radio-button :label="20">{{ $t('article.status.20') }}</el-radio-button>
+        <el-radio-button :label="21">{{ $t('article.status.21') }}</el-radio-button>
+        <el-radio-button :label="22">{{ $t('article.status.22') }}</el-radio-button>
+      </el-radio-group>
+      <div class="app-block">
         <el-table
+          id="dataTable"
           ref="table"
           v-loading="tableLoading"
+          row-key="id"
           :data="data"
           @selection-change="(rows: any) => (selection = rows)"
           @row-dblclick="(row: any) => handleEdit(row.id)"
           @sort-change="handleSort"
         >
           <column-list name="article">
-            <el-table-column type="selection" :selectable="selectable" width="45"></el-table-column>
-            <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+            <el-table-column type="selection" :selectable="selectable" width="38"></el-table-column>
+            <el-table-column width="42">
+              <el-icon
+                class="text-lg align-middle text-gray-secondary"
+                :class="isSorted || perm('article:updateOrder') ? ['cursor-not-allowed', 'text-gray-disabled'] : ['cursor-move', 'text-gray-regular', 'drag-handle']"
+                disalbed
+              >
+                <Grid />
+              </el-icon>
+            </el-table-column>
+            <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
             <el-table-column property="title" :label="$t('article.title')" min-width="280" sort-by="@articleExt-title" sortable="custom">
               <template #default="{ row }">
-                <el-link :href="row.url" :underline="false" target="_blank">{{ row.title }}</el-link>
+                <!-- <el-button type="primary" link @click="() => openArticleLink(row.status, row.url, row.dynamicUrl)">{{ row.title }}</el-button> -->
+                <el-link href="javascript:" :underline="false" @click="() => openArticleLink(row.status, row.url, row.dynamicUrl)">{{ row.title }}</el-link>
                 <el-tag
                   v-for="item in row.blockItemList"
                   :key="item.id"
@@ -349,36 +401,36 @@ const cancelSticky = async (id: number) => {
                 >
                   {{ item.block.name }}
                 </el-tag>
-                <el-tag
-                  v-if="row.sticky > 0"
-                  type="danger"
-                  class="mx-1"
-                  effect="light"
-                  :title="$t('article.sticky')"
-                  size="small"
-                  round
-                  :closable="!perm('article:sticky')"
-                  @close="() => cancelSticky(row.id)"
-                >
-                  {{ row.sticky }}
-                </el-tag>
+                <el-tooltip v-if="row.sticky > 0" placement="top">
+                  <template #content>
+                    {{ $t('article.sticky') }}
+                    <span v-if="row.stickyDate != null">{{ dayjs(row.stickyDate).format(' YYYY-MM-DD HH:mm:ss') }}</span>
+                  </template>
+                  <el-tag type="danger" class="mx-1" effect="light" size="small" round :closable="!perm('article:sticky')" @close="() => cancelSticky(row.id)">
+                    {{ row.sticky }}
+                  </el-tag>
+                </el-tooltip>
                 <el-tooltip v-if="row.srcId != null" placement="top">
                   <template #content>
                     {{ t(`article.type.${row.type}`) }}:
                     <span v-if="row.siteId !== row.src.siteId">[{{ row.src.site.name }}]</span>
-                    {{ row.src.channel.paths.map((it: any) => it.name).join('/') }}
+                    {{ row.src.channel.paths.map((it: any) => it.name).join(' / ') }}
                   </template>
                   <el-icon class="ml-1 align-middle"><DocumentCopy /></el-icon>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column property="channel.name" :label="$t('article.channel')" sort-by="channel-name" sortable="custom" show-overflow-tooltip></el-table-column>
+            <el-table-column property="channel.name" :label="$t('article.channel')" sort-by="channel-name" sortable="custom" show-overflow-tooltip>
+              <template #default="{ row }">
+                <span :title="row.channel.paths.map((it: any) => it.name).join(' / ')">{{ row.channel.name }}</span>
+              </template>
+            </el-table-column>
             <el-table-column property="org.name" :label="$t('article.org')" sort-by="org-name" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
             <el-table-column property="author" :label="$t('article.author')" sort-by="@articleExt-author" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
             <el-table-column property="editor" :label="$t('article.editor')" sort-by="@articleExt-editor" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
             <el-table-column property="source" :label="$t('article.source')" sort-by="@articleExt-source" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
             <el-table-column property="user.username" :label="$t('article.user')" sort-by="user-username" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
-            <el-table-column property="created" :label="$t('article.created')" sort-by="@articleExt-created" min-width="120" sortable="custom" display="none" show-overflow-tooltip>
+            <el-table-column property="created" :label="$t('article.created')" min-width="120" sortable="custom" display="none" show-overflow-tooltip>
               <template #default="{ row }">{{ dayjs(row.created).format('YYYY-MM-DD HH:mm') }}</template>
             </el-table-column>
             <el-table-column
@@ -389,25 +441,17 @@ const cancelSticky = async (id: number) => {
               display="none"
               show-overflow-tooltip
             ></el-table-column>
-            <el-table-column
-              property="modified"
-              :label="$t('article.modified')"
-              sort-by="@articleExt-modified"
-              min-width="120"
-              sortable="custom"
-              display="none"
-              show-overflow-tooltip
-            >
+            <el-table-column property="modified" :label="$t('article.modified')" min-width="120" sortable="custom" display="none" show-overflow-tooltip>
               <template #default="{ row }">{{ dayjs(row.modified).format('YYYY-MM-DD HH:mm') }}</template>
             </el-table-column>
             <el-table-column property="publishDate" :label="$t('article.publishDate')" min-width="120" sortable="custom" show-overflow-tooltip>
               <template #default="{ row }">{{ dayjs(row.publishDate).format('YYYY-MM-DD HH:mm') }}</template>
             </el-table-column>
-            <el-table-column property="views" :label="$t('article.views')" sort-by="@articleBuffer-views" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
+            <el-table-column property="views" :label="$t('article.views')" sort-by="@articleExt-views" sortable="custom" display="none" show-overflow-tooltip></el-table-column>
             <el-table-column
               property="dayViews"
               :label="$t('article.dayViews')"
-              sort-by="@articleBuffer-dayViews"
+              sort-by="@articleExt-dayViews"
               sortable="custom"
               display="none"
               show-overflow-tooltip
@@ -415,7 +459,7 @@ const cancelSticky = async (id: number) => {
             <el-table-column
               property="weekViews"
               :label="$t('article.weekViews')"
-              sort-by="@articleBuffer-weekViews"
+              sort-by="@articleExt-weekViews"
               sortable="custom"
               display="none"
               show-overflow-tooltip
@@ -423,7 +467,7 @@ const cancelSticky = async (id: number) => {
             <el-table-column
               property="monthViews"
               :label="$t('article.monthViews')"
-              sort-by="@articleBuffer-monthViews"
+              sort-by="@articleExt-monthViews"
               sortable="custom"
               display="none"
               show-overflow-tooltip
@@ -431,7 +475,7 @@ const cancelSticky = async (id: number) => {
             <el-table-column
               property="quarterViews"
               :label="$t('article.quarterViews')"
-              sort-by="@articleBuffer-quarterViews"
+              sort-by="@articleExt-quarterViews"
               sortable="custom"
               display="none"
               show-overflow-tooltip
@@ -439,7 +483,7 @@ const cancelSticky = async (id: number) => {
             <el-table-column
               property="yearViews"
               :label="$t('article.yearViews')"
-              sort-by="@articleBuffer-yearViews"
+              sort-by="@articleExt-yearViews"
               sortable="custom"
               display="none"
               show-overflow-tooltip
@@ -517,7 +561,7 @@ const cancelSticky = async (id: number) => {
                         >
                           <span class="text-xs">{{ $t('article.op.externalPush') }}</span>
                         </el-dropdown-item>
-                        <el-dropdown-item :disabled="perm('article:sticky')" divided @click="() => handleSticky(row.id, row.sticky)">
+                        <el-dropdown-item :disabled="perm('article:sticky')" divided @click="() => handleSticky(row.id, row.sticky, row.stickyDate)">
                           <span class="text-xs">{{ $t('article.op.sticky') }}</span>
                         </el-dropdown-item>
                         <el-dropdown-item
@@ -538,7 +582,7 @@ const cancelSticky = async (id: number) => {
           </column-list>
         </el-table>
         <el-pagination
-          v-model:currentPage="currentPage"
+          v-model:current-page="currentPage"
           v-model:pageSize="pageSize"
           :total="total"
           :page-sizes="pageSizes"
@@ -566,6 +610,30 @@ const cancelSticky = async (id: number) => {
         @finished="fetchData"
       />
       <process-task-list v-model="taskListVisible" :instance-id="instanceId" />
+      <el-dialog v-model="stickyVisible" :title="$t('article.sticky')" :width="768">
+        <el-form ref="stickyForm" :model="stickyValues" label-width="150px">
+          <el-form-item prop="sticky">
+            <template #label><label-tip message="article.sticky" help /></template>
+            <el-input-number v-model="stickyValues.sticky" :min="0" :max="999" />
+          </el-form-item>
+          <el-form-item
+            prop="stickyDate"
+            :rules="{
+              validator: (rule, value, callback) => {
+                if (value != null && Date.now() > value.getTime()) {
+                  callback($t('article.error.stickyDate.beforeCurrent'));
+                  return;
+                }
+                callback();
+              },
+            }"
+          >
+            <template #label><label-tip message="article.stickyDate" help /></template>
+            <el-date-picker v-model="stickyValues.stickyDate" type="datetime" />
+          </el-form-item>
+          <el-button type="primary" @click="() => submitSticky()">{{ $t('submit') }}</el-button>
+        </el-form>
+      </el-dialog>
     </el-main>
   </el-container>
 </template>

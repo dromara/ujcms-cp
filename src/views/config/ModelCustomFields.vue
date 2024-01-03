@@ -72,7 +72,7 @@ const changeSelected = async (element: any) => {
   });
 };
 const clone = (element: any) => {
-  const cloneElement = { code: `field${new Date().getTime()}`, type: element.type, name: element.label, double: false };
+  const cloneElement = { code: `field${Date.now()}`, type: element.type, name: element.label, double: false };
   cloned.value = cloneElement;
   return cloneElement;
 };

@@ -3,8 +3,9 @@ import { defineComponent, ref, toRefs, watch, onMounted, onBeforeUnmount, onActi
 import { useI18n } from 'vue-i18n';
 import { useFormItem } from 'element-plus';
 import { getAuthHeaders } from '@/utils/auth';
-import { baseSettings, uploadSettings, securitySettings } from '@/store/useConfig';
-import { imageUploadUrl, fileUploadUrl, videoUploadUrl, fetchImage } from '@/api/config';
+import { currentUser } from '@/stores/useCurrentUser';
+import { useSysConfigStore } from '@/stores/sysConfigStore';
+import { imageUploadUrl, fileUploadUrl, mediaUploadUrl, fetchImage } from '@/api/config';
 
 // 参考：https://www.tiny.cloud/docs/advanced/usage-with-module-loaders/webpack/webpack_es6_npm/
 // 参考：https://github.com/tinymce/tinymce-vue/blob/main/src/main/ts/components/Editor.ts
@@ -36,7 +37,7 @@ import 'tinymce/plugins/media';
 // import 'tinymce/plugins/noneditable';
 import 'tinymce/plugins/pagebreak';
 import 'tinymce/plugins/paste';
-// import 'tinymce/plugins/preview';
+import 'tinymce/plugins/preview';
 // import 'tinymce/plugins/print';
 import 'tinymce/plugins/quickbars';
 // import 'tinymce/plugins/save';
@@ -50,6 +51,9 @@ import 'tinymce/plugins/table';
 import 'tinymce/plugins/visualblocks';
 import 'tinymce/plugins/visualchars';
 // import 'tinymce/plugins/wordcount';
+
+import './plugins/indent2em';
+import './plugins/typesetting';
 
 import { isTextarea, uuid, initEditor } from './utils';
 
@@ -74,6 +78,7 @@ export default defineComponent({
   setup(props, ctx) {
     const { disabled, modelValue } = toRefs(props);
     const { t } = useI18n();
+    const sysConfig = useSysConfigStore();
     const element = ref<any>();
     const vueEditor = ref<any>();
     const elementId: string = props.id || uuid('tiny-vue');
@@ -86,7 +91,9 @@ export default defineComponent({
       if (publicPath.endsWith('/')) {
         publicPath = publicPath.substring(0, publicPath.length - 1);
       }
+      const ep2 = currentUser.epRank >= 2;
       const finalInit = {
+        base_url: '/tinymce',
         language_url: `${publicPath}/tinymce/langs/zh_CN.js`,
         language: 'zh_CN',
         skin: 'oxide',
@@ -97,12 +104,14 @@ export default defineComponent({
         content_style: 'body { font-size: 14px; }',
         menubar: false,
         plugins:
-          'advlist autoresize autosave charmap code codesample directionality fullscreen hr image imagetools lists link media pagebreak paste quickbars ' +
-          'searchreplace table visualblocks visualchars',
+          'advlist autoresize autosave charmap code codesample directionality fullscreen hr image imagetools lists link media pagebreak paste preview quickbars ' +
+          `searchreplace table visualblocks visualchars indent2em ${ep2 ? 'typesetting' : ''}`,
         toolbar:
-          'fullscreen code | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | selectall removeformat pastetext | ' +
-          'quickimage media | blockquote codesample table | bullist numlist | outdent indent lineheight | forecolor backcolor | fontselect fontsizeselect formatselect | ' +
-          'superscript subscript charmap | hr | ltr rtl | visualblocks visualchars | restoredraft undo redo | searchreplace',
+          `fullscreen code ${
+            ep2 ? '| typesetting' : ''
+          } | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | selectall removeformat pastetext | ` +
+          'quickimage media | blockquote codesample table | bullist numlist | indent2em outdent indent lineheight | forecolor backcolor | fontselect fontsizeselect formatselect | ' +
+          'superscript subscript charmap | hr | ltr rtl | visualblocks visualchars | restoredraft undo redo | preview searchreplace',
         font_formats:
           '宋体=SimSun; 微软雅黑=Microsoft YaHei; 楷体=SimKai,KaiTi; 黑体=SimHei; 隶书=SimLi,LiSu; Andale Mono=andale mono,times;Arial=arial,helvetica,sans-serif;' +
           'Arial Black=arial black,avant garde;Comic Sans MS=comic sans ms,sans-serif;Helvetica=helvetica;Impact=impact,chicago;Times New Roman=times new roman,times',
@@ -112,14 +121,14 @@ export default defineComponent({
         image_uploadtab: false,
         image_advtab: true,
         image_caption: true,
-        images_file_types: uploadSettings.imageTypes,
+        images_file_types: sysConfig.upload.imageTypes,
         min_height: 300,
         max_height: 500,
         convert_urls: false,
         autosave_ask_before_unload: false,
         ...props.init,
         images_upload_handler(blobInfo: any, success: any, failure: any, progress: any) {
-          const fileSizeLimitByte = uploadSettings.imageLimitByte;
+          const fileSizeLimitByte = sysConfig.upload.imageLimitByte;
           if (fileSizeLimitByte > 0 && blobInfo.blob().size > fileSizeLimitByte) {
             failure(t('error.fileMaxSize', { size: `${fileSizeLimitByte / 1024 / 1024}MB` }), { remove: true });
             return;
@@ -171,18 +180,18 @@ export default defineComponent({
           let fileSizeLimtByte = 0;
           let uploadUrl: string;
           if (meta.filetype === 'image') {
-            fileSizeLimtByte = uploadSettings.imageLimitByte;
-            input.setAttribute('accept', uploadSettings.imageInputAccept);
+            fileSizeLimtByte = sysConfig.upload.imageLimitByte;
+            input.setAttribute('accept', sysConfig.upload.imageInputAccept);
             uploadUrl = imageUploadUrl;
             // input.setAttribute('accept', 'image/*');
           } else if (meta.filetype === 'media') {
-            fileSizeLimtByte = uploadSettings.videoLimitByte;
-            input.setAttribute('accept', uploadSettings.videoInputAccept);
-            uploadUrl = videoUploadUrl;
+            fileSizeLimtByte = sysConfig.upload.mediaLimitByte;
+            input.setAttribute('accept', sysConfig.upload.mediaInputAccept);
+            uploadUrl = mediaUploadUrl;
             // input.setAttribute('accept', 'video/*');
           } else {
-            fileSizeLimtByte = uploadSettings.fileLimitByte;
-            input.setAttribute('accept', uploadSettings.fileInputAccept);
+            fileSizeLimtByte = sysConfig.upload.fileLimitByte;
+            input.setAttribute('accept', sysConfig.upload.fileInputAccept);
             uploadUrl = fileUploadUrl;
           }
 
@@ -294,7 +303,7 @@ export default defineComponent({
             if (format === 'html' && paste && content.includes('src="')) {
               const images = Array.from(editor.getBody().getElementsByTagName('img')).filter((img: any) => {
                 const src = img.src;
-                if (src.startsWith(baseSettings.uploadUrlPrefix)) {
+                if (src.startsWith(sysConfig.base.uploadUrlPrefix)) {
                   return false;
                 }
                 if (img.hasAttribute('data-mce-bogus')) {
@@ -313,7 +322,7 @@ export default defineComponent({
                   return false;
                 }
                 const host = new URL(src).host;
-                for (let domain of securitySettings.ssrfList) {
+                for (let domain of sysConfig.security.ssrfList) {
                   if (domain === '*' || host === domain || host.endsWith('.' + domain)) {
                     return true;
                   }

@@ -8,7 +8,7 @@ import { ElMessage } from 'element-plus';
 import { Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
-import { perm } from '@/store/useCurrentUser';
+import { perm } from '@/stores/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
 import { deleteShortMessage, queryShortMessagePage } from '@/api/log';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -85,8 +85,8 @@ const handleDelete = async (ids: number[]) => {
     <div class="app-block mt-3">
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="shortMessage">
-          <el-table-column type="selection" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column type="selection" width="38"></el-table-column>
+          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
           <el-table-column property="type" :label="$t('shortMessage.type')" sortable="custom" width="100">
             <template #default="{ row }">
               <el-tag v-if="row.type === 1" size="small">{{ $t(`shortMessage.type.${row.type}`) }}</el-tag>
@@ -126,7 +126,7 @@ const handleDelete = async (ids: number[]) => {
         </column-list>
       </el-table>
       <el-pagination
-        v-model:currentPage="currentPage"
+        v-model:current-page="currentPage"
         v-model:pageSize="pageSize"
         :total="total"
         :page-sizes="pageSizes"

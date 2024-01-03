@@ -2,12 +2,10 @@
 import { onMounted, ref, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration';
 import echarts, { ECOption } from '@/utils/echarts';
 import { queryCountryStat, queryProvinceStat } from '@/api/stat';
 
 const { t, n } = useI18n();
-dayjs.extend(duration);
 
 const dateRange = ref<string>('last30day');
 const getBeginByDateRange = (range: string): string | undefined => {

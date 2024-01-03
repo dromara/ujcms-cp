@@ -7,8 +7,9 @@ import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Plus, Delete, ArrowDown } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import dayjs from 'dayjs';
-import { perm } from '@/store/useCurrentUser';
+import { perm } from '@/stores/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
 import { deleteMessageBoard, queryMessageBoardPage, updateMessageBoardStatus } from '@/api/interaction';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -28,10 +29,20 @@ const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
 const beanId = ref<number>();
 const beanIds = computed(() => data.value.map((row) => row.id));
+
+const route = useRoute();
+const status = ref<number>(Number(route.query.status ?? '-1'));
+
 const fetchData = async () => {
   loading.value = true;
   try {
-    const { content, totalElements } = await queryMessageBoardPage({ ...toParams(params.value), Q_OrderBy: sort.value, page: currentPage.value, pageSize: pageSize.value });
+    const { content, totalElements } = await queryMessageBoardPage({
+      ...toParams(params.value),
+      Q_EQ_status: status.value !== -1 ? status.value : undefined,
+      Q_OrderBy: sort.value,
+      page: currentPage.value,
+      pageSize: pageSize.value,
+    });
     data.value = content;
     total.value = totalElements;
   } finally {
@@ -114,11 +125,17 @@ const handleStatus = async (ids: number[], status: number) => {
       </el-popconfirm>
       <column-setting name="messageBoard" />
     </div>
-    <div class="app-block mt-3">
+    <el-radio-group v-model="status" class="mt-3" @change="() => fetchData()">
+      <el-radio-button :label="-1">{{ $t('all') }}</el-radio-button>
+      <el-radio-button :label="0">{{ $t('messageBoard.status.0') }}</el-radio-button>
+      <el-radio-button :label="1">{{ $t('messageBoard.status.1') }}</el-radio-button>
+      <el-radio-button :label="2">{{ $t('messageBoard.status.2') }}</el-radio-button>
+    </el-radio-group>
+    <div class="app-block">
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="messageBoard">
-          <el-table-column type="selection" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column type="selection" width="38"></el-table-column>
+          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
           <el-table-column property="title" :label="$t('messageBoard.title')" min-width="260" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="type.name" :label="$t('messageBoard.type')" min-width="80" sort-by="type@dict-name" sortable="custom"></el-table-column>
           <el-table-column
@@ -158,14 +175,14 @@ const handleStatus = async (ids: number[], status: number) => {
         </column-list>
       </el-table>
       <el-pagination
-        v-model:currentPage="currentPage"
+        v-model:current-page="currentPage"
         v-model:pageSize="pageSize"
         :total="total"
         :page-sizes="pageSizes"
         :layout="pageLayout"
         small
         background
-        class="px-3 py-2 justify-end"
+        class="justify-end px-3 py-2"
         @size-change="() => fetchData()"
         @current-change="() => fetchData()"
       ></el-pagination>

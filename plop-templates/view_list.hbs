@@ -3,16 +3,16 @@ export default { name: '{{pascalCase name}}List' };
 </script>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Plus, Delete } from '@element-plus/icons-vue';
+import { Plus, Delete, Grid } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { perm } from '@/store/useCurrentUser';
-import { moveList, toParams, resetParams } from '@/utils/common';
+import Sortable from 'sortablejs';
+import { perm } from '@/stores/useCurrentUser';
+import { toParams, resetParams } from '@/utils/common';
 import { delete{{pascalCase name}}, query{{pascalCase name}}List, update{{pascalCase name}}Order } from '@/api/{{kebabCase path}}';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
-import ListMove from '@/components/ListMove.vue';
 import {{pascalCase name}}Form from './{{pascalCase name}}Form.vue';
 
 const { t } = useI18n();
@@ -25,17 +25,40 @@ const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
 const beanId = ref<number>();
 const beanIds = computed(() => data.value.map((row) => row.id));
-const filtered = ref<boolean>(false);
+const isSorted = ref<boolean>(false);
 const fetchData = async () => {
   loading.value = true;
   try {
     data.value = await query{{pascalCase name}}List({ ...toParams(params.value), Q_OrderBy: sort.value });
-    filtered.value = Object.values(params.value).filter((v) => v !== undefined && v !== '').length > 0 || sort.value !== undefined;
+    isSorted.value = sort.value !== undefined;
   } finally {
     loading.value = false;
   }
 };
-onMounted(fetchData);
+let sortable;
+const initDragTable = () => {
+  const tbody = document.querySelector('#dataTable .el-table__body-wrapper tbody');
+  sortable = Sortable.create(tbody, {
+    handle: '.drag-handle',
+    onEnd: async function (event: any) {
+      const { oldIndex, newIndex } = event;
+      if (oldIndex !== newIndex) {
+        [data.value[oldIndex], data.value[newIndex]] = [data.value[newIndex], data.value[oldIndex]];
+        await update{{pascalCase name}}Order(data.value[oldIndex].id, data.value[newIndex].id);
+        ElMessage.success(t('success'));
+      }
+    },
+  });
+};
+onMounted(() => {
+  fetchData();
+  initDragTable();
+});
+onBeforeUnmount(() => {
+  if (sortable !== undefined) {
+    sortable.destroy();
+  }
+});
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
   if (prop) {
@@ -66,10 +89,6 @@ const handleDelete = async (ids: number[]) => {
   fetchData();
   ElMessage.success(t('success'));
 };
-const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => {
-  const list = moveList(selected, data.value, type);
-  await update{{pascalCase name}}Order(list.map((item) => item.id));
-};
 </script>
 
 <template>
@@ -86,13 +105,14 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
           <el-button :disabled="selection.length <= 0 || perm('{{camelCase name}}:delete')" :icon="Delete">\{{ $t('delete') }}</el-button>
         </template>
       </el-popconfirm>
-      <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" />
       <column-setting name="{{camelCase name}}" />
     </div>
-    <div class="app-block mt-3">
+    <div class="mt-3 app-block">
       <el-table
+        id="dataTable"
         ref="table"
         v-loading="loading"
+        row-key="id"
         :data="data"
         @selection-change="(rows) => (selection = rows)"
         @row-dblclick="(row) => handleEdit(row.id)"
@@ -100,11 +120,20 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
       >
         <column-list name="{{camelCase name}}">
           <el-table-column type="selection" width="45"></el-table-column>
+          <el-table-column width="42">
+            <el-icon
+              class="text-lg align-middle text-gray-secondary"
+              :class="isSorted || perm('{{camelCase name}}:update') ? ['cursor-not-allowed', 'text-gray-disabled'] : ['cursor-move', 'text-gray-regular', 'drag-handle']"
+              disalbed
+            >
+              <Grid />
+            </el-icon>
+          </el-table-column>
           <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('{{camelCase name}}.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column :label="$t('table.action')">
-            <template #default="{row}">
-              <el-button type="primary" :disabled="perm('{{camelCase name}}:update')" @click="() => handleEdit(row.id)" size="small" link>\{{ $t('edit') }}</el-button>
+            <template #default="{ row }">
+              <el-button type="primary" :disabled="perm('{{camelCase name}}:update')" size="small" link @click="() => handleEdit(row.id)">\{{ $t('edit') }}</el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
                 <template #reference>
                   <el-button type="primary" :disabled="perm('{{camelCase name}}:delete')" size="small" link>\{{ $t('delete') }}</el-button>

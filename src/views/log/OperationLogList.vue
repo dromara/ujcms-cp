@@ -9,7 +9,7 @@ import { Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
 import { logModules, logNames } from '@/data';
-import { perm } from '@/store/useCurrentUser';
+import { perm } from '@/stores/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
 import { deleteOperationLog, queryOperationLogPage } from '@/api/log';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -109,8 +109,8 @@ const handleDelete = async (ids: number[]) => {
     <div class="app-block mt-3">
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="operationLog">
-          <el-table-column type="selection" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column type="selection" width="38"></el-table-column>
+          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
           <el-table-column property="module" :label="$t('operationLog.module')" sortable="custom" show-overflow-tooltip>
             <template #default="{ row }">{{ row.module && $t(`log.${row.module}`) }}</template>
           </el-table-column>
@@ -146,7 +146,7 @@ const handleDelete = async (ids: number[]) => {
         </column-list>
       </el-table>
       <el-pagination
-        v-model:currentPage="currentPage"
+        v-model:current-page="currentPage"
         v-model:pageSize="pageSize"
         :total="total"
         :page-sizes="pageSizes"

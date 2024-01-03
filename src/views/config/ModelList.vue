@@ -7,7 +7,7 @@ import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { perm } from '@/store/useCurrentUser';
+import { perm } from '@/stores/useCurrentUser';
 import { moveList, toParams, resetParams } from '@/utils/common';
 import { deleteModel, queryModelList, updateModelOrder } from '@/api/config';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -111,7 +111,7 @@ const deletable = (bean: any) => bean.id > 10;
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="model">
           <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('model.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="type" :label="$t('model.type')" sortable="custom" :formatter="(row) => $t(`model.type.${row.type}`)" />
           <el-table-column property="scope" :label="$t('model.scope')" sortable="custom">
