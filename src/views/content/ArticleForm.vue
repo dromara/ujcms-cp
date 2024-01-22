@@ -316,7 +316,7 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
         </el-button-group>
         <el-button v-if="isEdit" :icon="View" @click="() => openArticleLink(values.status, values.url, values.dynamicUrl)">{{ $t('article.op.preview') }}</el-button>
         <el-button-group>
-          <el-popconfirm v-if="isEdit && !isReview" :title="$t('confirmDelete')" @confirm="() => handleDelete()">
+          <el-popconfirm v-if="isEdit && !isReview" :title="$t('confirmDelete')" @confirm="() => handleExecute('delete', bean.id)">
             <template #reference>
               <el-button :disabled="perm('article:delete') || unsaved" :icon="DocumentRemove">{{ $t('delete') }}</el-button>
             </template>

@@ -1,6 +1,6 @@
 {
   "name": "ujcms-cp",
-  "version": "9.0.4",
+  "version": "9.0.5",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -118,6 +118,6 @@
     "not dead"
   ],
   "engines": {
-    "node": ">=14.18"
+    "node": ">=16"
   }
 }

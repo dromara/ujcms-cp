@@ -5,20 +5,23 @@
  * @returns 树形数据
  */
 export const toTree = (data: any[]): any[] => {
-  const root = [];
+  const root: any[] = [];
   const tempMap = {};
-  data.forEach((item) => {
+  data.forEach((item: any) => {
     tempMap[item.id] = item;
   });
-  data.forEach((item) => {
+  data.forEach((item: any) => {
     const parent = tempMap[item.parentId];
     if (parent) {
-      if (parent.children) {
+      if (parent.children != null) {
         parent.children.push(item);
       } else {
         parent.children = [item];
       }
     } else {
+      if (item.children == null) {
+        item.children = [];
+      }
       root.push(item);
     }
   });
