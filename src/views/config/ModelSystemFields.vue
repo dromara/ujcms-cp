@@ -23,13 +23,13 @@ watch(visible, async () => {
     bean.value = await queryModel(beanId.value as number);
     const modelData = getModelData()[bean.value.type];
     mains.value = mergeModelFields(
-      modelData.mains.filter((item) => currentUser.epRank >= item.epRank ?? 0),
+      modelData.mains.filter((item) => currentUser.epRank >= (item.epRank ?? 0)),
       bean.value.mains,
       bean.value.type,
     );
     if (modelData.asides?.length > 0) {
       asides.value = mergeModelFields(
-        modelData.asides.filter((item) => currentUser.epRank >= item.epRank ?? 0),
+        modelData.asides.filter((item) => currentUser.epRank >= (item.epRank ?? 0)),
         bean.value.asides,
         bean.value.type,
       );

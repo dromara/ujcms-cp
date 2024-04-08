@@ -5,7 +5,7 @@ import { Document, Files, FolderOpened, User, UserFilled, BellFilled } from '@el
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import echarts, { ECOption } from '@/utils/echarts';
-import { currentUser } from '@/stores/useCurrentUser';
+import { currentUser, hasPermission } from '@/stores/useCurrentUser';
 import { queryContentStat } from '@/api/personal';
 import { queryTrendStat, queryVisitorStat, querySourceTypeStat } from '@/api/stat';
 import { queryArticlePendingCount, queryArticleRejectCount } from '@/api/content';
@@ -130,9 +130,13 @@ const fetchUnreviewedMessageBoard = async () => {
 };
 
 onMounted(async () => {
-  fetchPendingArticle();
-  fetchRejectArticle();
-  fetchUnreviewedMessageBoard();
+  if (hasPermission('articleReview:list')) {
+    fetchPendingArticle();
+    fetchRejectArticle();
+  }
+  if (hasPermission('messageBoard:list')) {
+    fetchUnreviewedMessageBoard();
+  }
   initTrendChart();
   initSourceTypeChart();
   fetchVisitorStat();

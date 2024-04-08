@@ -753,18 +753,18 @@ export function getModelData(): any {
 }
 
 export function mergeModelFields(defaultFields: any[], str: string | null | undefined, type: string): any[] {
-  const fields = JSON.parse(str || '[]');
+  let fields = JSON.parse(str || '[]');
   const defaults = defaultFields.map((item: any) => ({ ...item, label: `${type}.${item.code}` }));
   // 去除默认字段中不存在的字段
-  fields.filter((field: any) => defaults.findIndex((item) => item.code === field.code) !== -1);
-  defaults.forEach((item) => {
+  fields = fields.filter((field: any) => defaults.findIndex((item) => item.code === field.code) !== -1);
+  defaults.forEach((item, i) => {
     const index = fields.findIndex((it: any) => it.code === item.code);
     if (index !== -1) {
       // 加上缺失属性，覆盖不可改属性
       fields[index] = { ...item, ...fields[index], must: item.must, label: item.label, type: item.type };
     } else {
       // 加上没有的字段
-      fields.push(item);
+      fields.splice(i, 0, item);
     }
   });
   return fields;

@@ -43,8 +43,8 @@ const initDragTable = () => {
     onEnd: async function (event: any) {
       const { oldIndex, newIndex } = event;
       if (oldIndex !== newIndex) {
-        [data.value[oldIndex], data.value[newIndex]] = [data.value[newIndex], data.value[oldIndex]];
         await updateMessageBoardTypeOrder(data.value[oldIndex].id, data.value[newIndex].id);
+        data.value.splice(newIndex, 0, data.value.splice(oldIndex, 1)[0]);
         ElMessage.success(t('success'));
       }
     },
@@ -61,7 +61,7 @@ onBeforeUnmount(() => {
 });
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
-  if (prop) {
+  if (prop && order) {
     sort.value = (column.sortBy ?? prop) + (order === 'descending' ? '_desc' : '');
   } else {
     sort.value = undefined;
