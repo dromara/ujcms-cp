@@ -260,14 +260,17 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
       :action="action"
       :focus="focus"
       :init-values="
-        () => ({
-          editorType: mains['text'].editorType,
-          channelId: channel?.id,
-          allowComment: true,
-          customs: {},
-          fileList: [],
-          imageList: [],
-        })
+        () => {
+          articleModelId = channel?.articleModelId;
+          return {
+            editorType: mains['text'].editorType,
+            channelId: channel?.id,
+            allowComment: true,
+            customs: {},
+            fileList: [],
+            imageList: [],
+          };
+        }
       "
       :to-values="(bean) => ({ ...bean })"
       perms="article"
@@ -623,14 +626,14 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
                       :disabled="perm('jodConvert:library') || disabled"
                       :upload-action="jodConvertLibraryUrl"
                       :on-success="
-                      (res: any) => {
-                        values.doc = res.doc;
-                        values.docOrig = res.docOrig;
-                        values.docName = res.docName;
-                        values.docLength = res.docLength;
-                        values.image = res.docImage;
-                      }
-                    "
+                        (res) => {
+                          values.doc = res.doc;
+                          values.docOrig = res.docOrig;
+                          values.docName = res.docName;
+                          values.docLength = res.docLength;
+                          values.image = res.docImage;
+                        }
+                      "
                     ></base-upload>
                     <el-alert v-if="!jodConverterEnabled && currentUser.epRank > 0" :title="$t('error.jodConverterNotEnabled')" type="error" :closable="false" />
                     <el-button v-if="currentUser.epRank === 0" type="primary" @click="() => $alert($t('error.enterprise'), { dangerouslyUseHTMLString: true })">
@@ -776,7 +779,11 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
                   <el-autocomplete
                     v-model="values.source"
                     value-key="name"
-                    :fetch-suggestions="async (query:string, callback:any) => callback(await fetchSourceList(query))"
+                    :fetch-suggestions="
+                      (query, callback) => {
+                        fetchSourceList(query).then((result) => callback(result));
+                      }
+                    "
                     class="w-full"
                     highlight-first-item
                     hide-loading

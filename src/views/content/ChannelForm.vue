@@ -370,7 +370,7 @@ const initCustoms = (customs: any) => {
                 </el-select>
               </el-form-item>
               <el-form-item
-                v-if="currentUser.epRank >= 3"
+                v-if="currentUser.epRank >= 3 && asides['performanceType'].show"
                 prop="performanceType"
                 :label="asides['performanceType'].name ?? $t('channel.performanceType')"
                 :rules="asides['performanceType'].required ? { required: true, message: () => $t('v.required') } : undefined"
