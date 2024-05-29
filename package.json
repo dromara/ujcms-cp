@@ -1,6 +1,6 @@
 {
   "name": "ujcms-cp",
-  "version": "9.1.1",
+  "version": "9.1.4",
   "private": true,
   "scripts": {
     "dev": "vite",
