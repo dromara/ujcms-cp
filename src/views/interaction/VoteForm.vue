@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'VoteForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, PropType } from 'vue';
 import { Plus, Minus, Grid } from '@element-plus/icons-vue';
@@ -10,7 +6,10 @@ import { queryVote, createVote, updateVote, deleteVote } from '@/api/interaction
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 
-defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null }, beanIds: { type: Array as PropType<number[]>, required: true } });
+defineOptions({
+  name: 'VoteForm',
+});
+defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: String, default: null }, beanIds: { type: Array as PropType<string[]>, required: true } });
 defineEmits({ 'update:modelValue': null, finished: null });
 const focus = ref<any>();
 const values = ref<any>({});
@@ -68,31 +67,15 @@ const addNewLine = (index: number) => {
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item prop="orderDate">
-            <template #label><label-tip message="vote.orderDate" help /></template>
-            <el-date-picker
-              v-model="values.orderDate"
-              type="datetime"
-              class="w-full"
-              @change="
-                (value) => {
-                  // 清空日期值后，value会变成null，导致后台校验失败
-                  if (value === null) values.orderDate = undefined;
-                }
-              "
-            ></el-date-picker>
+          <el-form-item prop="mode" :rules="{ required: true, message: () => $t('v.required') }">
+            <template #label><label-tip message="vote.mode" help /></template>
+            <el-select v-model="values.mode" class="w-full"><el-option v-for="n in [1, 2, 3]" :key="n" :value="n" :label="$t(`vote.mode.${n}`)" /> </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item prop="created">
             <template #label><label-tip message="vote.created" /></template>
             <el-date-picker v-model="values.created" type="datetime" class="w-full" disabled></el-date-picker>
-          </el-form-item>
-        </el-col>
-        <el-col :span="24">
-          <el-form-item prop="mode" :rules="{ required: true, message: () => $t('v.required') }">
-            <template #label><label-tip message="vote.mode" help /></template>
-            <el-select v-model="values.mode" class="w-full"><el-option v-for="n in [1, 2, 3]" :key="n" :value="n" :label="$t(`vote.mode.${n}`)" /> </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -130,7 +113,7 @@ const addNewLine = (index: number) => {
                   <th class="w-40">{{ $t('voteOption.count') }}</th>
                 </tr>
               </thead>
-              <draggable v-model="values.options" tag="tbody" handle=".draggable-handle" item-key="id">
+              <draggable v-model="values.options" :animation="250" tag="tbody" handle=".draggable-handle" item-key="id">
                 <template #item="{ element: option, index }">
                   <tr>
                     <td class="p-2">

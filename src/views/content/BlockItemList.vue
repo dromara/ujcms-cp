@@ -1,21 +1,20 @@
-<script lang="ts">
-export default { name: 'BlockItemList' };
-</script>
-
 <script setup lang="ts">
-import { computed, watch, onMounted, ref } from 'vue';
+import { computed, watch, onMounted, onBeforeUnmount, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Delete, Plus } from '@element-plus/icons-vue';
+import { Plus, Delete, Grid } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
+import Sortable from 'sortablejs';
 import { perm } from '@/stores/useCurrentUser';
-import { moveList, toParams, resetParams } from '@/utils/common';
+import { toParams, resetParams } from '@/utils/common';
 import { queryBlockList } from '@/api/config';
 import { deleteBlockItem, queryBlockItemList, updateBlockItem, updateBlockItemOrder } from '@/api/content';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
-import ListMove from '@/components/ListMove.vue';
 import BlockItemForm from './BlockItemForm.vue';
 
+defineOptions({
+  name: 'BlockItemList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -24,19 +23,21 @@ const data = ref<any[]>([]);
 const selection = ref<any[]>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
 const blockList = ref<any[]>([]);
 const blockId = ref<string>();
-const block = computed(() => blockList.value.find((item) => item.id === Number(blockId.value)));
+const block = computed(() => blockList.value.find((item) => item.id === blockId.value));
 const previewSrcList = computed(() => data.value.map((it) => it.image));
 const mobilePreviewSrcList = computed(() => data.value.map((it) => it.mobileImage));
+const isSorted = ref<boolean>(false);
 const fetchData = async () => {
   loading.value = true;
   try {
-    data.value = await queryBlockItemList({ ...toParams(params.value), blockId: Number(blockId.value), Q_OrderBy: sort.value });
+    data.value = await queryBlockItemList({ ...toParams(params.value), blockId: blockId.value, Q_OrderBy: sort.value });
     filtered.value = Object.values(params.value).filter((v) => v !== undefined && v !== '').length > 0 || sort.value !== undefined;
+    isSorted.value = sort.value !== undefined;
   } finally {
     loading.value = false;
   }
@@ -46,10 +47,32 @@ const fetchBlockList = async () => {
   blockId.value = String(blockList.value[0].id);
 };
 
+let sortable;
+const initDragTable = () => {
+  const tbody = document.querySelector('#dataTable .el-table__body-wrapper tbody');
+  sortable = Sortable.create(tbody, {
+    handle: '.drag-handle',
+    onEnd: async function (event: any) {
+      const { oldIndex, newIndex } = event;
+      if (oldIndex !== newIndex) {
+        await updateBlockItemOrder(data.value[oldIndex].id, data.value[newIndex].id);
+        data.value.splice(newIndex, 0, data.value.splice(oldIndex, 1)[0]);
+        ElMessage.success(t('success'));
+      }
+    },
+  });
+};
+
 watch(blockId, () => fetchData());
 
 onMounted(async () => {
   await fetchBlockList();
+  initDragTable();
+});
+onBeforeUnmount(() => {
+  if (sortable !== undefined) {
+    sortable.destroy();
+  }
 });
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
@@ -72,7 +95,7 @@ const handleAdd = () => {
   beanId.value = undefined;
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   formVisible.value = true;
 };
@@ -81,14 +104,10 @@ const handleUpdate = async (bean: any) => {
   fetchData();
   ElMessage.success(t('success'));
 };
-const handleDelete = async (ids: number[]) => {
+const handleDelete = async (ids: string[]) => {
   await deleteBlockItem(ids);
   fetchData();
   ElMessage.success(t('success'));
-};
-const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => {
-  const list = moveList(selected, data.value, type);
-  await updateBlockItemOrder(list.map((item) => item.id));
 };
 </script>
 
@@ -112,13 +131,14 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
             <el-button :disabled="selection.length <= 0 || perm('blockItem:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
           </template>
         </el-popconfirm>
-        <list-move :disabled="selection.length <= 0 || filtered || perm('blockItem:update')" class="ml-2" @move="(type) => move(selection, type)" />
         <column-setting name="blockItem" class="ml-2" />
       </div>
       <div class="mt-3 app-block">
         <el-table
+          id="dataTable"
           ref="table"
           v-loading="loading"
+          row-key="id"
           :data="data"
           @selection-change="(rows: any) => (selection = rows)"
           @row-dblclick="(row: any) => handleEdit(row.id)"
@@ -126,7 +146,16 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
         >
           <column-list name="blockItem">
             <el-table-column type="selection" width="38"></el-table-column>
-            <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
+            <el-table-column width="42">
+              <el-icon
+                class="text-lg align-middle"
+                :class="isSorted || perm('blockItem:update') ? ['cursor-not-allowed', 'text-gray-disabled'] : ['cursor-move', 'text-gray-secondary', 'drag-handle']"
+                disalbed
+              >
+                <Grid />
+              </el-icon>
+            </el-table-column>
+            <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
             <el-table-column property="title" :label="$t('blockItem.title')" sortable="custom" min-width="200" show-overflow-tooltip></el-table-column>
             <el-table-column property="image" :label="$t('blockItem.image')">
               <template #default="{ row, $index }">
@@ -177,7 +206,7 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
           </column-list>
         </el-table>
       </div>
-      <block-item-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" :block-id="Number(blockId)" @finished="fetchData" />
+      <block-item-form v-model="formVisible" :bean-id :bean-ids :block-id @finished="fetchData" />
     </el-main>
   </el-container>
 </template>

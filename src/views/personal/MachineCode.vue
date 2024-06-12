@@ -1,11 +1,10 @@
-<script lang="ts">
-export default { name: 'MachineCode' };
-</script>
-
 <script setup lang="ts">
 import { toRefs, watch, ref } from 'vue';
 import { queryMachineCode } from '@/api/personal';
 
+defineOptions({
+  name: 'MachineCode',
+});
 const props = defineProps({ modelValue: { type: Boolean, required: true } });
 defineEmits({ 'update:modelValue': null });
 const { modelValue: visible } = toRefs(props);

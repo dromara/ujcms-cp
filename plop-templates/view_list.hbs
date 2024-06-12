@@ -61,7 +61,7 @@ onBeforeUnmount(() => {
 });
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
-  if (prop) {
+  if (prop && order) {
     sort.value = (column.sortBy ?? prop) + (order === 'descending' ? '_desc' : '');
   } else {
     sort.value = undefined;
@@ -113,7 +113,7 @@ const handleDelete = async (ids: number[]) => {
         ref="table"
         v-loading="loading"
         row-key="id"
-        :data="data"
+        :data
         @selection-change="(rows) => (selection = rows)"
         @row-dblclick="(row) => handleEdit(row.id)"
         @sort-change="handleSort"
@@ -129,7 +129,7 @@ const handleDelete = async (ids: number[]) => {
               <Grid />
             </el-icon>
           </el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="id" label="ID" width="180" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('{{camelCase name}}.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">

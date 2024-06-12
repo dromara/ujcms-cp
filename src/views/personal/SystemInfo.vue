@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'SystemInfo' };
-</script>
-
 <script setup lang="ts">
 import { toRefs, watch, ref, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -9,6 +5,9 @@ import echarts, { ECOption } from '@/utils/echarts';
 import { querySystemInfo } from '@/api/personal';
 import LabelTip from '@/components/LabelTip.vue';
 
+defineOptions({
+  name: 'SystemInfo',
+});
 const props = defineProps({ modelValue: { type: Boolean, required: true } });
 defineEmits({ 'update:modelValue': null });
 
@@ -22,7 +21,7 @@ const memoryChart = shallowRef<HTMLElement>();
 
 const initMemoryChart = () => {
   const option: ECOption = {
-    tooltip: { trigger: 'item', valueFormatter: (value: any) => `${n(value)} MB` },
+    tooltip: { trigger: 'item', valueFormatter: (value: any) => `${n(Number(value))} MB` },
     series: [
       {
         name: t('systemInfo.memory'),
@@ -112,23 +111,23 @@ watch(visible, async () => {
           </el-form-item>
           <el-form-item>
             <template #label><label-tip message="systemInfo.maxMemory" help /></template>
-            <el-input :value="$n(values.maxMemory ?? 0)" :readonly="true" input-style="text-align: right"><template #append>MB</template></el-input>
+            <el-input :value="$n(Number(values.maxMemory ?? 0))" :readonly="true" input-style="text-align: right"><template #append>MB</template></el-input>
           </el-form-item>
           <el-form-item>
             <template #label><label-tip message="systemInfo.totalMemory" help /></template>
-            <el-input :value="$n(values.totalMemory ?? 0)" :readonly="true" input-style="text-align: right"><template #append>MB</template></el-input>
+            <el-input :value="$n(Number(values.totalMemory ?? 0))" :readonly="true" input-style="text-align: right"><template #append>MB</template></el-input>
           </el-form-item>
           <el-form-item>
             <template #label><label-tip message="systemInfo.usedMemory" /></template>
-            <el-input :value="$n(values.usedMemory ?? 0)" :readonly="true" input-style="text-align: right"><template #append>MB</template></el-input>
+            <el-input :value="$n(Number(values.usedMemory ?? 0))" :readonly="true" input-style="text-align: right"><template #append>MB</template></el-input>
           </el-form-item>
           <el-form-item>
             <template #label><label-tip message="systemInfo.freeMemory" help /></template>
-            <el-input :value="$n(values.freeMemory ?? 0)" :readonly="true" input-style="text-align: right"><template #append>MB</template></el-input>
+            <el-input :value="$n(Number(values.freeMemory ?? 0))" :readonly="true" input-style="text-align: right"><template #append>MB</template></el-input>
           </el-form-item>
           <el-form-item>
             <template #label><label-tip message="systemInfo.availableMemory" help /></template>
-            <el-input :value="$n(values.availableMemory ?? 0)" :readonly="true" input-style="text-align: right"><template #append>MB</template></el-input>
+            <el-input :value="$n(Number(values.availableMemory ?? 0))" :readonly="true" input-style="text-align: right"><template #append>MB</template></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12" class="flex items-center justify-center">

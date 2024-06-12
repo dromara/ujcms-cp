@@ -72,10 +72,10 @@ const dataKey = computed<any>({
   <el-switch v-else-if="field.type === 'switch'" v-model="data"></el-switch>
   <el-radio-group v-else-if="field.type === 'radio'" v-model="dataKey" @change="(val) => (data = dictList.find((item) => item.value === val)?.name)">
     <template v-if="field.checkStyle === 'button'">
-      <el-radio-button v-for="item in dictList" :key="item.id" :label="item.value">{{ item.name }}</el-radio-button>
+      <el-radio-button v-for="item in dictList" :key="item.id" :value="item.value">{{ item.name }}</el-radio-button>
     </template>
     <template v-else>
-      <el-radio v-for="item in dictList" :key="item.id" :label="item.value">{{ item.name }}</el-radio>
+      <el-radio v-for="item in dictList" :key="item.id" :value="item.value">{{ item.name }}</el-radio>
     </template>
   </el-radio-group>
   <el-checkbox-group
@@ -84,10 +84,10 @@ const dataKey = computed<any>({
     @change="(val) => (data = dictList.filter((item) => val.indexOf(item.value) !== -1).map((item) => item.name))"
   >
     <template v-if="field.checkStyle === 'button'">
-      <el-checkbox-button v-for="item in dictList" :key="item.id" :label="item.value">{{ item.name }}</el-checkbox-button>
+      <el-checkbox-button v-for="item in dictList" :key="item.id" :value="item.value">{{ item.name }}</el-checkbox-button>
     </template>
     <template v-else>
-      <el-checkbox v-for="item in dictList" :key="item.id" :label="item.value">{{ item.name }}</el-checkbox>
+      <el-checkbox v-for="item in dictList" :key="item.id" :value="item.value">{{ item.name }}</el-checkbox>
     </template>
   </el-checkbox-group>
   <el-select

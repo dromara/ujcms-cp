@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'ArticleInternalPushForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, watch, toRefs, PropType } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -10,9 +6,12 @@ import { toTree, disableParentTree, disableTree } from '@/utils/tree';
 import { queryArticle, queryChannelList, internalPushArticle, externalPushArticle } from '@/api/content';
 import { querySiteList } from '@/api/system';
 
+defineOptions({
+  name: 'ArticleInternalPushForm',
+});
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { type: Number, default: null },
+  beanId: { type: String, default: null },
   type: { type: String as PropType<'internal' | 'external'>, default: 'external' },
 });
 const emit = defineEmits({ 'update:modelValue': null, finished: null });
@@ -33,7 +32,7 @@ const fetchArticle = async () => {
     bean.value = await queryArticle(beanId.value);
   }
 };
-const fetchChannelData = async (siteId?: number) => {
+const fetchChannelData = async (siteId?: string) => {
   const params = type.value === 'internal' ? { isArticlePermission: true } : { siteId };
   channelData.value = disableParentTree(toTree(await queryChannelList(params)));
   channelData.value = disableTree(channelData.value, [...bean.value.destList.map((item: any) => item.channel.id), bean.value.channel.id]);
@@ -92,7 +91,7 @@ const handleSubmit = () => {
         </el-form-item>
         <el-form-item prop="type">
           <el-radio-group v-model="values.type">
-            <el-radio-button v-for="n in [1, 3]" :key="n" :label="n">{{ t(`article.type.${n}`) }}</el-radio-button>
+            <el-radio-button v-for="n in [1, 3]" :key="n" :value="n">{{ t(`article.type.${n}`) }}</el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="type === 'external'" prop="siteId" :rules="[{ required: true, message: () => $t('v.required') }]">
@@ -104,7 +103,7 @@ const handleSubmit = () => {
             :render-after-expand="false"
             check-strictly
             class="w-full"
-            @change="(value: number) => fetchChannelData(value)"
+            @change="(value: string) => fetchChannelData(value)"
           />
         </el-form-item>
         <el-form-item prop="channelIds" :rules="[{ required: true, message: () => $t('v.required') }]">
@@ -113,7 +112,7 @@ const handleSubmit = () => {
             :data="channelData"
             node-key="id"
             :props="{ label: 'name' }"
-            class="border rounded w-full"
+            class="w-full border rounded"
             check-strictly
             default-expand-all
             show-checkbox
@@ -124,7 +123,7 @@ const handleSubmit = () => {
       </el-form>
     </template>
     <template #footer>
-      <div class="flex justify-between items-center">
+      <div class="flex items-center justify-between">
         <div></div>
         <div>
           <el-button @click="() => $emit('update:modelValue', false)">{{ $t('cancel') }}</el-button>

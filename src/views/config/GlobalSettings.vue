@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'GlobalSettings' };
-</script>
-
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -35,6 +31,9 @@ import { useSysConfigStore } from '@/stores/sysConfigStore';
 import LabelTip from '@/components/LabelTip.vue';
 import FieldItem from '@/views/config/components/FieldItem.vue';
 
+defineOptions({
+  name: 'GlobalSettings',
+});
 const { t } = useI18n();
 const sysConfig = useSysConfigStore();
 const form = ref<any>();
@@ -223,14 +222,14 @@ const invalidExtension = (extensions: string) => {
                 :rules="[
                   { required: true, message: () => $t('v.required') },
                   {
-                    validator: (rule:any, value:any, callback:any) => {
+                    validator: (rule: any, value: any, callback: any) => {
                       if (invalidExtension(value)) {
                         callback($t('config.upload.error.extensionNotAllowd'));
                         return;
                       }
                       callback();
                     },
-                  }
+                  },
                 ]"
               >
                 <template #label><label-tip message="config.upload.imageTypes" help /></template>
@@ -249,14 +248,14 @@ const invalidExtension = (extensions: string) => {
                 :rules="[
                   { required: true, message: () => $t('v.required') },
                   {
-                    validator: (rule:any, value:any, callback:any) => {
+                    validator: (rule: any, value: any, callback: any) => {
                       if (invalidExtension(value)) {
                         callback($t('config.upload.error.extensionNotAllowd'));
                         return;
                       }
                       callback();
                     },
-                  }
+                  },
                 ]"
               >
                 <template #label><label-tip message="config.upload.videoTypes" help /></template>
@@ -275,14 +274,14 @@ const invalidExtension = (extensions: string) => {
                 :rules="[
                   { required: true, message: () => $t('v.required') },
                   {
-                    validator: (rule:any, value:any, callback:any) => {
+                    validator: (rule: any, value: any, callback: any) => {
                       if (invalidExtension(value)) {
                         callback($t('config.upload.error.extensionNotAllowd'));
                         return;
                       }
                       callback();
                     },
-                  }
+                  },
                 ]"
               >
                 <template #label><label-tip message="config.upload.audioTypes" help /></template>
@@ -301,14 +300,14 @@ const invalidExtension = (extensions: string) => {
                 :rules="[
                   { required: true, message: () => $t('v.required') },
                   {
-                    validator: (rule:any, value:any, callback:any) => {
+                    validator: (rule: any, value: any, callback: any) => {
                       if (invalidExtension(value)) {
                         callback($t('config.upload.error.extensionNotAllowd'));
                         return;
                       }
                       callback();
                     },
-                  }
+                  },
                 ]"
               >
                 <template #label><label-tip message="config.upload.libraryTypes" help /></template>
@@ -327,14 +326,14 @@ const invalidExtension = (extensions: string) => {
                 :rules="[
                   { required: true, message: () => $t('v.required') },
                   {
-                    validator: (rule:any, value:any, callback:any) => {
+                    validator: (rule: any, value: any, callback: any) => {
                       if (invalidExtension(value)) {
                         callback($t('config.upload.error.extensionNotAllowd'));
                         return;
                       }
                       callback();
                     },
-                  }
+                  },
                 ]"
               >
                 <template #label><label-tip message="config.upload.docTypes" help /></template>
@@ -353,14 +352,14 @@ const invalidExtension = (extensions: string) => {
                 :rules="[
                   { required: true, message: () => $t('v.required') },
                   {
-                    validator: (rule:any, value:any, callback:any) => {
+                    validator: (rule: any, value: any, callback: any) => {
                       if (invalidExtension(value)) {
                         callback($t('config.upload.error.extensionNotAllowd'));
                         return;
                       }
                       callback();
                     },
-                  }
+                  },
                 ]"
               >
                 <template #label><label-tip message="config.upload.fileTypes" help /></template>
@@ -550,7 +549,7 @@ const invalidExtension = (extensions: string) => {
               <el-form-item prop="provider" :rules="{ required: true, message: () => $t('v.required') }">
                 <template #label><label-tip message="config.sms.provider" /></template>
                 <el-radio-group v-model="values.provider">
-                  <el-radio-button v-for="n in [0, 1, 2]" :key="n" :label="n">{{ $t(`config.sms.provider.${n}`) }}</el-radio-button>
+                  <el-radio-button v-for="n in [0, 1, 2]" :key="n" :value="n">{{ $t(`config.sms.provider.${n}`) }}</el-radio-button>
                 </el-radio-group>
               </el-form-item>
             </el-col>
@@ -871,7 +870,7 @@ const invalidExtension = (extensions: string) => {
             <el-col v-for="field in fields" :key="field.code" :span="field.double ? 12 : 24">
               <el-form-item :prop="field.code" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
                 <template #label><label-tip :label="field.name" /></template>
-                <field-item v-model="values[field.code]" v-model:model-key="values[field.code + '_key']" :field="field"></field-item>
+                <field-item v-model="values[field.code]" v-model:model-key="values[field.code + 'Key']" :field="field"></field-item>
               </el-form-item>
             </el-col>
           </el-row>
@@ -923,7 +922,7 @@ const invalidExtension = (extensions: string) => {
             </el-col>
           </el-row>
         </template>
-        <div v-if="type !== 'security' || currentUser.epRank > 1" v-loading="buttonLoading">
+        <div v-if="type !== 'security' || currentUser.epRank >= 1" v-loading="buttonLoading">
           <el-button :disabled="perm(`config:${type}:update`)" type="primary" native-type="submit" @click.prevent="() => handleSubmit()">
             {{ $t('save') }}
           </el-button>

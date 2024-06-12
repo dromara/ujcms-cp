@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'UserForm' };
-</script>
-
 <script setup lang="ts">
 import { onMounted, ref, toRefs, watch, PropType } from 'vue';
 import { useSysConfigStore } from '@/stores/sysConfigStore';
@@ -12,10 +8,13 @@ import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 import { ImageUpload } from '@/components/Upload';
 
+defineOptions({
+  name: 'UserForm',
+});
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { type: Number, default: null },
-  beanIds: { type: Array as PropType<number[]>, required: true },
+  beanId: { type: String, default: null },
+  beanIds: { type: Array as PropType<string[]>, required: true },
   org: { type: Object, default: null },
   showGlobalData: { type: Boolean, required: true },
 });
@@ -26,13 +25,16 @@ const sysConfig = useSysConfigStore();
 const focus = ref<any>();
 const values = ref<any>({});
 const groupList = ref<any[]>([]);
+const orgIds = ref<any[]>([]);
 const orgList = ref<any[]>([]);
 
 const fetchGroupList = async () => {
   groupList.value = await queryGroupList();
 };
 const fetchOrgList = async () => {
-  orgList.value = toTree(await queryOrgList({ current: !showGlobalData.value }));
+  const flatOrgList = await queryOrgList({ current: !showGlobalData.value });
+  orgIds.value = flatOrgList.map((item: any) => item.id);
+  orgList.value = toTree(flatOrgList);
 };
 
 onMounted(() => {
@@ -57,9 +59,9 @@ watch(visible, () => {
     :bean-id="beanId"
     :bean-ids="beanIds"
     :focus="focus"
-    :init-values="(): any => ({orgId:org?.id, gender: 0, roleIds: [] })"
-    :to-values="(bean: any) => ({ ...bean })"
-    :disable-delete="(bean: any) => bean.id <= 1"
+    :init-values="() => ({ orgId: org?.id, gender: 0, orgIds: [] })"
+    :to-values="(bean) => ({ ...bean, orgIds: bean.orgList.filter((item) => showGlobalData || orgIds.indexOf(item.id) !== -1).map((item) => item.id), global: showGlobalData })"
+    :disable-delete="(bean) => bean.id <= 1"
     :disable-edit="(bean) => currentUser.rank > bean.rank"
     perms="user"
     :model-value="modelValue"
@@ -94,9 +96,28 @@ watch(visible, () => {
         </el-col>
         <el-col :span="12">
           <el-form-item prop="groupId" :label="$t('user.group')" :rules="{ required: true, message: () => $t('v.required') }">
+            <template #label><label-tip message="user.group" help /></template>
             <el-select v-model="values.groupId" class="w-full">
               <el-option v-for="item in groupList" :key="item.id" :value="item.id" :label="item.name" :disabled="item.type !== 2"></el-option>
             </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col v-if="currentUser.epRank >= 3" :span="24">
+          <el-form-item prop="orgIds" :label="$t('user.orgs')">
+            <template #label><label-tip message="user.orgs" help /></template>
+            <el-tree-select
+              v-model="values.orgIds"
+              :data="orgList"
+              node-key="id"
+              :props="{ label: 'name' }"
+              :render-after-expand="false"
+              :default-expanded-keys="orgList.map((item) => item.id)"
+              multiple
+              show-checkbox
+              check-strictly
+              check-on-click-node
+              class="w-full"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -106,7 +127,7 @@ watch(visible, () => {
             :rules="[
               { required: true, message: () => $t('v.required') },
               {
-                asyncValidator: async (rule:any, value:any, callback:any) => {
+                asyncValidator: async (rule: any, value: any, callback: any) => {
                   if (value !== bean.username && (await usernameExist(value))) {
                     callback($t('user.error.usernameExist'));
                     return;
@@ -130,7 +151,7 @@ watch(visible, () => {
             :label="$t('user.mobile')"
             :rules="[
               {
-                asyncValidator: async (rule:any, value:any, callback:any) => {
+                asyncValidator: async (rule: any, value: any, callback: any) => {
                   if (value !== bean.mobile && (await mobileExist(value))) {
                     callback($t('user.error.mobileExist'));
                     return;
@@ -149,7 +170,7 @@ watch(visible, () => {
             :label="$t('user.email')"
             :rules="[
               {
-                asyncValidator: async (rule:any, value:any, callback:any) => {
+                asyncValidator: async (rule: any, value: any, callback: any) => {
                   if (value !== bean.email && (await emailExist(value))) {
                     callback($t('user.error.emailExist'));
                     return;
@@ -165,9 +186,9 @@ watch(visible, () => {
         <el-col :span="12">
           <el-form-item prop="gender" :label="$t('user.gender')" :rules="{ required: true, message: () => $t('v.required') }">
             <el-radio-group v-model="values.gender">
-              <el-radio :label="1">{{ $t('gender.male') }}</el-radio>
-              <el-radio :label="2">{{ $t('gender.female') }}</el-radio>
-              <el-radio :label="0">{{ $t('gender.none') }}</el-radio>
+              <el-radio :value="1">{{ $t('gender.male') }}</el-radio>
+              <el-radio :value="2">{{ $t('gender.female') }}</el-radio>
+              <el-radio :value="0">{{ $t('gender.none') }}</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>

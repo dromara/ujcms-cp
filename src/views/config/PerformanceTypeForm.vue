@@ -1,14 +1,13 @@
-<script lang="ts">
-export default { name: 'PerformanceTypeForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, PropType } from 'vue';
 import { queryPerformanceType, createPerformanceType, updatePerformanceType, deletePerformanceType } from '@/api/config';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 
-defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null }, beanIds: { type: Array as PropType<number[]>, required: true } });
+defineOptions({
+  name: 'PerformanceTypeForm',
+});
+defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: String, default: null }, beanIds: { type: Array as PropType<string[]>, required: true } });
 defineEmits({ 'update:modelValue': null, finished: null });
 const focus = ref<any>();
 const values = ref<any>({});

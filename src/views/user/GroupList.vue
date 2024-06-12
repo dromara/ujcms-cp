@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'GroupList' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -16,6 +12,9 @@ import ListMove from '@/components/ListMove.vue';
 import GroupForm from './GroupForm.vue';
 import GroupPermissionForm from './GroupPermissionForm.vue';
 
+defineOptions({
+  name: 'GroupList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -25,7 +24,7 @@ const selection = ref<any[]>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
 const permissionFormVisible = ref<boolean>(false);
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
 const fetchData = async () => {
@@ -59,16 +58,16 @@ const handleAdd = () => {
   beanId.value = undefined;
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const handlePermissionEdit = (id: number) => {
+const handlePermissionEdit = (id: string) => {
   beanId.value = id;
   permissionFormVisible.value = true;
 };
-const deletable = (id: number) => id > 10;
-const handleDelete = async (ids: number[]) => {
+const deletable = (id: string) => id > 10;
+const handleDelete = async (ids: string[]) => {
   const deletableIds = ids.filter((id) => deletable(id));
   if (deletableIds.length > 0) {
     await deleteGroup(deletableIds);
@@ -101,11 +100,11 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
       <list-move class="ml-2" :disabled="selection.length <= 0 || filtered || perm('org:update')" @move="(type) => move(selection, type)" />
       <column-setting name="group" class="ml-2" />
     </div>
-    <div class="app-block mt-3">
+    <div class="mt-3 app-block">
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="group">
           <el-table-column type="selection" width="50"></el-table-column>
-          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
+          <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('group.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="description" :label="$t('group.description')" min-width="150" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="allAccessPermission" :label="$t('group.allAccessPermission')" sortable="custom">

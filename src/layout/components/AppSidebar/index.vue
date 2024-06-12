@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'AppSidebar' };
-</script>
-
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -10,6 +6,9 @@ import { useAppStateStore } from '@/stores/appStateStore';
 import MenuItem from './MenuItem.vue';
 import SidebarLogo from './SidebarLogo.vue';
 
+defineOptions({
+  name: 'AppSidebar',
+});
 const router = useRouter();
 const route = useRoute();
 const appState = useAppStateStore();

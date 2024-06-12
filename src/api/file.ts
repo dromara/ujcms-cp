@@ -49,25 +49,25 @@ export const moveWebFileHtml = async (dir: string, names: string[], destDir: str
 export const deleteWebFileHtml = async (data: string[]): Promise<any> => (await axios.post('/backend/ext/web-file-html?_method=delete', data)).data;
 
 export const queryBackupDatabaseList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/ext/backup-database', { params })).data;
-export const queryBackupDatabase = async (id: number): Promise<any> => (await axios.get(`/backend/ext/backup-database/${id}`)).data;
+export const queryBackupDatabase = async (id: string): Promise<any> => (await axios.get(`/backend/ext/backup-database/${id}`)).data;
 export const backupBackupDatabase = async (): Promise<any> => (await axios.post('/backend/ext/backup-database')).data;
 export const restoreBackupDatabase = async (name: string): Promise<any> => (await axios.post('/backend/ext/backup-database?_method=put', { name })).data;
 export const deleteBackupDatabase = async (data: string[]): Promise<any> => (await axios.post('/backend/ext/backup-database?_method=delete', data)).data;
 
 export const queryBackupTemplatesList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/ext/backup-templates', { params })).data;
-export const queryBackupTemplates = async (id: number): Promise<any> => (await axios.get(`/backend/ext/backup-templates/${id}`)).data;
+export const queryBackupTemplates = async (id: string): Promise<any> => (await axios.get(`/backend/ext/backup-templates/${id}`)).data;
 export const backupBackupTemplates = async (): Promise<any> => (await axios.post('/backend/ext/backup-templates')).data;
 export const restoreBackupTemplates = async (name: string): Promise<any> => (await axios.post('/backend/ext/backup-templates?_method=put', { name })).data;
 export const deleteBackupTemplates = async (data: string[]): Promise<any> => (await axios.post('/backend/ext/backup-templates?_method=delete', data)).data;
 
 export const queryBackupUploadsList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/ext/backup-uploads', { params })).data;
-export const queryBackupUploads = async (id: number): Promise<any> => (await axios.get(`/backend/ext/backup-uploads/${id}`)).data;
+export const queryBackupUploads = async (id: string): Promise<any> => (await axios.get(`/backend/ext/backup-uploads/${id}`)).data;
 export const backupBackupUploads = async (): Promise<any> => (await axios.post('/backend/ext/backup-uploads')).data;
 export const restoreBackupUploads = async (name: string): Promise<any> => (await axios.post('/backend/ext/backup-uploads?_method=put', { name })).data;
 export const deleteBackupUploads = async (data: string[]): Promise<any> => (await axios.post('/backend/ext/backup-uploads?_method=delete', data)).data;
 
 export const queryIncrementalUploadsList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/ext/incremental-uploads', { params })).data;
-export const queryIncrementalUploads = async (id: number): Promise<any> => (await axios.get(`/backend/ext/incremental-uploads/${id}`)).data;
+export const queryIncrementalUploads = async (id: string): Promise<any> => (await axios.get(`/backend/ext/incremental-uploads/${id}`)).data;
 export const backupIncrementalUploads = async (): Promise<any> => (await axios.post('/backend/ext/incremental-uploads')).data;
 export const restoreIncrementalUploads = async (name: string): Promise<any> => (await axios.post('/backend/ext/incremental-uploads?_method=put', { name })).data;
 export const mergeIncrementalUploads = async (data: string[]): Promise<any> => (await axios.post('/backend/ext/incremental-uploads/merge', data)).data;

@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'ChannelForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, computed, toRefs, watch, PropType } from 'vue';
 import { toTree, disableSubtree, disableTreeWithPermission } from '@/utils/tree';
@@ -16,7 +12,7 @@ import {
   queryArticleTemplates,
   channelAliasExist,
 } from '@/api/content';
-import { queryProcessDefinitionList } from '@/api/system';
+import { queryProcessModelList } from '@/api/system';
 import { queryModelList, queryPerformanceTypeList } from '@/api/config';
 import { getModelData, mergeModelFields, arr2obj } from '@/data';
 import { currentUser } from '@/stores/useCurrentUser';
@@ -27,10 +23,13 @@ import Tinymce from '@/components/Tinymce';
 import { TuiEditor } from '@/components/TuiEditor';
 import { ImageUpload } from '@/components/Upload';
 
+defineOptions({
+  name: 'ChannelForm',
+});
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { type: Number, default: null },
-  beanIds: { type: Array as PropType<number[]>, required: true },
+  beanId: { type: String, default: null },
+  beanIds: { type: Array as PropType<string[]>, required: true },
   parent: { type: Object, default: null },
 });
 const emit = defineEmits({ 'update:modelValue': null, finished: null });
@@ -38,15 +37,15 @@ const emit = defineEmits({ 'update:modelValue': null, finished: null });
 const { modelValue: visible, parent } = toRefs(props);
 const focus = ref<any>();
 const values = ref<any>({});
-const processList = ref<any[]>([]);
+const processModelList = ref<any[]>([]);
 const performanceTypeList = ref<any[]>([]);
 const channelList = ref<any[]>([]);
 const channelModelList = ref<any[]>([]);
 const articleModelList = ref<any[]>([]);
-const channelPermissions = ref<number[]>([]);
+const channelPermissions = ref<string[]>([]);
 const channelTemplates = ref<any[]>([]);
 const articleTemplates = ref<any[]>([]);
-const channelModelId = ref<number>();
+const channelModelId = ref<string>();
 const channelModel = computed(() => channelModelList.value.find((item) => item.id === channelModelId.value));
 const mains = computed(() => arr2obj(mergeModelFields(getModelData().channel.mains, channelModel.value?.mains, 'channel')));
 const asides = computed(() => arr2obj(mergeModelFields(getModelData().channel.asides, channelModel.value?.asides, 'channel')));
@@ -62,9 +61,9 @@ const parentChannelList = computed(() => {
 const fetchChannelList = async () => {
   channelList.value = toTree(await queryChannelList());
 };
-const fetchProcessList = async () => {
+const fetchProcessModelList = async () => {
   if (currentUser.epRank > 0) {
-    processList.value = await queryProcessDefinitionList({ category: 'sys_article', latestVersion: true });
+    processModelList.value = await queryProcessModelList({ category: 'sys_article', deployed: true });
   }
 };
 const fetchPerformanceTypeList = async () => {
@@ -103,7 +102,7 @@ watch(visible, () => {
     fetchArticleModelList();
     fetchChannelTemplates();
     fetchArticleTemplates();
-    fetchProcessList();
+    fetchProcessModelList();
     fetchPerformanceTypeList();
   }
 });
@@ -115,7 +114,7 @@ const initCustoms = (customs: any) => {
     if (customs[field.code] == null) {
       customs[field.code] = field.defaultValue;
       if (field.defaultValueKey != null) {
-        customs[field.code + '_key'] = field.defaultValueKey;
+        customs[field.code + 'Key'] = field.defaultValueKey;
       }
     }
   });
@@ -134,21 +133,23 @@ const initCustoms = (customs: any) => {
     :bean-id="beanId"
     :bean-ids="beanIds"
     :focus="focus"
-    :init-values="(bean: any): any => ({
-      parentId: bean?.parentId ?? parent?.id,
-      type: 1,
-      channelModelId: bean?.channelModelId ?? parent?.channelModelId ?? channelModelList[0]?.id,
-      articleModelId: bean?.articleModelId ?? parent?.articleModelId ?? articleModelList[0]?.id,
-      nav: bean?.nav ?? parent?.nav ?? true,
-      channelTemplate: bean?.channelTemplate ?? parent?.channelTemplate ?? channelTemplates[0],
-      articleTemplate: bean?.articleTemplate ?? parent?.articleTemplate ?? articleTemplates[0],
-      pageSize: 20,
-      allowComment: bean?.allowComment ?? parent?.allowComment ?? true,
-      allowContribute: bean?.allowContribute ?? parent?.allowContribute ?? true,
-      allowSearch: bean?.allowSearch ?? parent?.allowSearch ?? true,
-      orderDesc: bean?.orderDesc ?? parent?.orderDesc ?? true,
-      customs: {},
-    })"
+    :init-values="
+      (bean: any): any => ({
+        parentId: bean?.parentId ?? parent?.id,
+        type: 1,
+        channelModelId: bean?.channelModelId ?? parent?.channelModelId ?? channelModelList[0]?.id,
+        articleModelId: bean?.articleModelId ?? parent?.articleModelId ?? articleModelList[0]?.id,
+        nav: bean?.nav ?? parent?.nav ?? true,
+        channelTemplate: bean?.channelTemplate ?? parent?.channelTemplate ?? channelTemplates[0],
+        articleTemplate: bean?.articleTemplate ?? parent?.articleTemplate ?? articleTemplates[0],
+        pageSize: 20,
+        allowComment: bean?.allowComment ?? parent?.allowComment ?? true,
+        allowContribute: bean?.allowContribute ?? parent?.allowContribute ?? true,
+        allowSearch: bean?.allowSearch ?? parent?.allowSearch ?? true,
+        orderDesc: bean?.orderDesc ?? parent?.orderDesc ?? true,
+        customs: {},
+      })
+    "
     :to-values="(bean) => ({ ...bean })"
     perms="channel"
     :model-value="modelValue"
@@ -319,7 +320,7 @@ const initCustoms = (customs: any) => {
               <el-col :span="field.double ? 12 : 24">
                 <el-form-item :prop="`customs.${field.code}`" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
                   <template #label><label-tip :label="field.name" /></template>
-                  <field-item v-model="values.customs[field.code]" v-model:model-key="values.customs[field.code + '_key']" :field="field"></field-item>
+                  <field-item v-model="values.customs[field.code]" v-model:model-key="values.customs[field.code + 'Key']" :field="field"></field-item>
                 </el-form-item>
               </el-col>
             </template>
@@ -331,7 +332,7 @@ const initCustoms = (customs: any) => {
               >
                 <div class="w-full">
                   <el-radio-group v-if="mains['text'].editorSwitch" v-model="values.editorType" class="mr-6" @change="() => (values.markdown = '')">
-                    <el-radio v-for="n in [1, 2]" :key="n" :label="n">{{ $t(`model.field.editorType.${n}`) }}</el-radio>
+                    <el-radio v-for="n in [1, 2]" :key="n" :value="n">{{ $t(`model.field.editorType.${n}`) }}</el-radio>
                   </el-radio-group>
                   <tui-editor v-if="values.editorType === 2" v-model="values.markdown" v-model:html="values.text" class="leading-6" />
                   <tinymce v-else ref="tinyText" v-model="values.text" />
@@ -366,7 +367,7 @@ const initCustoms = (customs: any) => {
                 :rules="asides['processKey'].required ? { required: true, message: () => $t('v.required') } : undefined"
               >
                 <el-select v-model="values.processKey" clearable class="w-full">
-                  <el-option v-for="item in processList" :key="item.key" :label="item.name" :value="item.key"></el-option>
+                  <el-option v-for="item in processModelList" :key="item.key" :label="item.name" :value="item.key"></el-option>
                 </el-select>
               </el-form-item>
               <el-form-item

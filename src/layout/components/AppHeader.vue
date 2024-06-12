@@ -28,7 +28,7 @@ const fetchSiteList = async () => {
   siteList.value = await queryCurrentSiteList();
   currentSite.value = siteList.value.find((item) => item.id === getCurrentSiteId()) ?? siteList.value[0];
 };
-const changeSiteId = (id: number) => {
+const changeSiteId = (id: string) => {
   setCurrentSiteId(id);
   window.location.reload();
 };

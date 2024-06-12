@@ -25,3 +25,9 @@ body {
 .inline-form .el-form-item {
   margin-bottom: 0;
 }
+
+.bpmn-property-item {
+  @apply py-1 px-2 text-xs rounded cursor-pointer text-primary;
+  background-color: var(--el-color-primary-light-9);
+  border: solid 1px var(--el-color-primary-light-8);
+}

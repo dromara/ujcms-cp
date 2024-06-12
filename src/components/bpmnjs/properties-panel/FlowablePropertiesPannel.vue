@@ -1,89 +1,65 @@
 <script setup lang="ts">
-import { ref, watch, toRefs, PropType } from 'vue';
-import { User, Setting } from '@element-plus/icons-vue';
-import LabelTip from '@/components/LabelTip.vue';
-import { is } from 'bpmn-js/lib/util/ModelUtil';
+import { ref, watch, markRaw } from 'vue';
+import NormalProps from './properties/NormalProps.vue';
+import ConditionProps from './properties/ConditionProps.vue';
+import AssignmentProps from './properties/AssignmentProps.vue';
+import MultiInstanceProps from './properties/MultiInstanceProps.vue';
+import TimerProps from './properties/TimerProps.vue';
+import FormProps from './properties/FormProps.vue';
+import ListenerProps from './properties/ListenerProps.vue';
+/**
+ * https://github.com/bpmn-io/bpmn-js/blob/develop/lib/features/modeling/Modeling.js
+ */
+const props = defineProps<{
+  modeler: any;
+  queryRoles: (params?: Record<string, any>) => Promise<any>;
+  queryOrgs: (params?: Record<string, any>) => Promise<any>;
+}>();
 
-const props = defineProps({ modeler: { type: Object, default: null }, queryRoles: { type: Function as PropType<() => Promise<any>>, required: true } });
-const { modeler } = toRefs(props);
-const element = ref<any>();
-let modeling: any;
-let canvas: any;
-let selection: any;
+const selection = ref<any>();
+const activeNames = ref(['1', '2']);
 
-const propertyName = ref<string>();
-const propertyId = ref<string>();
-const propertyRoleIds = ref<number[]>();
-
-const roleList = ref<any[]>([]);
-
-const changeName = (name: string) => {
-  modeling.updateProperties(selection, { name });
-};
-const changeId = (id: string) => {
-  modeling.updateProperties(selection, { id });
-};
-const changeRoles = (roleIds: number[]) => {
-  modeling.updateProperties(selection, { candidateGroups: roleIds.join(',') });
+const addActiveName = (name: string) => {
+  if (!activeNames.value.includes(name)) {
+    activeNames.value.push(name);
+  }
 };
 
-const fetchRoleList = async () => {
-  roleList.value = await props.queryRoles();
+const removeActiveName = (name: string) => {
+  const index = activeNames.value.indexOf(name);
+  if (index !== -1) {
+    activeNames.value.splice(index, 1);
+  }
 };
 
 watch(
-  () => modeler.value,
-  async () => {
-    if (modeler.value != null) {
-      fetchRoleList();
-      canvas = modeler.value.get('canvas');
-      modeling = modeler.value.get('modeling');
-      modeler.value.on('selection.changed', (event: any) => {
+  () => props.modeler,
+  () => {
+    if (props.modeler) {
+      props.modeler.on('selection.changed', (event: any) => {
         const { newSelection = [] } = event;
-        selection = newSelection[0] ?? canvas.getRootElement();
-        element.value = selection;
-        if (selection.businessObject) {
-          propertyName.value = selection.businessObject.name;
-          propertyId.value = selection.businessObject.id;
-          propertyRoleIds.value = selection.businessObject.candidateGroups?.split(',').map((item: string) => Number(item));
-        }
+        selection.value = markRaw(newSelection[0] ?? props.modeler.get('canvas').getRootElement());
       });
     }
   },
-  { immediate: true },
 );
 </script>
 
 <template>
-  <el-collapse model-value="1">
-    <el-collapse-item name="1">
-      <template #title>
-        <el-icon class="text-base"><Setting /></el-icon><span class="text-sm font-bold ml-1">{{ $t('flowable.groups.normal') }}</span>
-      </template>
-      <el-form label-width="96px">
-        <el-form-item>
-          <template #label><label-tip message="flowable.properties.name" /></template>
-          <el-input v-model="propertyName" :disabled="!is(element, 'bpmn:UserTask')" @input="changeName" />
-        </el-form-item>
-        <el-form-item class="mb-0">
-          <template #label><label-tip message="flowable.properties.id" /></template>
-          <el-input v-model="propertyId" disabled @input="changeId" />
-        </el-form-item>
-      </el-form>
-    </el-collapse-item>
-    <el-collapse-item v-if="is(element, 'bpmn:UserTask')" name="2">
-      <template #title>
-        <el-icon class="text-base"><User /></el-icon><span class="text-sm font-bold ml-1">{{ $t('flowable.groups.assignment') }}</span>
-      </template>
-      <el-form label-width="96px">
-        <el-form-item>
-          <template #label><label-tip message="flowable.properties.candidateGroups" /></template>
-          <el-select v-model="propertyRoleIds" multiple class="w-full" @change="changeRoles">
-            <el-option v-for="item in roleList" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-          <!-- <el-input v-model="candidateGroups" @input="changeCandidateGroups" /> -->
-        </el-form-item>
-      </el-form>
-    </el-collapse-item>
+  <el-collapse v-model="activeNames" class="pl-2 border-t-0">
+    <normal-props :modeler :selection="selection" collapse-item-name="1" />
+    <assignment-props :modeler :selection="selection" collapse-item-name="2" :query-orgs="queryOrgs" :query-roles="queryRoles" />
+    <condition-props :modeler :selection="selection" collapse-item-name="3" @show="addActiveName" @hide="removeActiveName" />
+    <form-props :modeler :selection="selection" collapse-item-name="4" @show="addActiveName" @hide="removeActiveName" />
+    <multi-instance-props :modeler :selection="selection" collapse-item-name="5" @show="addActiveName" @hide="removeActiveName" />
+    <listener-props :modeler :selection="selection" collapse-item-name="6" type="execution" @show="addActiveName" @hide="removeActiveName" />
+    <listener-props :modeler :selection="selection" collapse-item-name="7" type="task" @show="addActiveName" @hide="removeActiveName" />
+    <timer-props :modeler :selection="selection" collapse-item-name="8" @show="addActiveName" @hide="removeActiveName" />
   </el-collapse>
 </template>
+
+<style lang="scss" scoped>
+:deep(.el-collapse-item__content) {
+  padding-bottom: 0;
+}
+</style>

@@ -9,10 +9,7 @@ declare module '*.vue' {
 
 declare module 'bpmn-js/lib/Modeler';
 declare module 'bpmn-js/lib/Viewer';
-declare module 'bpmn-js-properties-panel';
 declare module 'bpmn-js/lib/util/ModelUtil';
-declare module '@/components/bpmnjs/provider/bpmn';
-declare module '@/components/bpmnjs/provider/flowable';
 declare module '@/components/bpmnjs/descriptors/flowable';
 declare module '@/components/bpmnjs/palette';
 declare module '@/components/bpmnjs/context-pad';
@@ -22,6 +19,7 @@ interface ImportMetaEnv {
   readonly VITE_PUBLIC_PATH: string;
   readonly VITE_I18N_LOCALE: string;
   readonly VITE_I18N_FALLBACK_LOCALE: string;
+  readonly VITE_USE_MOCK: string;
 }
 
 interface ImportMeta {

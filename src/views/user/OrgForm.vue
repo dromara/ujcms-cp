@@ -1,18 +1,17 @@
-<script lang="ts">
-export default { name: 'OrgForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, toRefs, watch, PropType } from 'vue';
 import { queryOrg, createOrg, updateOrg, deleteOrg, queryOrgList } from '@/api/user';
 import { toTree, disableSubtree } from '@/utils/tree';
 import DialogForm from '@/components/DialogForm.vue';
 
+defineOptions({
+  name: 'OrgForm',
+});
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { type: Number, default: null },
-  beanIds: { type: Array as PropType<number[]>, required: true },
-  parentId: { type: Number, required: true },
+  beanId: { type: String, default: null },
+  beanIds: { type: Array as PropType<string[]>, required: true },
+  parentId: { type: String, required: true },
   showGlobalData: { type: Boolean, required: true },
 });
 const { parentId, beanId, showGlobalData, modelValue: visible } = toRefs(props);
@@ -47,7 +46,7 @@ watch(visible, () => {
     :bean-id="beanId"
     :bean-ids="beanIds"
     :focus="focus"
-    :init-values="(bean: any): any => ({ parentId: parentId})"
+    :init-values="(bean: any): any => ({ parentId: parentId })"
     :to-values="(bean) => ({ ...bean })"
     :disable-delete="(bean) => bean.id <= 1 || bean.id === orgList[0]?.id"
     perms="org"

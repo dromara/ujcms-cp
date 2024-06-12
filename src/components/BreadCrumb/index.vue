@@ -1,12 +1,11 @@
-<script lang="ts">
-export default { name: 'BreadCrumb' };
-</script>
-
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { compile } from 'path-to-regexp';
 
+defineOptions({
+  name: 'BreadCrumb',
+});
 const router = useRouter();
 const route = useRoute();
 const itemList = ref<any[]>([]);

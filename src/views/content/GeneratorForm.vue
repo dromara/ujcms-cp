@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'GeneratorForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -14,6 +10,9 @@ import LabelTip from '@/components/LabelTip.vue';
 import TaskList from '@/views/system/TaskList.vue';
 
 type FormInstance = InstanceType<typeof ElForm>;
+defineOptions({
+  name: 'GeneratorForm',
+});
 const { t } = useI18n();
 const form = ref<FormInstance>();
 const values = ref<any>({});
@@ -148,7 +147,7 @@ const handleSubmit = () => {
         </el-form-item>
       </el-form>
     </div>
-    <div class="mt-3 p-3 app-block">
+    <div class="p-3 mt-3 app-block">
       <div class="pb-2 border-b text-gray-primary">{{ $t('site.settings.html') }}</div>
       <el-form ref="form" v-loading="loading" class="mt-3" :model="values" :disabled="perm('siteSettings:html:update')" label-width="200px">
         <el-row>
@@ -205,7 +204,7 @@ const handleSubmit = () => {
         </div>
       </el-form>
     </div>
-    <div class="mt-3 p-3 app-block">
+    <div class="p-3 mt-3 app-block">
       <div class="text-gray-primary">{{ $t('generator.taskList') }}</div>
     </div>
     <task-list ref="taskListRef" class="mt-3" />

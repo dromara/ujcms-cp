@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'DictList' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -16,6 +12,9 @@ import { QueryForm, QueryItem } from '@/components/QueryForm';
 import ListMove from '@/components/ListMove.vue';
 import DictForm from './DictForm.vue';
 
+defineOptions({
+  name: 'DictList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -24,17 +23,17 @@ const data = ref<Array<any>>([]);
 const selection = ref<Array<any>>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
 const typeList = ref<any[]>([]);
 const typeId = ref<string>();
-const dictType = computed(() => typeList.value.find((item) => item.id === Number(typeId.value)));
+const dictType = computed(() => typeList.value.find((item) => item.id === typeId.value));
 const deletable = (bean: any) => bean.id >= 500;
 const fetchData = async () => {
   loading.value = true;
   try {
-    data.value = await queryDictList({ ...toParams(params.value), typeId: Number(typeId.value), Q_OrderBy: sort.value });
+    data.value = await queryDictList({ ...toParams(params.value), typeId: typeId.value, Q_OrderBy: sort.value });
     filtered.value = Object.values(params.value).filter((v) => v !== undefined && v !== '').length > 0 || sort.value !== undefined;
   } finally {
     loading.value = false;
@@ -69,11 +68,11 @@ const handleAdd = () => {
   beanId.value = undefined;
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const handleDelete = async (ids: number[]) => {
+const handleDelete = async (ids: string[]) => {
   await deleteDict(ids);
   fetchData();
   ElMessage.success(t('success'));
@@ -107,7 +106,7 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
         <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" class="ml-2" @move="(type) => move(selection, type)" />
         <column-setting name="dict" class="ml-2" />
       </div>
-      <div class="app-block mt-3">
+      <div class="mt-3 app-block">
         <el-table
           ref="table"
           v-loading="loading"
@@ -118,7 +117,7 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
         >
           <column-list name="dict">
             <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-            <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
+            <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
             <el-table-column property="name" :label="$t('dict.name')" sortable="custom" show-overflow-tooltip></el-table-column>
             <el-table-column property="value" :label="$t('dict.value')" sortable="custom" show-overflow-tooltip></el-table-column>
             <el-table-column property="enabled" :label="$t('dict.enabled')" sortable="custom">

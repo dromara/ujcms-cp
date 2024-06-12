@@ -128,7 +128,6 @@
   "article.favorites": "收藏次数",
   "article.ups": "顶次数",
   "article.downs": "踩次数",
-  "article.rejectReason": "拒绝原因",
   "article.extractImage": "从正文提取图片",
   "article.type.0": "常规",
   "article.type.1": "复制",
@@ -175,6 +174,29 @@
   "tag.created": "创建日期",
   "tag.refers": "引用数",
 
+  "form.op.saveAsDraft": "存为草稿",
+  "form.op.submit": "提交",
+  "form.op.updateOrder": "调整排序",
+  "form.op.completelyDelete": "彻底删除",
+  "form.allType": "全部类型",
+  "form.type": "类型",
+  "form.org": "组织",
+  "form.user": "录入人",
+  "form.modifiedUser": "修改人",
+  "form.rejectReason": "拒绝原因",
+  "form.created": "录入日期",
+  "form.modified": "修改日期",
+  "form.ip": "IP",
+  "form.status": "状态",
+  "form.status.0": "已审核",
+  "form.status.10": "草稿",
+  "form.status.11": "待审核",
+  "form.status.12": "审核中",
+  "form.status.20": "已删除",
+  "form.status.22": "已退回",
+  "form.error.typeNotExist": "没有表单类型，请先到“配置 - 表单类型”中添加数据",
+  "form.error.selectType": "请先选择表单类型",
+
   "attachment.name": "名称",
   "attachment.path": "路径",
   "attachment.url": "URL",
@@ -195,6 +217,8 @@
   "generator.html": "页面静态化",
   "generator.html.tooltip": "先开启静态化，才能生成静态页",
   "generator.taskList": "任务列表",
+
+  "preview.noBackStep": "没有可退回的步骤，可考虑“拒绝”操作",
 
   "": ""
 }

@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'WebFileTemplateList' };
-</script>
-
 <script setup lang="ts">
 import {
   uploadWebFileTemplateUrl,
@@ -18,6 +14,10 @@ import {
   queryWebFileTemplateList,
 } from '@/api/file';
 import WebFileList from './WebFileList.vue';
+
+defineOptions({
+  name: 'WebFileTemplateList',
+});
 </script>
 
 <template>

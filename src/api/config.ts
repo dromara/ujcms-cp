@@ -45,41 +45,51 @@ export const updateSiteHtmlSettings = async (data: Record<string, any>): Promise
 export const queryCurrentSiteThemeList = async (): Promise<any> => (await axios.get('/backend/core/site/theme')).data;
 
 export const queryModelList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/model', { params })).data;
-export const queryModel = async (id: number): Promise<any> => (await axios.get(`/backend/core/model/${id}`)).data;
+export const queryModel = async (id: string): Promise<any> => (await axios.get(`/backend/core/model/${id}`)).data;
 export const createModel = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/model', data)).data;
 export const updateModel = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/model?_method=put', data)).data;
-export const updateModelOrder = async (data: number[]): Promise<any> => (await axios.post('/backend/core/model/order?_method=put', data)).data;
-export const deleteModel = async (data: number[]): Promise<any> => (await axios.post('/backend/core/model?_method=delete', data)).data;
+export const updateModelOrder = async (data: string[]): Promise<any> => (await axios.post('/backend/core/model/order?_method=put', data)).data;
+export const deleteModel = async (data: string[]): Promise<any> => (await axios.post('/backend/core/model?_method=delete', data)).data;
 
 export const queryDictTypeList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/dict-type', { params })).data;
-export const queryDictType = async (id: number): Promise<any> => (await axios.get(`/backend/core/dict-type/${id}`)).data;
+export const queryDictType = async (id: string): Promise<any> => (await axios.get(`/backend/core/dict-type/${id}`)).data;
 export const createDictType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/dict-type', data)).data;
 export const updateDictType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/dict-type?_method=put', data)).data;
-export const updateDictTypeOrder = async (data: number[]): Promise<any> => (await axios.post('/backend/core/dict-type/order?_method=put', data)).data;
-export const deleteDictType = async (data: number[]): Promise<any> => (await axios.post('/backend/core/dict-type?_method=delete', data)).data;
+export const updateDictTypeOrder = async (data: string[]): Promise<any> => (await axios.post('/backend/core/dict-type/order?_method=put', data)).data;
+export const deleteDictType = async (data: string[]): Promise<any> => (await axios.post('/backend/core/dict-type?_method=delete', data)).data;
 export const dictTypeAliasExist = async (alias: string, scope: number): Promise<any> => (await axios.get('/backend/core/dict-type/alias-exist', { params: { alias, scope } })).data;
 
 export const queryBlockList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/block', { params })).data;
-export const queryBlock = async (id: number): Promise<any> => (await axios.get(`/backend/core/block/${id}`)).data;
+export const queryBlock = async (id: string): Promise<any> => (await axios.get(`/backend/core/block/${id}`)).data;
 export const createBlock = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/block', data)).data;
 export const updateBlock = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/block?_method=put', data)).data;
-export const updateBlockOrder = async (data: number[]): Promise<any> => (await axios.post('/backend/core/block/order?_method=put', data)).data;
-export const deleteBlock = async (data: number[]): Promise<any> => (await axios.post('/backend/core/block?_method=delete', data)).data;
+export const updateBlockOrder = async (data: string[]): Promise<any> => (await axios.post('/backend/core/block/order?_method=put', data)).data;
+export const deleteBlock = async (data: string[]): Promise<any> => (await axios.post('/backend/core/block?_method=delete', data)).data;
 export const blockAliasExist = async (alias: string, scope: number): Promise<any> => (await axios.get('/backend/core/block/alias-exist', { params: { alias, scope } })).data;
-export const blockScopeNotAllowed = async (scope: number): Promise<any> => (await axios.get('/backend/core/block/scope-not-allowed', { params: { scope } })).data;
+export const blockScopeNotAllowed = async (scope: number, blockId: string): Promise<any> =>
+  (await axios.get('/backend/core/block/scope-not-allowed', { params: { scope, blockId } })).data;
 
 export const queryMessageBoardTypeList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/ext/message-board-type', { params })).data;
-export const queryMessageBoardType = async (id: number): Promise<any> => (await axios.get(`/backend/ext/message-board-type/${id}`)).data;
+export const queryMessageBoardType = async (id: string): Promise<any> => (await axios.get(`/backend/ext/message-board-type/${id}`)).data;
 export const createMessageBoardType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/ext/message-board-type', data)).data;
 export const updateMessageBoardType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/ext/message-board-type?_method=put', data)).data;
-export const updateMessageBoardTypeOrder = async (fromId: number, toId: number): Promise<any> =>
+export const updateMessageBoardTypeOrder = async (fromId: string, toId: string): Promise<any> =>
   (await axios.post('/backend/ext/message-board-type/update-order', { fromId, toId })).data;
-export const deleteMessageBoardType = async (data: number[]): Promise<any> => (await axios.post('/backend/ext/message-board-type?_method=delete', data)).data;
+export const deleteMessageBoardType = async (data: string[]): Promise<any> => (await axios.post('/backend/ext/message-board-type?_method=delete', data)).data;
 
 export const queryPerformanceTypeList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/performance-type', { params })).data;
-export const queryPerformanceType = async (id: number): Promise<any> => (await axios.get(`/backend/core/performance-type/${id}`)).data;
+export const queryPerformanceType = async (id: string): Promise<any> => (await axios.get(`/backend/core/performance-type/${id}`)).data;
 export const createPerformanceType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/performance-type', data)).data;
 export const updatePerformanceType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/performance-type?_method=put', data)).data;
-export const updatePerformanceTypeOrder = async (fromId: number, toId: number): Promise<any> =>
+export const updatePerformanceTypeOrder = async (fromId: string, toId: string): Promise<any> =>
   (await axios.post('/backend/core/performance-type/update-order', { fromId, toId })).data;
-export const deletePerformanceType = async (data: number[]): Promise<any> => (await axios.post('/backend/core/performance-type?_method=delete', data)).data;
+export const deletePerformanceType = async (data: string[]): Promise<any> => (await axios.post('/backend/core/performance-type?_method=delete', data)).data;
+
+export const queryFormTypeList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/ext/form-type', { params })).data;
+export const queryFormType = async (id: string): Promise<any> => (await axios.get(`/backend/ext/form-type/${id}`)).data;
+export const createFormType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/ext/form-type', data)).data;
+export const updateFormType = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/ext/form-type?_method=put', data)).data;
+export const updateFormTypeOrder = async (fromId: string, toId: string): Promise<any> => (await axios.post('/backend/ext/form-type/update-order', { fromId, toId })).data;
+export const deleteFormType = async (data: string[]): Promise<any> => (await axios.post('/backend/ext/form-type?_method=delete', data)).data;
+export const queryFormListTemplates = async (): Promise<any> => (await axios.get('/backend/ext/form-type/list-templates')).data;
+export const queryFormItemTemplates = async (): Promise<any> => (await axios.get('/backend/ext/form-type/item-templates')).data;

@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'ModelList' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -17,6 +13,9 @@ import ModelForm from './ModelForm.vue';
 import ModelSystemFields from './ModelSystemFields.vue';
 import ModelCustomFields from './ModelCustomFields.vue';
 
+defineOptions({
+  name: 'ModelList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const modelType = ref<string>('article');
@@ -28,7 +27,7 @@ const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
 const systemFieldsVisible = ref<boolean>(false);
 const customFieldsVisible = ref<boolean>(false);
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
 const fetchData = async () => {
@@ -58,11 +57,11 @@ const handleReset = () => {
   fetchData();
 };
 
-const handleSystemFields = (id: number) => {
+const handleSystemFields = (id: string) => {
   beanId.value = id;
   systemFieldsVisible.value = true;
 };
-const handleCustomFields = (id: number) => {
+const handleCustomFields = (id: string) => {
   beanId.value = id;
   customFieldsVisible.value = true;
 };
@@ -70,11 +69,11 @@ const handleAdd = () => {
   beanId.value = undefined;
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const handleDelete = async (ids: number[]) => {
+const handleDelete = async (ids: string[]) => {
   await deleteModel(ids);
   fetchData();
   ElMessage.success(t('success'));
@@ -105,13 +104,13 @@ const deletable = (bean: any) => bean.id > 10;
     </div>
     <el-radio-group v-model="modelType" class="mt-3" @change="() => fetchData()">
       <!-- ['article', 'channel', 'user', 'site', 'global'] -->
-      <el-radio-button v-for="n in ['article', 'channel', 'site', 'global']" :key="n" :label="n">{{ $t(`model.type.${n}`) }}</el-radio-button>
+      <el-radio-button v-for="n in ['article', 'channel', 'form', 'site', 'global']" :key="n" :value="n">{{ $t(`model.type.${n}`) }}</el-radio-button>
     </el-radio-group>
     <div class="app-block">
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="model">
           <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
+          <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('model.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="type" :label="$t('model.type')" sortable="custom" :formatter="(row) => $t(`model.type.${row.type}`)" />
           <el-table-column property="scope" :label="$t('model.scope')" sortable="custom">
@@ -123,7 +122,14 @@ const deletable = (bean: any) => bean.id > 10;
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">
               <el-button type="primary" :disabled="perm('model:update')" size="small" link @click="() => handleEdit(row.id)">{{ $t('edit') }}</el-button>
-              <el-button v-if="!['global', 'site'].includes(row.type)" type="primary" :disabled="perm('model:update')" size="small" link @click="() => handleSystemFields(row.id)">
+              <el-button
+                v-if="!['form', 'global', 'site'].includes(row.type)"
+                type="primary"
+                :disabled="perm('model:update')"
+                size="small"
+                link
+                @click="() => handleSystemFields(row.id)"
+              >
                 {{ $t('model.fun.systemFields') }}
               </el-button>
               <el-button type="primary" :disabled="perm('model:update')" size="small" link @click="() => handleCustomFields(row.id)">

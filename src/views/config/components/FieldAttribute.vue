@@ -36,9 +36,10 @@ watchEffect(async () => {
     dictList.value = await queryDictList({ typeId: field.value.dictTypeId });
   }
 });
-const dictTypeChange = async () => {
+const dictTypeChange = (typeId: string) => {
   field.value.defaultValue = field.value.multiple ? [] : undefined;
   field.value.defaultValueKey = field.value.multiple ? [] : undefined;
+  field.value.dataType = dictTypeList.value.find((item: any) => item.id === typeId)?.dataType === 1 ? 'number' : 'string';
 };
 </script>
 
@@ -68,9 +69,20 @@ const dictTypeChange = async () => {
   <el-form-item prop="name" :label="$t('model.field.name')" :rules="{ required: true, message: () => $t('v.required') }">
     <el-input v-model="field.name" maxlength="50"></el-input>
   </el-form-item>
+  <template v-if="['tinyEditor', 'textarea'].includes(field.type)">
+    <el-form-item prop="clob" :label="$t('model.field.clob')">
+      <template #label><label-tip message="model.field.clob" help /></template>
+      <el-switch v-model="field.clob"></el-switch>
+    </el-form-item>
+  </template>
   <el-form-item prop="double" :label="$t('model.field.double')">
     <el-switch v-model="field.double"></el-switch>
   </el-form-item>
+  <template v-if="['text', 'textarea', 'number', 'date', 'color', 'slider', 'switch', 'radio', 'checkbox', 'select', 'multipleSelect'].includes(field.type)">
+    <el-form-item prop="required" :label="$t('model.field.showInList')">
+      <el-switch v-model="field.showInList"></el-switch>
+    </el-form-item>
+  </template>
   <el-form-item prop="required" :label="$t('model.field.required')">
     <el-switch v-model="field.required"></el-switch>
   </el-form-item>
@@ -147,7 +159,7 @@ const dictTypeChange = async () => {
   <template v-if="['radio', 'checkbox'].includes(field.type)">
     <el-form-item prop="checkStyle" :label="$t('model.field.checkStyle')">
       <el-radio-group v-model="field.checkStyle">
-        <el-radio-button v-for="n in ['default', 'button']" :key="n" :label="n">{{ $t(`model.field.checkStyle.${n}`) }}</el-radio-button>
+        <el-radio-button v-for="n in ['default', 'button']" :key="n" :value="n">{{ $t(`model.field.checkStyle.${n}`) }}</el-radio-button>
       </el-radio-group>
     </el-form-item>
   </template>
@@ -158,8 +170,13 @@ const dictTypeChange = async () => {
   </template>
   <template v-if="['radio', 'checkbox', 'select', 'multipleSelect'].includes(field.type)">
     <el-form-item prop="dictTypeId" :label="$t('model.field.dictType')" :rules="{ required: true, message: () => $t('v.required') }">
-      <el-select v-model="field.dictTypeId" class="w-full" @change="(typeId) => dictTypeChange()">
+      <el-select v-model="field.dictTypeId" class="w-full" @change="(typeId) => dictTypeChange(typeId)">
         <el-option v-for="item in dictTypeList" :key="item.id" :value="item.id" :label="`${item.name}(${item.alias})`"></el-option>
+      </el-select>
+    </el-form-item>
+    <el-form-item prop="dataType" :label="$t('model.field.dataType')">
+      <el-select v-model="field.dataType" class="w-full" disabled>
+        <el-option v-for="item in ['string', 'number']" :key="item" :value="item" :label="$t(`model.field.dataType.${item}`)"></el-option>
       </el-select>
     </el-form-item>
   </template>

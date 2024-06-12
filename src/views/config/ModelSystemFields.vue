@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'ModelSystemFields' };
-</script>
-
 <script setup lang="ts">
 import { ref, toRefs, watch } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -10,7 +6,10 @@ import { getModelData, mergeModelFields } from '@/data';
 import { currentUser } from '@/stores/useCurrentUser';
 import { queryModel, updateModel } from '@/api/config';
 
-const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null } });
+defineOptions({
+  name: 'ModelSystemFields',
+});
+const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: String, default: null } });
 const emit = defineEmits({ 'update:modelValue': null });
 const { beanId, modelValue: visible } = toRefs(props);
 const { t } = useI18n();
@@ -20,7 +19,7 @@ const mains = ref<any[]>([]);
 const asides = ref<any[]>([]);
 watch(visible, async () => {
   if (visible.value && beanId.value) {
-    bean.value = await queryModel(beanId.value as number);
+    bean.value = await queryModel(beanId.value);
     const modelData = getModelData()[bean.value.type];
     mains.value = mergeModelFields(
       modelData.mains.filter((item) => currentUser.epRank >= (item.epRank ?? 0)),

@@ -1,17 +1,16 @@
-<script lang="ts">
-export default { name: 'GroupForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, PropType } from 'vue';
 import { queryGroup, createGroup, updateGroup, deleteGroup } from '@/api/user';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 
+defineOptions({
+  name: 'GroupForm',
+});
 defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { type: Number, default: null },
-  beanIds: { type: Array as PropType<number[]>, required: true },
+  beanId: { type: String, default: null },
+  beanIds: { type: Array as PropType<string[]>, required: true },
 });
 defineEmits({ 'update:modelValue': null, finished: null });
 const focus = ref<any>();

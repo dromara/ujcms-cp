@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'UserList' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -11,13 +7,16 @@ import dayjs from 'dayjs';
 import { currentUser, perm } from '@/stores/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
 import { toTree } from '@/utils/tree';
-import { deleteUser, updateUserStatus, queryUserList, queryOrgList } from '@/api/user';
+import { deleteUser, updateUserStatus, queryUserPage, queryOrgList } from '@/api/user';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import UserForm from './UserForm.vue';
 import UserPasswordForm from './UserPasswordForm.vue';
 import UserPermissionForm from './UserPermissionForm.vue';
 
+defineOptions({
+  name: 'UserList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -32,7 +31,7 @@ const formVisible = ref<boolean>(false);
 const passwordFormVisible = ref<boolean>(false);
 const permissionFormVisible = ref<boolean>(false);
 const passwordFormUsername = ref<string>('');
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 
 const showGlobalData = ref<boolean>(false);
@@ -55,7 +54,7 @@ const fetchOrg = async () => {
 const fetchData = async () => {
   loading.value = true;
   try {
-    const { content, totalElements } = await queryUserList({
+    const { content, totalElements } = await queryUserPage({
       ...toParams(params.value),
       orgId: org.value?.id,
       current: !showGlobalData.value,
@@ -64,7 +63,7 @@ const fetchData = async () => {
       pageSize: pageSize.value,
     });
     data.value = content;
-    total.value = totalElements;
+    total.value = Number(totalElements);
   } finally {
     loading.value = false;
   }
@@ -95,25 +94,25 @@ const handleAdd = () => {
   beanId.value = undefined;
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const handlePasswordEdit = (id: number, username: string) => {
+const handlePasswordEdit = (id: string, username: string) => {
   beanId.value = id;
   passwordFormUsername.value = username;
   passwordFormVisible.value = true;
 };
-const handlePermissionEdit = (id: number) => {
+const handlePermissionEdit = (id: string) => {
   beanId.value = id;
   permissionFormVisible.value = true;
 };
-const handleDelete = async (ids: number[]) => {
+const handleDelete = async (ids: string[]) => {
   await deleteUser(ids);
   fetchData();
   ElMessage.success(t('success'));
 };
-const handleStatus = async (ids: number[], status: number) => {
+const handleStatus = async (ids: string[], status: number) => {
   await updateUserStatus(ids, status);
   fetchData();
   ElMessage.success(t('success'));
@@ -207,7 +206,7 @@ const handleStatus = async (ids: number[], status: number) => {
         >
           <column-list name="user">
             <el-table-column type="selection" :selectable="deletable" width="38"></el-table-column>
-            <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
+            <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
             <el-table-column property="username" :label="$t('user.username')" sortable="custom" min-width="100"></el-table-column>
             <el-table-column property="mobile" :label="$t('user.mobile')" sortable="custom" display="none" min-width="100" show-overflow-tooltip></el-table-column>
             <el-table-column property="email" :label="$t('user.email')" sortable="custom" display="none" min-width="100" show-overflow-tooltip></el-table-column>
@@ -227,6 +226,13 @@ const handleStatus = async (ids: number[], status: number) => {
             <el-table-column property="loginIp" :label="$t('user.loginIp')" sort-by="@userExt-loginIp" sortable="custom" display="none" show-overflow-tooltip />
             <el-table-column property="loginCount" :label="$t('user.loginCount')" sort-by="@userExt-loginCount" sortable="custom" display="none" show-overflow-tooltip />
             <el-table-column property="org.name" :label="$t('user.org')" sort-by="org-name" sortable="custom" show-overflow-tooltip></el-table-column>
+            <el-table-column property="orgs" :label="$t('user.orgs')" display="none" show-overflow-tooltip>
+              <template #default="{ row }">
+                <el-space>
+                  <span v-for="item in row.orgList" :key="item.id">{{ item.name }}</span>
+                </el-space>
+              </template>
+            </el-table-column>
             <el-table-column property="roles" :label="$t('user.role')" show-overflow-tooltip>
               <template #default="{ row }">
                 <el-space>
@@ -248,9 +254,15 @@ const handleStatus = async (ids: number[], status: number) => {
             <el-table-column :label="$t('table.action')" width="220">
               <template #default="{ row }">
                 <el-button type="primary" :disabled="perm('user:update')" size="small" link @click="() => handleEdit(row.id)">{{ $t('edit') }}</el-button>
-                <el-button type="primary" :disabled="!deletable(row) || perm('user:updatePassword')" size="small" link @click="() => handlePasswordEdit(row.id, row.username)">{{
-                  $t('changePassword')
-                }}</el-button>
+                <el-button
+                  type="primary"
+                  :disabled="currentUser.rank > row.rank || perm('user:updatePassword')"
+                  size="small"
+                  link
+                  @click="() => handlePasswordEdit(row.id, row.username)"
+                >
+                  {{ $t('changePassword') }}
+                </el-button>
                 <el-button type="primary" :disabled="perm('user:updatePermission')" size="small" link @click="() => handlePermissionEdit(row.id)">
                   {{ $t('permissionSettings') }}
                 </el-button>

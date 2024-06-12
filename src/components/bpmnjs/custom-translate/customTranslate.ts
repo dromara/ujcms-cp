@@ -1,7 +1,8 @@
-// https://github.com/bpmn-io/bpmn-js-examples/blob/master/i18n/app/customTranslate/customTranslate.js
 import translations from './translations';
-
-export default function customTranslate(template: string, replacements: Record<string, string>) {
+/**
+ * https://github.com/bpmn-io/bpmn-js-examples/blob/main/i18n/src/customTranslate/customTranslate.js
+ */
+export default function customTranslate(template, replacements) {
   replacements = replacements || {};
 
   // Translate

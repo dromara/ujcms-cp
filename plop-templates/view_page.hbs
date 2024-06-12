@@ -32,15 +32,17 @@ const fetchData = async () => {
   try {
     const { content, totalElements } = await query{{pascalCase name}}Page({ ...toParams(params.value), Q_OrderBy: sort.value, page: currentPage.value, pageSize: pageSize.value });
     data.value = content;
-    total.value = totalElements;
+    total.value = Number(totalElements);
   } finally {
     loading.value = false;
   }
 };
-onMounted(fetchData);
+onMounted(() => {
+  fetchData();
+});
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
-  if (prop) {
+  if (prop && order) {
     sort.value = (column.sortBy ?? prop) + (order === 'descending' ? '_desc' : '');
   } else {
     sort.value = undefined;
@@ -97,7 +99,7 @@ const handleDelete = async (ids: number[]) => {
       >
         <column-list name="{{camelCase name}}">
           <el-table-column type="selection" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="64" sortable="custom"></el-table-column>
+          <el-table-column property="id" label="ID" width="180" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('{{camelCase name}}.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column :label="$t('table.action')">
             <template #default="{row}">
@@ -114,8 +116,8 @@ const handleDelete = async (ids: number[]) => {
       <el-pagination
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
-        :total="total"
-        :page-sizes="pageSizes"
+        :total
+        :page-sizes
         :layout="pageLayout"
         class="justify-end px-3 py-2"
         small

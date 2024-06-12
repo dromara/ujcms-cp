@@ -71,6 +71,9 @@
   "log.article.offline": "下线文章",
   "log.article.pass": "审核通过文章",
   "log.article.reject": "审核驳回文章",
+  "log.article.back": "审核退回文章",
+  "log.article.delegate": "审核委托文章",
+  "log.article.transfer": "审核转办文章",
   "log.article.completelyDelete": "彻底删除文章",
   "log.article.delete": "删除文章",
   "log.article.internalPush": "站内推送",
@@ -101,6 +104,18 @@
   "log.tag.update": "修改TAG",
   "log.tag.delete": "删除TAG",
 
+  "log.form": "表单管理",
+  "log.form.create": "新增表单",
+  "log.form.update": "修改表单",
+  "log.form.updateOrder": "修改表单顺序",
+  "log.form.delete": "删除表单",
+  "log.form.submit": "提交表单",
+  "log.form.pass": "审核通过表单",
+  "log.form.reject": "审核驳回表单",
+  "log.form.back": "审核退回表单",
+  "log.form.delegate": "审核委托表单",
+  "log.form.transfer": "审核转办表单",
+
   "log.attachment": "附件管理",
   "log.attachment.delete": "删除附件",
 
@@ -129,11 +144,13 @@
   "log.vote": "投票管理",
   "log.vote.create": "新增投票",
   "log.vote.update": "修改投票",
+  "log.vote.updateOrder": "修改投票顺序",
   "log.vote.delete": "删除投票",
 
   "log.survey": "调查问卷管理",
   "log.survey.create": "新增调查问卷",
   "log.survey.update": "修改调查问卷",
+  "log.survey.updateOrder": "修改调查问卷顺序",
   "log.survey.delete": "删除调查问卷",
 
   "log.example": "示例管理",
@@ -236,6 +253,12 @@
   "log.dictType.update": "修改字典类型",
   "log.dictType.updateOrder": "修改字典类型顺序",
   "log.dictType.delete": "删除字典类型",
+
+  "log.formType": "表单类型管理",
+  "log.formType.create": "新增表单类型",
+  "log.formType.update": "修改表单类型",
+  "log.formType.updateOrder": "修改表单类型顺序",
+  "log.formType.delete": "删除表单类型",
 
   "log.performanceType": "绩效类型管理",
   "log.performanceType.create": "新增绩效类型",

@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'TaskList' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -15,6 +11,9 @@ import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import TaskForm from '@/views/system/TaskForm.vue';
 
+defineOptions({
+  name: 'TaskList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -26,14 +25,14 @@ const data = ref<any[]>([]);
 const selection = ref<any[]>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const fetchData = async () => {
   loading.value = true;
   try {
     const { content, totalElements } = await queryTaskPage({ ...toParams(params.value), Q_OrderBy: sort.value, page: currentPage.value, pageSize: pageSize.value });
     data.value = content;
-    total.value = totalElements;
+    total.value = Number(totalElements);
   } finally {
     loading.value = false;
   }
@@ -56,11 +55,11 @@ const handleReset = () => {
   fetchData();
 };
 
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const handleDelete = async (ids: number[]) => {
+const handleDelete = async (ids: string[]) => {
   await deleteTask(ids);
   fetchData();
   ElMessage.success(t('success'));
@@ -88,7 +87,7 @@ defineExpose({ fetchData });
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="task">
           <el-table-column type="selection" width="38"></el-table-column>
-          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
+          <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('task.name')" sortable="custom" min-width="150" show-overflow-tooltip></el-table-column>
           <el-table-column property="beginDate" :label="$t('task.beginDate')" sortable="custom" width="170">
             <template #default="{ row }">{{ dayjs(row.beginDate).format('YYYY-MM-DD HH:mm:ss') }}</template>

@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'DictTypeList' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -15,6 +11,9 @@ import { QueryForm, QueryItem } from '@/components/QueryForm';
 import ListMove from '@/components/ListMove.vue';
 import DictTypeForm from './DictTypeForm.vue';
 
+defineOptions({
+  name: 'DictTypeList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -23,7 +22,7 @@ const data = ref<Array<any>>([]);
 const selection = ref<Array<any>>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
 const deletable = (bean: any) => bean.id >= 100;
@@ -58,11 +57,11 @@ const handleAdd = () => {
   beanId.value = undefined;
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const handleDelete = async (ids: number[]) => {
+const handleDelete = async (ids: string[]) => {
   await deleteDictType(ids);
   fetchData();
   ElMessage.success(t('success'));
@@ -90,17 +89,24 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
       <list-move :disabled="selection.length <= 0 || filtered || perm('org:update')" class="ml-2" @move="(type) => move(selection, type)" />
       <column-setting name="dictType" class="ml-2" />
     </div>
-    <div class="app-block mt-3">
+    <div class="mt-3 app-block">
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="dictType">
           <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
+          <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
           <el-table-column property="name" :label="$t('dictType.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="alias" :label="$t('dictType.alias')" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column
+            property="dataType"
+            :label="$t('dictType.dataType')"
+            sortable="custom"
+            :formatter="(row) => $t(`dictType.dataType.${row.dataType}`)"
+            show-overflow-tooltip
+          ></el-table-column>
           <el-table-column property="scope" :label="$t('dictType.scope')" sortable="custom">
             <template #default="{ row }">
-              <el-tag v-if="row.scope === 2" type="success" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
-              <el-tag v-else type="info" size="small">{{ $t(`block.scope.${row.scope}`) }}</el-tag>
+              <el-tag v-if="row.scope === 2" type="success" size="small">{{ $t(`dictType.scope.${row.scope}`) }}</el-tag>
+              <el-tag v-else type="info" size="small">{{ $t(`dictType.scope.${row.scope}`) }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column property="sys" :label="$t('dictType.sys')" sortable="custom">

@@ -8,7 +8,7 @@ import echarts, { ECOption } from '@/utils/echarts';
 import { currentUser, hasPermission } from '@/stores/useCurrentUser';
 import { queryContentStat } from '@/api/personal';
 import { queryTrendStat, queryVisitorStat, querySourceTypeStat } from '@/api/stat';
-import { queryArticlePendingCount, queryArticleRejectCount } from '@/api/content';
+import { queryArticlePendingCount, queryArticleRejectCount, queryFormPendingCount, queryFormRejectCount } from '@/api/content';
 import { queryMessageBoardUnreviewedCount } from '@/api/interaction';
 
 const { t, n } = useI18n();
@@ -128,11 +128,27 @@ const unreviewedMessageBoard = ref<number>(0);
 const fetchUnreviewedMessageBoard = async () => {
   unreviewedMessageBoard.value = await queryMessageBoardUnreviewedCount();
 };
+const pendingForm = ref<number>(0);
+const fetchPendingForm = async () => {
+  if (currentUser.epRank >= 3) {
+    pendingForm.value = await queryFormPendingCount();
+  }
+};
+const rejectedForm = ref<number>(0);
+const fetchRejectForm = async () => {
+  if (currentUser.epRank >= 3) {
+    rejectedForm.value = await queryFormRejectCount();
+  }
+};
 
 onMounted(async () => {
   if (hasPermission('articleReview:list')) {
     fetchPendingArticle();
     fetchRejectArticle();
+  }
+  if (hasPermission('formReview:list')) {
+    fetchPendingForm();
+    fetchRejectForm();
   }
   if (hasPermission('messageBoard:list')) {
     fetchUnreviewedMessageBoard();
@@ -176,6 +192,40 @@ onMounted(async () => {
             <div>
               <el-link class="ml-1 text-xl" type="warning" :underline="false" @click="() => $router.push({ path: '/content/article', query: { status: 22 } })">
                 {{ rejectedArticle }}
+              </el-link>
+            </div>
+          </div>
+        </div>
+      </el-col>
+      <el-col v-if="pendingForm > 0" :span="6">
+        <div class="mb-3 shadow-md bg-warning-lighter">
+          <div class="flex items-center justify-between px-4 py-3 text-xl text-warning">
+            <div class="flex items-center">
+              <el-icon><BellFilled /></el-icon>
+              <el-link class="ml-1 text-base" type="warning" :underline="false" @click="() => $router.push({ path: '/content/form-review' })">
+                {{ $t('todo.pendingForm') }}
+              </el-link>
+            </div>
+            <div>
+              <el-link class="ml-1 text-xl" type="warning" :underline="false" @click="() => $router.push({ path: '/content/form-review' })">
+                {{ pendingForm }}
+              </el-link>
+            </div>
+          </div>
+        </div>
+      </el-col>
+      <el-col v-if="rejectedForm > 0" :span="6">
+        <div class="mb-3 shadow-md bg-warning-lighter">
+          <div class="flex items-center justify-between px-4 py-3 text-xl text-warning">
+            <div class="flex items-center">
+              <el-icon><BellFilled /></el-icon>
+              <el-link class="ml-1 text-base" type="warning" :underline="false" @click="() => $router.push({ path: '/content/form', query: { status: 22 } })">
+                {{ $t('todo.rejectedForm') }}
+              </el-link>
+            </div>
+            <div>
+              <el-link class="ml-1 text-xl" type="warning" :underline="false" @click="() => $router.push({ path: '/content/form', query: { status: 22 } })">
+                {{ rejectedForm }}
               </el-link>
             </div>
           </div>

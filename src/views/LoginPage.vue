@@ -19,7 +19,7 @@ const isDisplayCaptcha = ref<boolean>(false);
 const isDisplayShortMessage = ref<boolean>(false);
 const captchaData = ref<string>();
 const captchaToken = ref<string>();
-const shortMessageId = ref<number>();
+const shortMessageId = ref<string>();
 const error = ref<string>();
 const buttonLoading = ref<boolean>(false);
 const redirect = ref<string | null>();
@@ -71,7 +71,7 @@ watchEffect(() => {
   redirect.value = route.query.redirect as LocationQueryValue;
 });
 
-const finishGetShortMessage = (val: number) => {
+const finishGetShortMessage = (val: string) => {
   shortMessageId.value = val;
   shortMessageTimer.value -= 1;
   shortMessageText.value = String(shortMessageTimer.value);

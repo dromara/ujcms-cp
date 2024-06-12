@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'ModelCustomFields' };
-</script>
-
 <script setup lang="ts">
 import { ref, toRefs, watch } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -13,9 +9,12 @@ import FieldItem from './components/FieldItem.vue';
 import FieldAttribute from './components/FieldAttribute.vue';
 import LabelTip from '@/components/LabelTip.vue';
 
+defineOptions({
+  name: 'ModelCustomFields',
+});
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { type: Number, default: null },
+  beanId: { type: String, default: null },
 });
 const emit = defineEmits({ 'update:modelValue': null });
 
@@ -72,7 +71,14 @@ const changeSelected = async (element: any) => {
   });
 };
 const clone = (element: any) => {
-  const cloneElement = { code: `field${Date.now()}`, type: element.type, name: element.label, double: false };
+  const cloneElement = {
+    code: `field${Date.now()}`,
+    type: element.type,
+    name: element.label,
+    double: false,
+    dataType: ['number', 'slider'].indexOf(element.type) !== -1 ? 'number' : 'string',
+    clob: ['tinyEditor'].indexOf(element.type) !== -1,
+  };
   cloned.value = cloneElement;
   return cloneElement;
 };

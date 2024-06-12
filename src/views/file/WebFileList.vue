@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'WebFileList' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref, toRefs, PropType } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -18,6 +14,9 @@ import BaseUpload from '@/components/Upload/BaseUpload.vue';
 import WebFileForm from './WebFileForm.vue';
 import WebFileBatch from './WebFileBatch.vue';
 
+defineOptions({
+  name: 'WebFileList',
+});
 const props = defineProps({
   type: { type: String, required: true },
   uploadWebFileUrl: { type: String, reuqired: true, default: null },

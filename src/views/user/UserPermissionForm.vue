@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'UserPermissionForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, toRefs } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -10,7 +6,10 @@ import { currentUser } from '@/stores/useCurrentUser';
 import { queryUser, updateUserPermission, queryRoleList } from '@/api/user';
 import LabelTip from '@/components/LabelTip.vue';
 
-const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null } });
+defineOptions({
+  name: 'UserPermissionForm',
+});
+const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: String, default: null } });
 const emit = defineEmits({ 'update:modelValue': null, finished: null });
 
 const { beanId, modelValue: visible } = toRefs(props);
@@ -64,7 +63,7 @@ const handleSubmit = () => {
         <el-form-item prop="roleIds">
           <template #label><label-tip message="user.role" help /></template>
           <el-checkbox-group v-model="values.roleIds">
-            <el-checkbox v-for="item in roleList" :key="item.id" :label="item.id" :disabled="values.rank > item.rank">{{ `${item.name}(${item.rank})` }}</el-checkbox>
+            <el-checkbox v-for="item in roleList" :key="item.id" :value="item.id" :disabled="values.rank > item.rank">{{ `${item.name}(${item.rank})` }}</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
         <el-form-item prop="rank" :rules="[{ required: true, message: () => $t('v.required') }]">
@@ -74,7 +73,7 @@ const handleSubmit = () => {
       </el-form>
     </template>
     <template #footer>
-      <div class="flex justify-between items-center">
+      <div class="flex items-center justify-between">
         <div>
           <el-tag>{{ values?.username }}</el-tag>
         </div>

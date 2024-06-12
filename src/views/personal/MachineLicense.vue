@@ -1,12 +1,11 @@
-<script lang="ts">
-export default { name: 'MachineLicense' };
-</script>
-
 <script setup lang="ts">
 import { toRefs, watch, ref } from 'vue';
 import dayjs from 'dayjs';
 import { queryMachineLicense } from '@/api/personal';
 
+defineOptions({
+  name: 'MachineLicense',
+});
 const props = defineProps({ modelValue: { type: Boolean, required: true } });
 defineEmits({ 'update:modelValue': null });
 const { modelValue: visible } = toRefs(props);

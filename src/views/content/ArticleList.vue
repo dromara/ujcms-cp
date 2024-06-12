@@ -1,9 +1,5 @@
-<script lang="ts">
-export default { name: 'ArticleList' };
-</script>
-
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
+import { computed, watch, ref, onMounted, onBeforeUnmount } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Plus, Cpu, MoreFilled, DocumentCopy, Grid } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
@@ -12,10 +8,10 @@ import Sortable from 'sortablejs';
 import dayjs from 'dayjs';
 import * as htmlparser2 from 'htmlparser2';
 import * as domutils from 'domutils';
-import { perm, currentUser } from '@/stores/useCurrentUser';
+import { perm, currentUser, hasPermission } from '@/stores/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
 import { toTree } from '@/utils/tree';
-import { queryBlockList } from '@/api/config';
+import { queryBlockList, queryModelList } from '@/api/config';
 import {
   deleteArticle,
   submitArticle,
@@ -27,6 +23,7 @@ import {
   queryArticlePage,
   queryChannelList,
   deleteBlockItem,
+  queryDictList,
 } from '@/api/content';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
@@ -37,6 +34,9 @@ import ArticlePushForm from './ArticlePushForm.vue';
 import BlockItemForm from './BlockItemForm.vue';
 import { openArticleLink } from './components/articleUtils';
 
+defineOptions({
+  name: 'ArticleList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -48,14 +48,14 @@ const data = ref<any[]>([]);
 const selection = ref<any[]>([]);
 const tableLoading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const isSorted = ref<boolean>(false);
 const action = ref<'add' | 'edit' | 'copy'>('edit');
 const blockList = ref<any[]>([]);
 const recommendVisible = ref<boolean>(false);
-const recommendBlockId = ref<number>();
-const recommendArticleId = ref<number>();
+const recommendBlockId = ref<string>();
+const recommendArticleId = ref<string>();
 const recommendTitle = ref<string>();
 const recommendDescription = ref<string>();
 const recommendVideo = ref<string>();
@@ -77,6 +77,21 @@ const pushType = ref<'internal' | 'external'>('internal');
 
 const route = useRoute();
 const status = ref<number>(Number(route.query.status ?? '-1'));
+
+const modelList = ref<any[]>([]);
+const model = computed(() => modelList.value.find((item: any) => item.id === channel.value?.articleModelId));
+const fields = computed(() => JSON.parse(model.value?.customs || '[]'));
+const dictListMap = ref<Record<string, any[]>>({});
+
+watch(fields, async () => {
+  dictListMap.value = {};
+  fields.value
+    .filter((field: any) => ['radio', 'select', 'checkbox', 'multipleSelect'].indexOf(field.type) >= 0)
+    .map((field: any) => field.dictTypeId)
+    .forEach(async (typeId: string) => {
+      dictListMap.value[typeId] = (await queryDictList({ typeId })).map((item: any) => ({ label: item.name, value: item.value }));
+    });
+});
 
 const selectable = (bean: any): boolean => {
   if (batchAction.value === 'delete') {
@@ -105,7 +120,7 @@ const selectionIds = computed(() => {
   return selection.value.filter((item: any) => selectable(item)).map((item: any) => item.id);
 });
 
-const handleExecute = async (action: string, ids: number[]) => {
+const handleExecute = async (action: string, ids: string[]) => {
   if (action === 'delete') {
     await deleteArticle(ids);
   } else if (action === 'submit') {
@@ -136,7 +151,7 @@ const fetchData = async () => {
     });
     isSorted.value = sort.value !== undefined;
     data.value = content;
-    total.value = totalElements;
+    total.value = Number(totalElements);
   } finally {
     tableLoading.value = false;
   }
@@ -151,6 +166,9 @@ const fetchChannel = async () => {
 };
 const fetchBlockList = async () => {
   blockList.value = await queryBlockList();
+};
+const fetchModelList = async () => {
+  modelList.value = await queryModelList({ type: 'article' });
 };
 let sortable;
 const initDragTable = () => {
@@ -171,6 +189,7 @@ onMounted(() => {
   fetchData();
   fetchChannel();
   fetchBlockList();
+  fetchModelList();
   initDragTable();
 });
 onBeforeUnmount(() => {
@@ -204,12 +223,12 @@ const handleAdd = () => {
   beanId.value = undefined;
   formVisible.value = true;
 };
-const handleCopy = (id: number) => {
+const handleCopy = (id: string) => {
   action.value = 'copy';
   beanId.value = id;
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   if (perm('article:update')) {
     return;
   }
@@ -218,18 +237,18 @@ const handleEdit = (id: number) => {
   formVisible.value = true;
 };
 
-const handleInternalPush = (id: number) => {
+const handleInternalPush = (id: string) => {
   beanId.value = id;
   pushType.value = 'internal';
   pushFormVisible.value = true;
 };
-const handleExternalPush = (id: number) => {
+const handleExternalPush = (id: string) => {
   beanId.value = id;
   pushType.value = 'external';
   pushFormVisible.value = true;
 };
 
-const recommendTo = (blockId: number, article: any) => {
+const recommendTo = (blockId: string, article: any) => {
   recommendVisible.value = true;
   recommendBlockId.value = blockId;
   recommendArticleId.value = article.id;
@@ -244,7 +263,7 @@ const recommendTo = (blockId: number, article: any) => {
     recommendImages.value.push(article.image);
   }
 };
-const handleBlockItemDelete = async (blockItemId: number) => {
+const handleBlockItemDelete = async (blockItemId: string) => {
   await deleteBlockItem([blockItemId]);
   fetchData();
   ElMessage.success(t('success'));
@@ -257,7 +276,7 @@ const stickyVisible = ref<boolean>(false);
 const stickyForm = ref<any>();
 const stickyValues = ref<any>({ id: 0, sticky: 0, stickyDate: null });
 
-const handleSticky = (id: number, sticky: number, stickyDate: Date) => {
+const handleSticky = (id: string, sticky: number, stickyDate: Date) => {
   stickyVisible.value = true;
   stickyValues.value = { id, sticky: sticky < 1 ? 1 : sticky, stickyDate };
 };
@@ -270,7 +289,7 @@ const submitSticky = async () => {
     ElMessage.success(t('success'));
   });
 };
-const cancelSticky = async (id: number) => {
+const cancelSticky = async (id: string) => {
   await stickyArticle([id], 0, undefined);
   fetchData();
   ElMessage.success(t('success'));
@@ -318,6 +337,50 @@ const cancelSticky = async (id: number) => {
         <query-form :params="params" @search="handleSearch" @reset="handleReset">
           <query-item :label="$t('article.title')" name="Q_Contains_@articleExt-title"></query-item>
           <query-item :label="$t('article.text')" name="Q_Contains_@articleExt-text"></query-item>
+          <template v-for="field in fields.filter((item) => ['imageUpload', 'videoUpload', 'audioUpload', 'fileUpload'].indexOf(item.type) === -1)" :key="field.code">
+            <query-item
+              v-if="['number', 'slider'].indexOf(field.type) >= 0"
+              :label="field.name"
+              :name="`Q_GE_@articleExt-mainsJson$${field.code}_Int,Q_LE_@articleExt-mainsJson$${field.code}_Int`"
+              type="number"
+            ></query-item>
+            <query-item
+              v-else-if="field.type === 'date' && field.dateType === 'datetime'"
+              :label="field.name"
+              :name="`Q_GE_@articleExt-mainsJson$${field.code}_DateTime,Q_LE_@articleExt-mainsJson$${field.code}_DateTime`"
+              type="datetime"
+            ></query-item>
+            <query-item
+              v-else-if="field.type === 'date'"
+              :label="field.name"
+              :name="`Q_GE_@articleExt-mainsJson$${field.code}_Date,Q_LE_@articleExt-mainsJson$${field.code}_Date`"
+              type="date"
+            ></query-item>
+            <query-item
+              v-else-if="field.type === 'switch'"
+              :label="field.name"
+              :name="`Q_EQ_@articleExt-mainsJson$${field.code}_Boolean`"
+              :options="[
+                { label: $t('yes'), value: 'true' },
+                { label: $t('no'), value: 'false' },
+              ]"
+              :multiple="false"
+            ></query-item>
+            <query-item
+              v-else-if="['radio', 'select'].indexOf(field.type) >= 0"
+              :label="field.name"
+              :name="`Q_In_@articleExt-mainsJson$${field.code}Key${field.dataType === 'number' ? '_Int' : ''}`"
+              :options="dictListMap[field.dictTypeId]"
+            ></query-item>
+            <query-item
+              v-else-if="['checkbox', 'multipleSelect'].indexOf(field.type) >= 0"
+              :label="field.name"
+              :name="`Q_ArrayIn_@articleExt-mainsJson$${field.code}Key${field.dataType === 'number' ? '_Int' : ''}`"
+              :options="dictListMap[field.dictTypeId]"
+            ></query-item>
+            <query-item v-else-if="field.clob" :label="field.name" :name="`Q_Contains_@articleExt-clobsJson$${field.code}`"></query-item>
+            <query-item v-else :label="field.name" :name="`Q_Contains_@articleExt-mainsJson$${field.code}`"></query-item>
+          </template>
           <query-item :label="$t('article.publishDate')" name="Q_GE_publishDate_DateTime,Q_LE_publishDate_DateTime" type="datetime"></query-item>
           <query-item
             :label="$t('article.block')"
@@ -340,7 +403,7 @@ const cancelSticky = async (id: number) => {
       </div>
       <div>
         <el-button type="primary" :disabled="perm('article:create')" :icon="Plus" @click="() => handleAdd()">{{ $t('add') }}</el-button>
-        <el-select v-model="batchAction" class="ml-2">
+        <el-select v-model="batchAction" class="w-64 ml-2">
           <template #prefix>{{ $t('batchAction') + ':' }}</template>
           <el-option v-for="item in batchActions" :key="item" :disabled="perm(`article:${item}`)" :value="item" :label="$t(`article.op.${item}`)" />
         </el-select>
@@ -352,16 +415,16 @@ const cancelSticky = async (id: number) => {
         <column-setting name="article" class="ml-2" />
       </div>
       <el-radio-group v-model="status" class="mt-3" @change="() => fetchData()">
-        <el-radio-button :label="-1">{{ $t('all') }}</el-radio-button>
-        <el-radio-button :label="0">{{ $t('article.status.0') }}</el-radio-button>
-        <el-radio-button :label="1">{{ $t('article.status.1') }}</el-radio-button>
-        <el-radio-button :label="5">{{ $t('article.status.5') }}</el-radio-button>
-        <el-radio-button :label="10">{{ $t('article.status.10') }}</el-radio-button>
-        <el-radio-button :label="11">{{ $t('article.status.11') }}</el-radio-button>
-        <el-radio-button :label="12">{{ $t('article.status.12') }}</el-radio-button>
-        <el-radio-button :label="20">{{ $t('article.status.20') }}</el-radio-button>
-        <el-radio-button :label="21">{{ $t('article.status.21') }}</el-radio-button>
-        <el-radio-button :label="22">{{ $t('article.status.22') }}</el-radio-button>
+        <el-radio-button :value="-1">{{ $t('all') }}</el-radio-button>
+        <el-radio-button :value="0">{{ $t('article.status.0') }}</el-radio-button>
+        <el-radio-button :value="1">{{ $t('article.status.1') }}</el-radio-button>
+        <el-radio-button :value="5">{{ $t('article.status.5') }}</el-radio-button>
+        <el-radio-button :value="10">{{ $t('article.status.10') }}</el-radio-button>
+        <el-radio-button :value="11">{{ $t('article.status.11') }}</el-radio-button>
+        <el-radio-button :value="12">{{ $t('article.status.12') }}</el-radio-button>
+        <el-radio-button :value="20">{{ $t('article.status.20') }}</el-radio-button>
+        <el-radio-button :value="21">{{ $t('article.status.21') }}</el-radio-button>
+        <el-radio-button :value="22">{{ $t('article.status.22') }}</el-radio-button>
       </el-radio-group>
       <div class="app-block">
         <el-table
@@ -378,14 +441,14 @@ const cancelSticky = async (id: number) => {
             <el-table-column type="selection" :selectable="selectable" width="38"></el-table-column>
             <el-table-column width="42">
               <el-icon
-                class="text-lg align-middle text-gray-secondary"
-                :class="isSorted || perm('article:updateOrder') ? ['cursor-not-allowed', 'text-gray-disabled'] : ['cursor-move', 'text-gray-regular', 'drag-handle']"
+                class="text-lg align-middle"
+                :class="isSorted || perm('article:updateOrder') ? ['cursor-not-allowed', 'text-gray-disabled'] : ['cursor-move', 'text-gray-secondary', 'drag-handle']"
                 disalbed
               >
                 <Grid />
               </el-icon>
             </el-table-column>
-            <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
+            <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
             <el-table-column property="title" :label="$t('article.title')" min-width="280" sort-by="@articleExt-title" sortable="custom">
               <template #default="{ row }">
                 <!-- <el-button type="primary" link @click="() => openArticleLink(row.status, row.url, row.dynamicUrl)">{{ row.title }}</el-button> -->
@@ -396,7 +459,7 @@ const cancelSticky = async (id: number) => {
                   :type="item.enabled ? undefined : 'info'"
                   size="small"
                   class="ml-1"
-                  closable
+                  :closable="hasPermission('blockItem:delete')"
                   @close="() => handleBlockItemDelete(item.id)"
                 >
                   {{ item.block.name }}
@@ -418,6 +481,30 @@ const cancelSticky = async (id: number) => {
                   </template>
                   <el-icon class="ml-1 align-middle"><DocumentCopy /></el-icon>
                 </el-tooltip>
+              </template>
+            </el-table-column>
+            <el-table-column
+              v-for="field in fields.filter((item) =>
+                ['text', 'textarea', 'number', 'date', 'color', 'slider', 'switch', 'radio', 'checkbox', 'select', 'multipleSelect'].includes(item.type),
+              )"
+              :key="field.code"
+              :property="`customs.${field.code}`"
+              :label="field.name"
+              :sort-by="`mainsJson$${field.code}${field.dataType === 'number' ? '_Int' : ''}`"
+              :sortable="['checkbox', 'multipleSelect'].indexOf(field.type) === -1 ? 'custom' : undefined"
+              :display="field.showInList ? undefined : 'none'"
+              show-overflow-tooltip
+            >
+              <template #default="{ row }">
+                <template v-if="field.type === 'date' && field.dateType === 'date'">
+                  {{ dayjs(row.customs[field.code]).format('YYYY-MM-DD') }}
+                </template>
+                <template v-else-if="field.type === 'date' && field.dateType === 'datetime'">
+                  {{ dayjs(row.customs[field.code]).format('YYYY-MM-DD HH:mm:ss') }}
+                </template>
+                <template v-else-if="field.type === 'switch'">
+                  <el-tag :type="row.customs[field.code] ? 'success' : 'info'" size="small">{{ $t(row.customs[field.code] ? 'yes' : 'no') }}</el-tag>
+                </template>
               </template>
             </el-table-column>
             <el-table-column property="channel.name" :label="$t('article.channel')" sort-by="channel-name" sortable="custom" show-overflow-tooltip>
@@ -492,8 +579,7 @@ const cancelSticky = async (id: number) => {
               <template #default="{ row }">
                 <el-tag v-if="row.status === 0" type="success" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
                 <el-tag v-else-if="row.status === 1" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
-                <el-tag v-else-if="row.status === 20" type="warning" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
-                <el-tag v-else-if="row.status === 21" type="warning" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
+                <el-tag v-else-if="row.status === 20 || row.status === 21" type="warning" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
                 <el-tooltip v-else-if="row.status === 22" :content="row.rejectReason" placement="top">
                   <el-tag type="danger" size="small">{{ $t(`article.status.${row.status}`) }}</el-tag>
                 </el-tooltip>
@@ -567,7 +653,7 @@ const cancelSticky = async (id: number) => {
                         <el-dropdown-item
                           v-for="(item, index) in blockList.filter((it) => it.enabled && it.recommendable)"
                           :key="item.id"
-                          :disabled="row.blocks.findIndex((block: any) => block.id === item.id) >= 0"
+                          :disabled="perm('blockItem:create') || row.blocks.findIndex((block: any) => block.id === item.id) >= 0"
                           :divided="index === 0"
                           @click="() => recommendTo(item.id, row)"
                         >

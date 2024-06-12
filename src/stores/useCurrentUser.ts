@@ -34,6 +34,7 @@ export interface CurrentUser {
   allChannelPermission: boolean;
   allArticlePermission: boolean;
   allStatusPermission: boolean;
+  dataScope: number;
   loginDate?: Date;
   loginIp?: string;
   epExcludes: string[];
@@ -48,6 +49,7 @@ const defaultUser: CurrentUser = {
   allChannelPermission: true,
   allArticlePermission: true,
   allStatusPermission: false,
+  dataScope: 4,
   epExcludes: [],
   epDisplay: false,
   epRank: 0,
@@ -202,6 +204,7 @@ export const fetchCurrentUser = async (): Promise<any> => {
       allChannelPermission: user.allChannelPermission,
       allArticlePermission: user.allArticlePermission,
       allStatusPermission: user.allStatusPermission,
+      dataScope: user.dataScope,
       loginDate: user.loginDate,
       loginIp: user.loginIp,
       epExcludes: user.epExcludes,

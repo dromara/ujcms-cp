@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'MessageBoardList' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -16,6 +12,9 @@ import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import MessageBoardForm from './MessageBoardForm.vue';
 
+defineOptions({
+  name: 'MessageBoardList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -27,7 +26,7 @@ const data = ref<any[]>([]);
 const selection = ref<any[]>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 
 const route = useRoute();
@@ -44,7 +43,7 @@ const fetchData = async () => {
       pageSize: pageSize.value,
     });
     data.value = content;
-    total.value = totalElements;
+    total.value = Number(totalElements);
   } finally {
     loading.value = false;
   }
@@ -71,16 +70,16 @@ const handleAdd = () => {
   beanId.value = undefined;
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const handleDelete = async (ids: number[]) => {
+const handleDelete = async (ids: string[]) => {
   await deleteMessageBoard(ids);
   fetchData();
   ElMessage.success(t('success'));
 };
-const handleStatus = async (ids: number[], status: number) => {
+const handleStatus = async (ids: string[], status: number) => {
   await updateMessageBoardStatus(ids, status);
   fetchData();
   ElMessage.success(t('success'));
@@ -126,16 +125,16 @@ const handleStatus = async (ids: number[], status: number) => {
       <column-setting name="messageBoard" />
     </div>
     <el-radio-group v-model="status" class="mt-3" @change="() => fetchData()">
-      <el-radio-button :label="-1">{{ $t('all') }}</el-radio-button>
-      <el-radio-button :label="0">{{ $t('messageBoard.status.0') }}</el-radio-button>
-      <el-radio-button :label="1">{{ $t('messageBoard.status.1') }}</el-radio-button>
-      <el-radio-button :label="2">{{ $t('messageBoard.status.2') }}</el-radio-button>
+      <el-radio-button :value="-1">{{ $t('all') }}</el-radio-button>
+      <el-radio-button :value="0">{{ $t('messageBoard.status.0') }}</el-radio-button>
+      <el-radio-button :value="1">{{ $t('messageBoard.status.1') }}</el-radio-button>
+      <el-radio-button :value="2">{{ $t('messageBoard.status.2') }}</el-radio-button>
     </el-radio-group>
     <div class="app-block">
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="messageBoard">
           <el-table-column type="selection" width="38"></el-table-column>
-          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
+          <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
           <el-table-column property="title" :label="$t('messageBoard.title')" min-width="260" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="type.name" :label="$t('messageBoard.type')" min-width="80" sort-by="type@dict-name" sortable="custom"></el-table-column>
           <el-table-column

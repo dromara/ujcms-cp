@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useSlots, provide, computed, ref, toRefs } from 'vue';
+import { useSlots, watch, provide, computed, ref, toRefs } from 'vue';
 import { Plus, Minus, Search, Refresh } from '@element-plus/icons-vue';
 import QueryInput from './QueryInput.vue';
 
@@ -11,14 +11,18 @@ defineEmits({
   search: null,
   reset: null,
 });
-
-const data = ref<any[]>([]);
-const inputs = computed(() => slots.default?.() ?? []);
-data.value = inputs.value.map((item) => ({ label: item.props?.label, name: item.props?.name }));
-
-const [first] = data.value;
-const names = ref<string[]>([first.name]);
+const inputs = computed<any[]>(
+  () =>
+    slots
+      .default?.()
+      .flatMap((item: any) => (item.children?.length > 0 ? item.children : item))
+      .flatMap((item: any) => (item.children?.length > 0 ? item.children : item))
+      .filter((item: any) => item.props?.name != null) ?? [],
+);
+const data = computed<any[]>(() => inputs.value.map((item) => ({ label: item.props?.label, name: item.props?.name })));
+const names = ref<string[]>([]);
 const remains = computed(() => data.value.filter((it) => !names.value.includes(it.name)));
+
 const clearParams = () => {
   Object.keys(params.value).forEach((key) => {
     if (!names.value.includes(key) && names.value.findIndex((item) => item.split(',').includes(key)) === -1) {
@@ -26,6 +30,27 @@ const clearParams = () => {
     }
   });
 };
+
+watch(
+  data,
+  () => {
+    const [first] = data.value;
+    if (names.value.length > 0) {
+      const sourceNames = data.value.map((item: any) => item.name);
+      names.value.filter((name: string) => sourceNames.includes(name));
+      Object.keys(params.value).forEach((key) => {
+        if (!sourceNames.includes(key) && sourceNames.findIndex((item) => item.split(',').includes(key)) === -1) {
+          delete params.value[key];
+        }
+      });
+    }
+    if (names.value.length === 0) {
+      names.value = [first.name];
+    }
+  },
+  { deep: true, immediate: true },
+);
+
 const handelRow = (index: number) => {
   if (index === 0) {
     const [item] = remains.value;

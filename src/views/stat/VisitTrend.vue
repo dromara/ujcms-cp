@@ -91,7 +91,7 @@ onMounted(async () => {
     <div class="p-3 mt-3 app-block">
       <div>
         <el-radio-group v-model="dateRange" @change="(value: any) => initTrendChart(value)">
-          <el-radio-button v-for="item in ['now', 'today', 'yesterday', 'last7day', 'last30day', 'lastYear', 'all']" :key="item" :label="item">
+          <el-radio-button v-for="item in ['now', 'today', 'yesterday', 'last7day', 'last30day', 'lastYear', 'all']" :key="item" :value="item">
             {{ $t(`visit.${item}`) }}
           </el-radio-button>
         </el-radio-group>

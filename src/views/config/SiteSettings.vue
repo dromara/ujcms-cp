@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'SiteSettings' };
-</script>
-
 <script setup lang="ts">
 import { onMounted, ref, computed, watch } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -24,6 +20,9 @@ import LabelTip from '@/components/LabelTip.vue';
 import { ImageUpload } from '@/components/Upload';
 import FieldItem from '@/views/config/components/FieldItem.vue';
 
+defineOptions({
+  name: 'SiteSettings',
+});
 defineEmits({ 'update:modelValue': null, finished: null });
 
 const { t } = useI18n();
@@ -36,7 +35,7 @@ const buttonLoading = ref<boolean>(false);
 const orgList = ref<any[]>([]);
 const themeList = ref<string[]>([]);
 const modelList = ref<any[]>([]);
-const modelId = ref<number>();
+const modelId = ref<string>();
 const model = computed(() => modelList.value.find((item) => item.id === modelId.value));
 const fields = computed(() => JSON.parse(model.value?.customs || '[]'));
 
@@ -170,7 +169,7 @@ const handleSubmit = () => {
               <el-form-item prop="position" :label="$t('site.watermark.position')" :rules="{ required: true, message: () => $t('v.required') }">
                 <el-radio-group v-model="values.position">
                   <div class="watermark-position">
-                    <el-radio v-for="n in 9" :key="n" :label="n" :title="$t(`site.watermark.position.${n}`)"><span></span></el-radio>
+                    <el-radio v-for="n in 9" :key="n" :value="n" :title="$t(`site.watermark.position.${n}`)"><span></span></el-radio>
                   </div>
                 </el-radio-group>
               </el-form-item>
@@ -340,7 +339,7 @@ const handleSubmit = () => {
             <el-col v-for="field in fields" :key="field.code" :span="field.double ? 12 : 24">
               <el-form-item :prop="field.code" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
                 <template #label><label-tip :label="field.name" /></template>
-                <field-item v-model="values[field.code]" v-model:model-key="values[field.code + '_key']" :field="field"></field-item>
+                <field-item v-model="values[field.code]" v-model:model-key="values[field.code + 'Key']" :field="field"></field-item>
               </el-form-item>
             </el-col>
           </el-row>
@@ -443,13 +442,13 @@ const handleSubmit = () => {
               <el-form-item prop="status">
                 <template #label><label-tip message="site.status" help /></template>
                 <el-radio-group v-model="values.status">
-                  <el-radio v-for="n in [0, 1]" :key="n" :label="n">{{ $t(`site.status.${n}`) }}</el-radio>
+                  <el-radio v-for="n in [0, 1]" :key="n" :value="n">{{ $t(`site.status.${n}`) }}</el-radio>
                 </el-radio-group>
               </el-form-item>
             </el-col>
           </el-row>
         </template>
-        <div v-if="type !== 'editor' || currentUser.epRank >= 2">
+        <div v-if="type !== 'editor' || currentUser.epRank >= 1">
           <el-button :disabled="perm(`siteSettings:${type}:update`)" :loading="buttonLoading" type="primary" native-type="submit" @click.prevent="handleSubmit">
             {{ $t('save') }}
           </el-button>

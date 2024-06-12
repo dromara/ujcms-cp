@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'GetShortMessage' };
-</script>
-
 <script setup lang="ts">
 import { ref, toRefs, watch } from 'vue';
 import { Picture } from '@element-plus/icons-vue';
@@ -9,6 +5,9 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { tryCaptcha, mobileNotExist, queryCaptcha, sendMobileMessage } from '@/api/login';
 
+defineOptions({
+  name: 'GetShortMessage',
+});
 const props = defineProps({ modelValue: { type: Boolean, required: true } });
 const emit = defineEmits({ 'update:modelValue': null, finish: null });
 const { modelValue: visible } = toRefs(props);

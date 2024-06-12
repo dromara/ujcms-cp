@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'UserPermissionForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, toRefs } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -12,7 +8,10 @@ import { queryGroup, updateGroupPermission, groupAccessPermissions } from '@/api
 import { queryChannelList } from '@/api/content';
 import LabelTip from '@/components/LabelTip.vue';
 
-const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null } });
+defineOptions({
+  name: 'GroupPermissionForm',
+});
+const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: String, default: null } });
 const emit = defineEmits({ 'update:modelValue': null, finished: null });
 
 const { beanId, modelValue: visible } = toRefs(props);
@@ -41,7 +40,7 @@ const fetchAccessPermissions = async () => {
   if (beanId?.value != null) {
     const accessPermissions = await groupAccessPermissions(beanId.value);
     accessPermissionTree.value?.setCheckedKeys([]);
-    accessPermissions.forEach((key: number) => {
+    accessPermissions.forEach((key: string) => {
       accessPermissionTree.value?.setChecked(key, true, false);
     });
   }
@@ -126,7 +125,7 @@ const handleAccessPermission = () => {
       </el-form>
     </template>
     <template #footer>
-      <div class="flex justify-between items-center">
+      <div class="flex items-center justify-between">
         <div>
           <el-tag>{{ values?.name }}</el-tag>
         </div>

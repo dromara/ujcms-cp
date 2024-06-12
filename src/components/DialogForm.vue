@@ -26,10 +26,10 @@ function setContinuous(name: string, continuous: boolean) {
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
+  values: { type: Object, required: true },
   name: { type: String, required: true },
   beanId: { type: [Number, String], default: null },
   beanIds: { type: Array as PropType<string[] | number[]>, required: true },
-  values: { type: Object, required: true },
   initValues: { type: Function as PropType<(bean?: any) => any>, required: true },
   toValues: { type: Function as PropType<(bean: any) => any>, required: true },
   queryBean: { type: Function as PropType<(id: any) => Promise<any>>, required: true },

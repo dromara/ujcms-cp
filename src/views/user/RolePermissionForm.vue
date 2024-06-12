@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'RolePermissionForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, toRefs, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -9,11 +5,14 @@ import { useI18n } from 'vue-i18n';
 import { getPermsTreeData } from '@/data';
 import { toTree, flatTree, disablePermissionTree } from '@/utils/tree';
 import { currentUser } from '@/stores/useCurrentUser';
-import { queryRole, updateRolePermission, roleArticlePermissions, roleChannelPermissions } from '@/api/user';
+import { queryRole, updateRolePermission, queryRoleArticlePermissions, queryRoleChannelPermissions, queryRoleOrgPermissions, queryOrgList } from '@/api/user';
 import { queryChannelList } from '@/api/content';
 import LabelTip from '@/components/LabelTip.vue';
 
-const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null } });
+defineOptions({
+  name: 'RolePermissionForm',
+});
+const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: String, default: null } });
 const emit = defineEmits({ 'update:modelValue': null, finished: null });
 
 const { beanId, modelValue: visible } = toRefs(props);
@@ -24,21 +23,26 @@ const bean = ref<any>({});
 const values = ref<any>({});
 const buttonLoading = ref<boolean>(false);
 
-const permissionExpand = ref<boolean>(true);
+const permissionExpand = ref<boolean>(false);
 const permissionCheck = ref<boolean>(false);
 const permissionTree = ref<any>();
-const grantPermissionExpand = ref<boolean>(true);
+const grantPermissionExpand = ref<boolean>(false);
 const grantPermissionCheck = ref<boolean>(false);
 const grantPermissionTree = ref<any>();
-const articlePermissionExpand = ref<boolean>(true);
+const articlePermissionExpand = ref<boolean>(false);
 const articlePermissionCheck = ref<boolean>(false);
 const articlePermissionTree = ref<any>();
-const channelPermissionExpand = ref<boolean>(true);
+const channelPermissionExpand = ref<boolean>(false);
 const channelPermissionCheck = ref<boolean>(false);
 const channelPermissionTree = ref<any>();
+const orgPermissionExpand = ref<boolean>(false);
+const orgPermissionCheck = ref<boolean>(false);
+const orgPermissionTree = ref<any>();
+
 const permsData: any[] = getPermsTreeData();
 disablePermissionTree(permsData, currentUser.grantPermissions ?? []);
 const channelData = ref<any[]>([]);
+const orgData = ref<any[]>([]);
 const disabled = computed(() => (bean.value.global && !currentUser.globalPermission) || currentUser.rank > bean.value.rank);
 const fetchRole = async () => {
   if (beanId.value != null) {
@@ -53,24 +57,36 @@ const fetchRole = async () => {
 };
 const fetchArticlePermissions = async () => {
   if (beanId.value != null) {
-    const articlePermissions = await roleArticlePermissions(beanId.value);
+    const articlePermissions = await queryRoleArticlePermissions(beanId.value);
     articlePermissionTree.value?.setCheckedKeys([]);
-    articlePermissions.forEach((key: number) => {
+    articlePermissions.forEach((key: string) => {
       articlePermissionTree.value?.setChecked(key, true, false);
     });
   }
 };
 const fetchChannelPermissions = async () => {
   if (beanId.value != null) {
-    const channelPermissions = await roleChannelPermissions(beanId.value);
+    const channelPermissions = await queryRoleChannelPermissions(beanId.value);
     channelPermissionTree.value?.setCheckedKeys([]);
-    channelPermissions.forEach((key: number) => {
+    channelPermissions.forEach((key: string) => {
       channelPermissionTree.value?.setChecked(key, true, false);
+    });
+  }
+};
+const fetchOrgPermissions = async () => {
+  if (beanId.value != null) {
+    const orgPermissions = await queryRoleOrgPermissions(beanId.value);
+    orgPermissionTree.value?.setCheckedKeys([]);
+    orgPermissions.forEach((key: string) => {
+      orgPermissionTree.value?.setChecked(key, true, false);
     });
   }
 };
 const fetchChannelData = async () => {
   channelData.value = toTree(await queryChannelList());
+};
+const fetchOrgData = async () => {
+  orgData.value = toTree(await queryOrgList({ current: true }));
 };
 
 watch(visible, async () => {
@@ -78,10 +94,12 @@ watch(visible, async () => {
     fetchRole();
     fetchArticlePermissions();
     fetchChannelPermissions();
+    fetchOrgPermissions();
   }
 });
 onMounted(() => {
   fetchChannelData();
+  fetchOrgData();
 });
 
 const handleSubmit = () => {
@@ -93,6 +111,7 @@ const handleSubmit = () => {
       handleGrantPermission();
       handleArticlePermission();
       handleChannelPermission();
+      handleOrgPermission();
       await updateRolePermission(values.value);
       emit('finished');
       emit('update:modelValue', false);
@@ -103,7 +122,7 @@ const handleSubmit = () => {
   });
 };
 
-const expandTree = (checked: boolean, tree: any, data: any[], key?: string) => {
+const expandTree = (checked: any, tree: any, data: any[], key?: string) => {
   data.forEach((item) => {
     if (item.children) {
       tree.getNode(item[key ?? 'key']).expanded = checked;
@@ -111,7 +130,7 @@ const expandTree = (checked: boolean, tree: any, data: any[], key?: string) => {
     }
   });
 };
-const checkTree = (checked: boolean, tree: any, data: any[], key?: string) => {
+const checkTree = (checked: any, tree: any, data: any[], key?: string) => {
   tree.setCheckedKeys(checked ? data.map((item: any) => item[key ?? 'key']) : []);
 };
 
@@ -135,6 +154,11 @@ const handleChannelPermission = () => {
     values.value.channelPermissions = [...channelPermissionTree.value.getCheckedNodes(), ...channelPermissionTree.value.getHalfCheckedNodes()].map((item) => item.id);
   }
 };
+const handleOrgPermission = () => {
+  if (orgPermissionTree.value != null) {
+    values.value.orgPermissions = orgPermissionTree.value.getCheckedNodes().map((item: any) => item.id);
+  }
+};
 const getPermission = (checkedNodes: any[], halfCheckedNodes: any[]) =>
   [...checkedNodes, ...halfCheckedNodes]
     .filter((item) => item.perms)
@@ -156,24 +180,19 @@ const getPermission = (checkedNodes: any[], halfCheckedNodes: any[]) =>
             </el-form-item>
             <template v-if="!values.allPermission">
               <div class="border-t">
-                <el-checkbox
-                  v-model="permissionExpand"
-                  :disabled="false"
-                  :label="$t('expand/collapse')"
-                  @change="(checked: any) => expandTree(checked, permissionTree, permsData)"
-                />
+                <el-checkbox v-model="permissionExpand" :disabled="false" :label="$t('expand/collapse')" @change="(checked) => expandTree(checked, permissionTree, permsData)" />
                 <el-checkbox
                   v-model="permissionCheck"
                   :label="$t('checkAll/uncheckAll')"
                   @change="
-                  (checked: any) => {
-                    checkTree(checked, permissionTree, permsData);
-                    handlePermission();
-                  }
-                "
+                    (checked) => {
+                      checkTree(checked, permissionTree, permsData);
+                      handlePermission();
+                    }
+                  "
                 />
               </div>
-              <el-tree ref="permissionTree" :data="permsData" node-key="key" class="border rounded" default-expand-all show-checkbox @check="() => handlePermission()" />
+              <el-tree ref="permissionTree" :data="permsData" node-key="key" class="border rounded" show-checkbox @check="() => handlePermission()" />
             </template>
           </el-tab-pane>
           <el-tab-pane v-if="currentUser.epRank >= 1 || currentUser.epDisplay" :label="$t('role.grantPermission')" name="grantPermission">
@@ -185,27 +204,19 @@ const getPermission = (checkedNodes: any[], halfCheckedNodes: any[]) =>
               </el-form-item>
               <template v-if="!values.allGrantPermission">
                 <div class="border-t">
-                  <el-checkbox v-model="grantPermissionExpand" :label="$t('expand/collapse')" @change="(checked: any) => expandTree(checked, grantPermissionTree, permsData)" />
+                  <el-checkbox v-model="grantPermissionExpand" :label="$t('expand/collapse')" @change="(checked) => expandTree(checked, grantPermissionTree, permsData)" />
                   <el-checkbox
                     v-model="grantPermissionCheck"
                     :label="$t('checkAll/uncheckAll')"
                     @change="
-                  (checked: any) => {
-                    checkTree(checked, grantPermissionTree, permsData);
-                    handleGrantPermission();
-                  }
-                "
+                      (checked) => {
+                        checkTree(checked, grantPermissionTree, permsData);
+                        handleGrantPermission();
+                      }
+                    "
                   />
                 </div>
-                <el-tree
-                  ref="grantPermissionTree"
-                  :data="permsData"
-                  node-key="key"
-                  class="border rounded"
-                  default-expand-all
-                  show-checkbox
-                  @check="() => handleGrantPermission()"
-                />
+                <el-tree ref="grantPermissionTree" :data="permsData" node-key="key" class="border rounded" show-checkbox @check="() => handleGrantPermission()" />
               </template>
             </template>
             <template v-else>
@@ -220,16 +231,42 @@ const getPermission = (checkedNodes: any[], halfCheckedNodes: any[]) =>
                 <template #label><label-tip message="role.globalPermission" help /></template>
                 <el-switch v-model="values.globalPermission" :disabled="!currentUser.globalPermission"></el-switch>
               </el-form-item>
-              <el-form-item prop="dataScope" :rules="[{ required: true, message: () => $t('v.required') }]">
-                <template #label><label-tip message="role.dataScope" help /></template>
-                <el-select v-model="values.dataScope">
-                  <el-option v-for="item in [1, 2, 3]" :key="item" :label="$t(`role.dataScope.${item}`)" :value="item" />
-                </el-select>
-              </el-form-item>
               <el-form-item prop="allStatusPermission" :rules="{ required: true, message: () => $t('v.required') }">
                 <template #label><label-tip message="role.allStatusPermission" help /></template>
                 <el-switch v-model="values.allStatusPermission" :disabled="!currentUser.allStatusPermission"></el-switch>
               </el-form-item>
+              <el-form-item prop="dataScope" :rules="[{ required: true, message: () => $t('v.required') }]">
+                <template #label><label-tip message="role.dataScope" help /></template>
+                <el-select v-model="values.dataScope">
+                  <el-option v-for="n in [1, 2, 3, 4]" :key="n" :label="$t(`role.dataScope.${n}`)" :value="n" />
+                </el-select>
+              </el-form-item>
+              <template v-if="values.dataScope === 2">
+                <div class="border-t">
+                  <el-checkbox v-model="orgPermissionExpand" :label="$t('expand/collapse')" @change="(checked) => expandTree(checked, orgPermissionTree, orgData, 'id')" />
+                  <el-checkbox
+                    v-model="orgPermissionCheck"
+                    :label="$t('checkAll/uncheckAll')"
+                    @change="
+                      (checked) => {
+                        checkTree(checked, orgPermissionTree, flatTree(orgData), 'id');
+                        handleOrgPermission();
+                      }
+                    "
+                  />
+                </div>
+                <el-tree
+                  ref="orgPermissionTree"
+                  :data="orgData"
+                  node-key="id"
+                  :props="{ label: 'name' }"
+                  class="border rounded"
+                  :default-expanded-keys="orgData.map((it) => it.id)"
+                  show-checkbox
+                  check-strictly
+                  @check="() => handleOrgPermission()"
+                />
+              </template>
             </template>
             <template v-else>
               <el-alert type="warning" :closable="false" :show-icon="true">
@@ -248,17 +285,17 @@ const getPermission = (checkedNodes: any[], halfCheckedNodes: any[]) =>
                   <el-checkbox
                     v-model="articlePermissionExpand"
                     :label="$t('expand/collapse')"
-                    @change="(checked: any) => expandTree(checked, articlePermissionTree, channelData, 'id')"
+                    @change="(checked) => expandTree(checked, articlePermissionTree, channelData, 'id')"
                   />
                   <el-checkbox
                     v-model="articlePermissionCheck"
                     :label="$t('checkAll/uncheckAll')"
                     @change="
-                    (checked: any) => {
-                      checkTree(checked, articlePermissionTree, channelData, 'id');
-                      handleArticlePermission();
-                    }
-                  "
+                      (checked) => {
+                        checkTree(checked, articlePermissionTree, flatTree(channelData), 'id');
+                        handleArticlePermission();
+                      }
+                    "
                   />
                 </div>
                 <el-tree
@@ -267,7 +304,6 @@ const getPermission = (checkedNodes: any[], halfCheckedNodes: any[]) =>
                   node-key="id"
                   :props="{ label: 'name' }"
                   class="border rounded"
-                  default-expand-all
                   show-checkbox
                   @check="() => handleArticlePermission()"
                 />
@@ -290,13 +326,13 @@ const getPermission = (checkedNodes: any[], halfCheckedNodes: any[]) =>
                   <el-checkbox
                     v-model="channelPermissionExpand"
                     :label="$t('expand/collapse')"
-                    @change="(checked: any) => expandTree(checked, channelPermissionTree, channelData, 'id')"
+                    @change="(checked) => expandTree(checked, channelPermissionTree, channelData, 'id')"
                   />
                   <el-checkbox
                     v-model="channelPermissionCheck"
                     :label="$t('checkAll/uncheckAll')"
                     @change="
-                      (checked: any) => {
+                      (checked) => {
                         checkTree(checked, channelPermissionTree, flatTree(channelData), 'id');
                         handleChannelPermission();
                       }
@@ -310,7 +346,6 @@ const getPermission = (checkedNodes: any[], halfCheckedNodes: any[]) =>
                   :props="{ label: 'name' }"
                   class="border rounded"
                   check-strictly
-                  default-expand-all
                   show-checkbox
                   @check="() => handleChannelPermission()"
                 />

@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'RoleList' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -16,6 +12,9 @@ import ListMove from '@/components/ListMove.vue';
 import RoleForm from './RoleForm.vue';
 import RolePermissionForm from './RolePermissionForm.vue';
 
+defineOptions({
+  name: 'RoleList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -25,7 +24,7 @@ const selection = ref<Array<any>>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
 const permissionFormVisible = ref<boolean>(false);
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
 const fetchData = async () => {
@@ -61,15 +60,15 @@ const handleAdd = () => {
   beanId.value = undefined;
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const handlePermissionEdit = (id: number) => {
+const handlePermissionEdit = (id: string) => {
   beanId.value = id;
   permissionFormVisible.value = true;
 };
-const handleDelete = async (ids: number[]) => {
+const handleDelete = async (ids: string[]) => {
   await deleteRole(ids);
   fetchData();
   ElMessage.success(t('success'));
@@ -102,14 +101,14 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
       ref="table"
       v-loading="loading"
       :data="data"
-      class="mt-3 shadow bg-white"
+      class="mt-3 bg-white shadow"
       @selection-change="(rows) => (selection = rows)"
       @row-dblclick="(row) => handleEdit(row.id)"
       @sort-change="handleSort"
     >
       <column-list name="role">
         <el-table-column type="selection" :selectable="(bean) => !disabled(bean)" width="50"></el-table-column>
-        <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
+        <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
         <el-table-column property="name" :label="$t('role.name')" sortable="custom" show-overflow-tooltip></el-table-column>
         <el-table-column property="description" :label="$t('role.description')" sortable="custom" show-overflow-tooltip></el-table-column>
         <el-table-column property="rank" :label="$t('role.rank')" sortable="custom" show-overflow-tooltip></el-table-column>

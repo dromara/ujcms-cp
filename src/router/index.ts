@@ -55,6 +55,18 @@ export const routes: Array<RouteRecordRaw> = [
       { path: 'dict', name: 'DictList', component: () => import('@/views/content/DictList.vue'), meta: { title: 'menu.content.dict', requiresPermission: 'dict:page' } },
       { path: 'tag', name: 'TagList', component: () => import('@/views/content/TagList.vue'), meta: { title: 'menu.content.tag', requiresPermission: 'tag:page' } },
       {
+        path: 'form',
+        name: 'FormList',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.content.form', requiresPermission: 'form:page' },
+      },
+      {
+        path: 'form-review',
+        name: 'FormReviewList',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.content.formReview', requiresPermission: 'formReview:page' },
+      },
+      {
         path: 'attachment',
         name: 'AttachmentList',
         component: () => import('@/views/content/AttachmentList.vue'),
@@ -172,6 +184,12 @@ export const routes: Array<RouteRecordRaw> = [
         name: 'DictTypeList',
         component: () => import('@/views/config/DictTypeList.vue'),
         meta: { title: 'menu.config.dictType', requiresPermission: 'dictType:page' },
+      },
+      {
+        path: 'form-type',
+        name: 'FormTypeList',
+        component: () => import('@/views/EnterprisePage.vue'),
+        meta: { title: 'menu.config.formType', requiresPermission: 'formType:page' },
       },
       {
         path: 'performance-type',
@@ -309,19 +327,19 @@ export const routes: Array<RouteRecordRaw> = [
       {
         path: 'short-message',
         name: 'ShortMessageList',
-        component: () => import('@/views/log/ShortMessageList.vue'),
+        component: () => import('@/views/EnterprisePage.vue'),
         meta: { title: 'menu.log.shortMessage', requiresPermission: 'shortMessage:page' },
       },
       {
         path: 'login-log',
         name: 'LoginLogList',
-        component: () => import('@/views/log/LoginLogList.vue'),
+        component: () => import('@/views/EnterprisePage.vue'),
         meta: { title: 'menu.log.loginLog', requiresPermission: 'loginLog:page' },
       },
       {
         path: 'operation-log',
         name: 'OperationLogList',
-        component: () => import('@/views/log/OperationLogList.vue'),
+        component: () => import('@/views/EnterprisePage.vue'),
         meta: { title: 'menu.log.operationLog', requiresPermission: 'operationLog:page' },
       },
     ],
@@ -331,7 +349,7 @@ export const routes: Array<RouteRecordRaw> = [
     component: Layout,
     meta: { title: 'menu.system', icon: Operation, requiresPermission: 'menu.system' },
     children: [
-      { path: 'site', name: 'SiteList', component: () => import('@/views/system/SiteList.vue'), meta: { title: 'menu.system.site', requiresPermission: 'site:page' } },
+      { path: 'site', name: 'SiteList', component: () => import('@/views/EnterprisePage.vue'), meta: { title: 'menu.system.site', requiresPermission: 'site:page' } },
       {
         path: 'process-model',
         name: 'ProcessModelList',

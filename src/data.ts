@@ -34,7 +34,7 @@ export function getPermsTreeData(): any[] {
         {
           label: t('menu.personal.homepage.systemMonitor'),
           key: 'homepage:systemMonitor',
-          perms: ['homepage:systemMonitor'],
+          perms: ['homepage:systemMonitor', 'homepage:systemLoad'],
         },
         {
           label: t('menu.personal.homepage.generatedKey'),
@@ -67,6 +67,7 @@ export function getPermsTreeData(): any[] {
             { label: t('add'), key: 'article:create', perms: ['article:create', 'article.submit', 'jodConvert:doc', 'jodConvert:library'] },
             { label: t('view'), key: 'article:show', perms: ['article:show'] },
             { label: t('edit'), key: 'article:update', perms: ['article:update', 'article.submit', 'article:show', 'jodConvert:doc', 'jodConvert:library'] },
+            { label: t('article.op.recommendTo'), key: 'blockItem:create', perms: ['blockItem:create', 'blockItem:delete'] },
             { label: t('article.op.internalPush'), key: 'article:internalPush', perms: ['article:internalPush'] },
             { label: t('article.op.externalPush'), key: 'article:externalPush', perms: ['article:externalPush'] },
             { label: t('article.op.updateOrder'), key: 'article:updateOrder', perms: ['article:updateOrder'] },
@@ -84,14 +85,17 @@ export function getPermsTreeData(): any[] {
           perms: ['articleReview:page', 'articleReview:list', 'channel:list', 'dict:list', 'model:list', 'block:list', 'processInstance:task'],
           children: [
             { label: t('list'), key: 'articleReview:page' },
-            { label: t('pass'), key: 'articleReview:pass', perms: ['articleReview:pass'] },
-            { label: t('reject'), key: 'articleReview:reject', perms: ['articleReview:reject'] },
+            { label: t('review.pass'), key: 'articleReview:pass', perms: ['articleReview:pass'] },
+            { label: t('review.reject'), key: 'articleReview:reject', perms: ['articleReview:reject'] },
+            { label: t('review.back'), key: 'articleReview:back', perms: ['articleReview:back'] },
+            { label: t('review.delegate'), key: 'articleReview:delegate', perms: ['articleReview:delegate'] },
+            { label: t('review.transfer'), key: 'articleReview:transfer', perms: ['articleReview:transfer'] },
           ],
         },
         {
           label: t('menu.content.channel'),
           key: 'channel.key',
-          perms: ['channel:page', 'channel:list', 'processDefinition:list', 'model:list'],
+          perms: ['channel:page', 'channel:list', 'processModel:list', 'model:list'],
           children: [
             { label: t('list'), key: 'channel:page' },
             { label: t('add'), key: 'channel:create', perms: ['channel:create'] },
@@ -130,6 +134,33 @@ export function getPermsTreeData(): any[] {
             { label: t('add'), key: 'tag:create', perms: ['tag:create'] },
             { label: t('edit'), key: 'tag:update', perms: ['tag:update', 'tag:show'] },
             { label: t('delete'), key: 'tag:delete', perms: ['tag:delete'] },
+          ],
+        },
+        {
+          label: t('menu.content.form'),
+          key: 'form.key',
+          perms: ['form:page', 'form:list'],
+          children: [
+            { label: t('list'), key: 'form:page' },
+            { label: t('add'), key: 'form:create', perms: ['form:create'] },
+            { label: t('edit'), key: 'form:update', perms: ['form:update', 'form:show'] },
+            { label: t('form.op.updateOrder'), key: 'form:updateOrder', perms: ['form:updateOrder'] },
+            { label: t('form.op.submit'), key: 'form:submit', perms: ['form:submit'] },
+            { label: t('delete'), key: 'form:delete', perms: ['form:delete'] },
+            { label: t('completelyDelete'), key: 'form:completelyDelete', perms: ['form:completelyDelete'] },
+          ],
+        },
+        {
+          label: t('menu.content.formReview'),
+          key: 'formReview.key',
+          perms: ['formReview:page', 'formReview:list', 'formType:list', 'dict:list', 'model:list', 'processInstance:task'],
+          children: [
+            { label: t('list'), key: 'formReview:page' },
+            { label: t('review.pass'), key: 'formReview:pass', perms: ['formReview:pass'] },
+            { label: t('review.reject'), key: 'formReview:reject', perms: ['formReview:reject'] },
+            { label: t('review.back'), key: 'formReview:back', perms: ['formReview:back'] },
+            { label: t('review.delegate'), key: 'formReview:delegate', perms: ['formReview:delegate'] },
+            { label: t('review.transfer'), key: 'formReview:transfer', perms: ['formReview:transfer'] },
           ],
         },
         {
@@ -391,6 +422,17 @@ export function getPermsTreeData(): any[] {
           ],
         },
         {
+          label: t('menu.config.formType'),
+          key: 'formType.key',
+          perms: ['formType:page', 'formType:list'],
+          children: [
+            { label: t('list'), key: 'formType:page' },
+            { label: t('add'), key: 'formType:create', perms: ['formType:create'] },
+            { label: t('edit'), key: 'formType:update', perms: ['formType:update', 'formType:show'] },
+            { label: t('delete'), key: 'formType:delete', perms: ['formType:delete'] },
+          ],
+        },
+        {
           label: t('menu.config.performanceType'),
           key: 'performanceType.key',
           perms: ['performanceType:page', 'performanceType:list'],
@@ -548,6 +590,7 @@ export function getPermsTreeData(): any[] {
             { label: t('list'), key: 'org:page' },
             { label: t('add'), key: 'org:create', perms: ['org:create'] },
             { label: t('edit'), key: 'org:update', perms: ['org:update', 'org:show'] },
+            { label: t('permissionSettings'), key: 'org:updatePermission', perms: ['org:updatePermission', 'org:show'] },
             { label: t('delete'), key: 'org:delete', perms: ['org:delete'] },
           ],
         },
@@ -783,6 +826,8 @@ export const logModules = [
   'channel',
   'blockItem',
   'dict',
+  'tag',
+  'form',
   'attachment',
   'fulltext',
   'html',
@@ -803,6 +848,7 @@ export const logModules = [
   'model',
   'block',
   'dictType',
+  'formType',
   'performanceType',
   'user',
   'role',
@@ -823,6 +869,8 @@ export const logNames = [
   'article.submit',
   'article.pass',
   'article.reject',
+  'article.delegate',
+  'article.transfer',
   'article.completelyDelete',
   'article.delete',
   'article.updateOrder',
@@ -844,6 +892,17 @@ export const logNames = [
   'dict.update',
   'dict.updateOrder',
   'dict.delete',
+
+  'tag.create',
+  'tag.update',
+  'tag.delete',
+
+  'form.create',
+  'form.update',
+  'form.updateOrder',
+  'form.delete',
+  'form.pass',
+  'form.reject',
 
   'attachment.delete',
 
@@ -867,10 +926,12 @@ export const logNames = [
 
   'vote.create',
   'vote.update',
+  'vote.updateOrder',
   'vote.delete',
 
   'survey.create',
   'survey.update',
+  'survey.updateOrder',
   'survey.delete',
 
   'example.create',
@@ -959,6 +1020,11 @@ export const logNames = [
   'dictType.updateOrder',
   'dictType.delete',
 
+  'formType.create',
+  'formType.update',
+  'formType.updateOrder',
+  'formType.delete',
+
   'performanceType.create',
   'performanceType.update',
   'performanceType.updateOrder',
@@ -974,11 +1040,13 @@ export const logNames = [
   'role.create',
   'role.update',
   'role.updateOrder',
+  'role.updatePermission',
   'role.delete',
 
   'org.create',
   'org.update',
   'org.updateOrder',
+  'org.updatePermission',
   'org.delete',
 
   'group.create',

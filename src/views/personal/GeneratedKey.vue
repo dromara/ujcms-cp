@@ -1,11 +1,10 @@
-<script lang="ts">
-export default { name: 'GeneratedKey' };
-</script>
-
 <script setup lang="ts">
 import { toRefs, watch, ref } from 'vue';
 import { queryGeneratedKey } from '@/api/personal';
 
+defineOptions({
+  name: 'GeneratedKey',
+});
 const props = defineProps({ modelValue: { type: Boolean, required: true } });
 defineEmits({ 'update:modelValue': null });
 

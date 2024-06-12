@@ -1,20 +1,20 @@
-<script lang="ts">
-export default { name: 'VoteList' };
-</script>
-
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Plus, Delete } from '@element-plus/icons-vue';
+import { Plus, Delete, Grid } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
+import Sortable from 'sortablejs';
 import { perm } from '@/stores/useCurrentUser';
 import { pageSizes, pageLayout, toParams, resetParams } from '@/utils/common';
-import { deleteVote, queryVotePage } from '@/api/interaction';
+import { deleteVote, queryVotePage, updateVoteOrder } from '@/api/interaction';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import VoteForm from './VoteForm.vue';
 
+defineOptions({
+  name: 'VoteList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -26,19 +26,44 @@ const data = ref<any[]>([]);
 const selection = ref<any[]>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
+const isSorted = ref<boolean>(false);
 const fetchData = async () => {
   loading.value = true;
   try {
     const { content, totalElements } = await queryVotePage({ ...toParams(params.value), Q_OrderBy: sort.value, page: currentPage.value, pageSize: pageSize.value });
     data.value = content;
-    total.value = totalElements;
+    total.value = Number(totalElements);
+    isSorted.value = sort.value !== undefined;
   } finally {
     loading.value = false;
   }
 };
-onMounted(fetchData);
+let sortable;
+const initDragTable = () => {
+  const tbody = document.querySelector('#dataTable .el-table__body-wrapper tbody');
+  sortable = Sortable.create(tbody, {
+    handle: '.drag-handle',
+    onEnd: async function (event: any) {
+      const { oldIndex, newIndex } = event;
+      if (oldIndex !== newIndex) {
+        await updateVoteOrder(data.value[oldIndex].id, data.value[newIndex].id);
+        data.value.splice(newIndex, 0, data.value.splice(oldIndex, 1)[0]);
+        ElMessage.success(t('success'));
+      }
+    },
+  });
+};
+onMounted(() => {
+  fetchData();
+  initDragTable();
+});
+onBeforeUnmount(() => {
+  if (sortable !== undefined) {
+    sortable.destroy();
+  }
+});
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
   if (prop && order) {
@@ -60,11 +85,11 @@ const handleAdd = () => {
   beanId.value = undefined;
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const handleDelete = async (ids: number[]) => {
+const handleDelete = async (ids: string[]) => {
   await deleteVote(ids);
   fetchData();
   ElMessage.success(t('success'));
@@ -78,7 +103,6 @@ const handleDelete = async (ids: number[]) => {
         <query-item :label="$t('vote.title')" name="Q_Contains_title"></query-item>
         <query-item :label="$t('vote.beginDate')" name="Q_GE_beginDate_DateTime,Q_LE_beginDate_DateTime" type="datetime"></query-item>
         <query-item :label="$t('vote.endDate')" name="Q_GE_endDate_DateTime,Q_LE_endDate_DateTime" type="datetime"></query-item>
-        <query-item :label="$t('vote.orderDate')" name="Q_GE_orderDate_DateTime,Q_LE_orderDate_DateTime" type="datetime"></query-item>
         <query-item :label="$t('vote.mode')" name="Q_In_mode_Short" :options="[1, 2, 3].map((item) => ({ label: $t(`vote.mode.${item}`), value: item }))"></query-item>
       </query-form>
     </div>
@@ -92,10 +116,28 @@ const handleDelete = async (ids: number[]) => {
       <column-setting name="vote" class="ml-2" />
     </div>
     <div class="mt-3 app-block">
-      <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
+      <el-table
+        id="dataTable"
+        ref="table"
+        v-loading="loading"
+        row-key="id"
+        :data="data"
+        @selection-change="(rows) => (selection = rows)"
+        @row-dblclick="(row) => handleEdit(row.id)"
+        @sort-change="handleSort"
+      >
         <column-list name="vote">
           <el-table-column type="selection" width="38"></el-table-column>
-          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
+          <el-table-column width="42">
+            <el-icon
+              class="text-lg align-middle"
+              :class="isSorted || perm('vote:update') ? ['cursor-not-allowed', 'text-gray-disabled'] : ['cursor-move', 'text-gray-secondary', 'drag-handle']"
+              disalbed
+            >
+              <Grid />
+            </el-icon>
+          </el-table-column>
+          <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
           <el-table-column property="title" :label="$t('vote.title')" min-width="280" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="beginDate" :label="$t('vote.beginDate')" min-width="120" sortable="custom" display="none" show-overflow-tooltip>
             <template #default="{ row }">{{ row.beginDate != null ? dayjs(row.beginDate).format('YYYY-MM-DD HH:mm') : '' }}</template>
@@ -114,9 +156,6 @@ const handleDelete = async (ids: number[]) => {
             <template #default="{ row }">
               <el-tag :type="row.enabled ? 'success' : 'info'" size="small">{{ $t(row.enabled ? 'yes' : 'no') }}</el-tag>
             </template>
-          </el-table-column>
-          <el-table-column property="orderDate" :label="$t('vote.orderDate')" min-width="120" sortable="custom" display="none" show-overflow-tooltip>
-            <template #default="{ row }">{{ dayjs(row.orderDate).format('YYYY-MM-DD HH:mm:ss') }}</template>
           </el-table-column>
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">

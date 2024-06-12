@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'BlockItemForm' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref, toRefs, PropType } from 'vue';
 import { queryBlockList } from '@/api/config';
@@ -10,12 +6,15 @@ import DialogForm from '@/components/DialogForm.vue';
 import { BaseUpload, ImageUpload } from '@/components/Upload';
 import ImageExtractor from './components/ImageExtractor.vue';
 
+defineOptions({
+  name: 'BlockItemForm',
+});
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { type: Number, default: null },
-  beanIds: { type: Array as PropType<number[]>, required: true },
-  blockId: { type: Number, default: null },
-  articleId: { type: Number, default: null },
+  beanId: { type: String, default: null },
+  beanIds: { type: Array as PropType<string[]>, required: true },
+  blockId: { type: String, default: null },
+  articleId: { type: String, default: null },
   title: { type: String, default: null },
   description: { type: String, default: null },
   video: { type: String, default: null },
@@ -23,7 +22,7 @@ const props = defineProps({
 });
 defineEmits({ 'update:modelValue': null, finished: null });
 const { blockId } = toRefs(props);
-const currentBlockId = ref<number | null>();
+const currentBlockId = ref<string | null>();
 const focus = ref<any>();
 const values = ref<any>({});
 const blockList = ref<any[]>([]);
@@ -116,7 +115,7 @@ const imageExtractorVisible = ref<boolean>(false);
           <el-input v-model="values.video" maxlength="255">
             <template #prepend>URL</template>
           </el-input>
-          <base-upload type="video" :on-success="(res: any) => values.video = res.url"></base-upload>
+          <base-upload type="video" :on-success="(res: any) => (values.video = res.url)"></base-upload>
         </el-form-item>
         <el-form-item prop="targetBlank" :label="$t('blockItem.targetBlank')">
           <el-switch v-model="values.targetBlank" />

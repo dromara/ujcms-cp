@@ -1,13 +1,12 @@
-<script lang="ts">
-export default { name: 'WebFileBatch' };
-</script>
-
 <script setup lang="ts">
 import { ref, watch, computed, PropType, toRefs } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Folder } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 
+defineOptions({
+  name: 'WebFileBatch',
+});
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
   type: { type: String as PropType<'copy' | 'move'>, required: true },
@@ -78,7 +77,7 @@ const handleSubmit = async () => {
         {{ item }}
       </el-button>
     </div>
-    <el-table ref="table" :data="data" :show-header="false" class="border-t mt-2">
+    <el-table ref="table" :data="data" :show-header="false" class="mt-2 border-t">
       <el-table-column :label="$t('webFile.name')">
         <template #default="{ row }">
           <el-link type="primary" :underline="false" :disabled="batchIds.findIndex((it) => row.id.startsWith(it)) >= 0" @click="() => changeParentId(row.id)">

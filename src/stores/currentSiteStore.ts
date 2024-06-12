@@ -2,14 +2,14 @@ import { defineStore } from 'pinia';
 
 export const useCurrentSiteStore = defineStore('ujcmsCurrentSiteStore', {
   state: () => ({
-    currentSiteId: null as number | null,
+    currentSiteId: null as string | null,
     currentSite: null as any,
   }),
   actions: {
     getCurrentSiteId() {
       return this.currentSiteId;
     },
-    setCurrentSiteId(currentSiteId: number | null) {
+    setCurrentSiteId(currentSiteId: string | null) {
       this.currentSiteId = currentSiteId;
     },
   },

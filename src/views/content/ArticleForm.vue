@@ -1,11 +1,7 @@
-<script lang="ts">
-export default { name: 'ArticleForm' };
-</script>
-
 <script setup lang="ts">
 import { computed, ref, toRefs, watch, PropType } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Finished, Box, DocumentRemove, Delete, CircleCheck, CircleClose, View } from '@element-plus/icons-vue';
+import { Finished, Box, DocumentRemove, Delete, CircleCheck, CircleClose, View, Back, SetUp, Compass } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import * as htmlparser2 from 'htmlparser2';
 import * as domutils from 'domutils';
@@ -14,23 +10,28 @@ import { useCurrentSiteStore } from '@/stores/currentSiteStore';
 import { perm, currentUser } from '@/stores/useCurrentUser';
 import {
   queryArticle,
+  queryArticleReview,
   createArticle,
   updateArticle,
+  passArticle,
   submitArticle,
   archiveArticle,
   offlineArticle,
   deleteArticle,
   completelyDeleteArticle,
-  passArticle,
   rejectArticle,
+  delegateArticle,
+  transferArticle,
+  backArticle,
   queryChannelList,
   queryArticleTemplates,
   queryArticleTitleSimilarity,
 } from '@/api/content';
 import { queryModelList } from '@/api/config';
-import { validateErrorWord, validateSensitiveWord } from '@/api/system';
+import { validateErrorWord, validateSensitiveWord, queryTaskFormProperties } from '@/api/system';
 import { jodConvertDocUrl, jodConvertLibraryUrl, queryJodConvertEnabled, queryDictListByAlias, queryTagList } from '@/api/content';
-import { toTree } from '@/utils/tree';
+import { queryOrgList, queryOrgPermissions } from '@/api/user';
+import { toTree, disableTreeWithPermission } from '@/utils/tree';
 import { formatDuration } from '@/utils/common';
 import { getModelData, mergeModelFields, arr2obj } from '@/data';
 import FieldItem from '@/views/config/components/FieldItem.vue';
@@ -41,11 +42,18 @@ import LabelTip from '@/components/LabelTip.vue';
 import { BaseUpload, ImageUpload, ImageListUpload, FileListUpload } from '@/components/Upload';
 import ImageExtractor from './components/ImageExtractor.vue';
 import { openArticleLink } from './components/articleUtils';
+import ReviewFormProperties from './components/ReviewFormProperties.vue';
+import ReviewDelegate from './components/ReviewDelegate.vue';
+import ReviewTransfer from './components/ReviewTransfer.vue';
+import ReviewBack from './components/ReviewBack.vue';
 
+defineOptions({
+  name: 'ArticleForm',
+});
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { type: Number, default: null },
-  beanIds: { type: Array as PropType<number[]>, required: true },
+  beanId: { type: String, default: null },
+  beanIds: { type: Array as PropType<string[]>, required: true },
   action: { type: String as PropType<'add' | 'copy' | 'edit'>, default: 'edit' },
   channel: { type: Object, default: null },
   isReview: { type: Boolean, default: false },
@@ -64,11 +72,13 @@ const focus = ref<any>();
 const values = ref<any>({});
 const tinyText = ref<any>();
 const jodConverterEnabled = ref<boolean>(false);
+const orgList = ref<any[]>([]);
+const orgIds = ref<string[]>([]);
 const channelList = ref<any[]>([]);
 const flatChannelList = ref<any[]>([]);
 const articleModelList = ref<any[]>([]);
 const articleTemplates = ref<any[]>([]);
-const articleModelId = ref<number>();
+const articleModelId = ref<string>();
 const articleModel = computed(() => articleModelList.value.find((item) => item.id === articleModelId.value));
 const mains = computed(() => arr2obj(mergeModelFields(getModelData().article.mains, articleModel.value?.mains, 'article')));
 const asides = computed(() => arr2obj(mergeModelFields(getModelData().article.asides, articleModel.value?.asides, 'article')));
@@ -77,7 +87,7 @@ const editorFields = computed(() => JSON.parse(articleModel.value?.customs || '[
 
 const tagLoading = ref<boolean>(false);
 const tagList = ref<any[]>([]);
-const tagRemoteMethod = async (query: string) => {
+const tagRemoteMethod = async (query?: string) => {
   tagLoading.value = true;
   tagList.value = await queryTagList({ Q_Contains_name: query, Q_OrderBy: 'refers_desc,id_desc', limit: 20 });
   tagLoading.value = false;
@@ -86,6 +96,7 @@ const tagRemoteMethod = async (query: string) => {
 watch(visible, () => {
   if (visible.value) {
     articleModelId.value = channel?.value?.articleModelId;
+    fetchOrgList();
     fetchChannelList();
     fetchArticleModeList();
     fetchArticleTemplates();
@@ -101,6 +112,14 @@ const fetchJodConverterEnabled = async () => {
   }
 };
 const fetchSourceList = (name: string) => queryDictListByAlias('sys_article_source', name);
+const fetchOrgList = async () => {
+  const flatOrgList = await queryOrgList({ current: true });
+  orgIds.value = flatOrgList.map((item: any) => item.id);
+  orgList.value = toTree(flatOrgList);
+  if (currentUser.dataScope !== 1) {
+    disableTreeWithPermission(orgList.value, await queryOrgPermissions());
+  }
+};
 const fetchChannelList = async () => {
   flatChannelList.value = await queryChannelList({ isArticlePermission: true });
   channelList.value = toTree(flatChannelList.value);
@@ -120,7 +139,7 @@ const initCustoms = (customs: any) => {
     if (customs[field.code] == null) {
       customs[field.code] = field.defaultValue;
       if (field.defaultValueKey != null) {
-        customs[field.code + '_key'] = field.defaultValueKey;
+        customs[field.code + 'Key'] = field.defaultValueKey;
       }
     }
   });
@@ -185,28 +204,68 @@ const handleSaveAsDraft = () => {
   });
 };
 
-const handleExecute = async (action: string, id: number) => {
-  if (['pass', 'reject'].includes(action)) {
-    dialog.value.remove(async (values: any) => {
-      if (action === 'pass') {
-        await passArticle([id]);
-      } else if (action === 'reject') {
-        try {
-          const { value } = await ElMessageBox.prompt(t('article.rejectReason'), t('reject'), {
-            confirmButtonText: t('submit'),
-            cancelButtonText: t('cancel'),
-            inputPattern: /\S+/,
-            inputErrorMessage: t('v.required'),
-          });
-          await rejectArticle([id], value);
-        } catch (e) {
-          /* empty */
-        }
-      }
-    });
-    return;
-  }
+const taskId = ref<string>('');
+const formProperties = ref<any[]>([]);
+const formPropertiesVisible = ref<boolean>(false);
+const backVisible = ref<boolean>(false);
+const delegateVisible = ref<boolean>(false);
+const transferVisible = ref<boolean>(false);
 
+const handlePass = async (bean: any) => {
+  taskId.value = bean.taskId;
+  formProperties.value = await queryTaskFormProperties(bean.taskId);
+  formPropertiesVisible.value = true;
+};
+const submitPass = async (params: any) => {
+  dialog.value.remove(async () => {
+    await passArticle(taskId.value, params.properties, params.comment);
+  });
+};
+
+const handleDelegate = async (bean: any) => {
+  taskId.value = bean.taskId;
+  delegateVisible.value = true;
+};
+const submitDelegate = async (params: any) => {
+  dialog.value.remove(async () => {
+    await delegateArticle(taskId.value, params.toUserId, params.comment);
+  });
+};
+const handleTransfer = async (bean: any) => {
+  taskId.value = bean.taskId;
+  transferVisible.value = true;
+};
+const submitTransfer = async (params: any) => {
+  dialog.value.remove(async () => {
+    await transferArticle(taskId.value, params.toUserId, params.comment);
+  });
+};
+const handleBack = (bean: any) => {
+  taskId.value = bean.taskId;
+  backVisible.value = true;
+};
+const submitBack = (params: any) => {
+  dialog.value.remove(async () => {
+    await backArticle(taskId.value, params.activityId, params.comment);
+  });
+};
+const handleReject = async (bean: any) => {
+  try {
+    const { value } = await ElMessageBox.prompt(t('review.rejectReason'), t('review.reject'), {
+      confirmButtonText: t('submit'),
+      cancelButtonText: t('cancel'),
+      inputPattern: /\S+/,
+      inputErrorMessage: t('v.required'),
+    });
+    dialog.value.remove(async () => {
+      await rejectArticle([bean.taskId], value);
+    });
+  } catch (e) {
+    /* empty */
+  }
+};
+
+const handleExecute = (action: string, id: string) => {
   dialog.value.submit(async (values: any, { loadBean }: { loadBean: () => Promise<any> }) => {
     if (action === 'delete') {
       await deleteArticle([id]);
@@ -235,7 +294,7 @@ const extractImage = () => {
 
 const titleSimilarityVisible = ref<boolean>(false);
 const titleSimilarityList = ref<any[]>([]);
-const titleSimilarity = async (title: string, excludeId?: number) => {
+const titleSimilarity = async (title: string, excludeId?: string) => {
   titleSimilarityList.value = await queryArticleTitleSimilarity(0.6, title, excludeId);
   if (titleSimilarityList.value.length > 0) {
     titleSimilarityVisible.value = true;
@@ -251,7 +310,7 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
       ref="dialog"
       v-model:values="values"
       :name="$t('menu.content.article')"
-      :query-bean="queryArticle"
+      :query-bean="isReview ? queryArticleReview : queryArticle"
       :create-bean="createArticle"
       :update-bean="updateArticle"
       :delete-bean="completelyDeleteArticle"
@@ -272,7 +331,7 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
           };
         }
       "
-      :to-values="(bean) => ({ ...bean })"
+      :to-values="(bean) => ({ ...bean, tagNames: bean.tags.map((item) => item.name) })"
       perms="article"
       :model-value="modelValue"
       :addable="!isReview"
@@ -293,12 +352,19 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
     >
       <template #header-action="{ isEdit, bean, unsaved, handleDelete }">
         <el-button-group v-if="isReview">
-          <el-popconfirm v-if="isEdit && isReview" :title="$t('confirmPass')" @confirm="() => handleExecute('pass', bean.id)">
-            <template #reference>
-              <el-button :disabled="perm('articleReview:pass') || unsaved" type="primary" :icon="CircleCheck">{{ $t('pass') }}</el-button>
-            </template>
-          </el-popconfirm>
-          <el-button :disabled="perm('articleReview:reject') || unsaved" :icon="CircleClose" @click="() => handleExecute('reject', bean.id)">{{ $t('reject') }}</el-button>
+          <el-button v-if="isEdit && isReview" :disabled="perm('articleReview:pass') || unsaved" type="primary" :icon="CircleCheck" @click="() => handlePass(bean)">
+            {{ $t('review.pass') }}
+          </el-button>
+          <el-button :disabled="perm('articleReview:reject') || unsaved" :icon="CircleClose" @click="() => handleReject(bean)">{{ $t('review.reject') }}</el-button>
+          <el-button v-if="currentUser.epRank >= 3" :disabled="perm('articleReview:back') || unsaved" :icon="Back" @click="() => handleBack(bean)">
+            {{ $t('review.back') }}
+          </el-button>
+          <el-button v-if="currentUser.epRank >= 3" :disabled="perm('articleReview:delegate') || unsaved" :icon="SetUp" @click="() => handleDelegate(bean)">
+            {{ $t('review.delegate') }}
+          </el-button>
+          <el-button v-if="currentUser.epRank >= 3" :disabled="perm('articleReview:transfer') || unsaved" :icon="Compass" @click="() => handleTransfer(bean)">
+            {{ $t('review.transfer') }}
+          </el-button>
         </el-button-group>
         <el-button-group v-if="!isReview">
           <el-popconfirm v-if="isEdit" :title="$t('confirmExecute')" @confirm="() => handleExecute('submit', bean.id)">
@@ -438,6 +504,7 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
                     :remote-method="tagRemoteMethod"
                     :loading="tagLoading"
                     class="w-full"
+                    @focus.once="() => tagRemoteMethod()"
                   >
                     <el-option v-for="item in tagList.map((it) => it.name)" :key="item" :label="item" :value="item" />
                   </el-select>
@@ -496,7 +563,7 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
                 <el-col :span="field.double ? 12 : 24">
                   <el-form-item :prop="`customs.${field.code}`" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
                     <template #label><label-tip :label="field.name" /></template>
-                    <field-item v-model="values.customs[field.code]" v-model:model-key="values.customs[field.code + '_key']" :field="field"></field-item>
+                    <field-item v-model="values.customs[field.code]" v-model:model-key="values.customs[field.code + 'Key']" :field="field"></field-item>
                   </el-form-item>
                 </el-col>
               </template>
@@ -626,7 +693,7 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
                       :disabled="perm('jodConvert:library') || disabled"
                       :upload-action="jodConvertLibraryUrl"
                       :on-success="
-                        (res) => {
+                        (res: any) => {
                           values.doc = res.doc;
                           values.docOrig = res.docOrig;
                           values.docName = res.docName;
@@ -674,7 +741,7 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
                 >
                   <div class="w-full">
                     <el-radio-group v-if="mains['text'].editorSwitch" v-model="values.editorType" class="mr-6" @change="() => (values.markdown = '')">
-                      <el-radio v-for="n in [1, 2]" :key="n" :label="n">{{ $t(`model.field.editorType.${n}`) }}</el-radio>
+                      <el-radio v-for="n in [1, 2]" :key="n" :value="n">{{ $t(`model.field.editorType.${n}`) }}</el-radio>
                     </el-radio-group>
                     <div v-if="values.editorType === 1 && jodConverterEnabled && currentUser.epRank > 0" class="inline-flex mb-1">
                       <base-upload
@@ -695,7 +762,7 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
               </el-col>
               <template v-for="field in editorFields" :key="field.code">
                 <el-col :span="field.double ? 12 : 24">
-                  <el-form-item :prop="`customs.${field.code}`" :label="field.name" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
+                  <el-form-item :prop="`customs.${field.code}`" :rules="field.required ? { required: true, message: () => $t('v.required') } : undefined">
                     <template #label><label-tip :label="field.name" /></template>
                     <field-item v-model="values.customs[field.code]" :field="field"></field-item>
                   </el-form-item>
@@ -737,8 +804,17 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
                     "
                   />
                 </el-form-item>
-                <el-form-item v-if="isEdit && asides['org'].show" :label="asides['org'].name ?? $t('article.org')" required>
-                  <el-input :value="values.org?.name" disabled></el-input>
+                <el-form-item v-if="asides['org'].show" :label="asides['org'].name ?? $t('article.org')" :required="isEdit">
+                  <el-tree-select
+                    v-model="values.orgId"
+                    :data="bean.org?.id != null && orgIds.indexOf(bean.org.id) === -1 ? [bean.org, ...orgList] : orgList"
+                    node-key="id"
+                    :props="{ label: 'name' }"
+                    :render-after-expand="false"
+                    :default-expanded-keys="(bean.org?.paths ?? orgList).map((it) => it.id)"
+                    class="w-full"
+                  />
+                  <!-- <el-input :value="values.org?.name" disabled></el-input> -->
                 </el-form-item>
                 <el-form-item v-if="asides['publishDate'].show" prop="publishDate" :rules="isEdit ? { required: true, message: () => $t('v.required') } : undefined">
                   <template #label><label-tip :label="asides['publishDate'].name ?? $t('article.publishDate')" message="article.publishDate" help /></template>
@@ -779,11 +855,7 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
                   <el-autocomplete
                     v-model="values.source"
                     value-key="name"
-                    :fetch-suggestions="
-                      (query, callback) => {
-                        fetchSourceList(query).then((result) => callback(result));
-                      }
-                    "
+                    :fetch-suggestions="async (query: string, callback: any) => callback(await fetchSourceList(query))"
                     class="w-full"
                     highlight-first-item
                     hide-loading
@@ -861,6 +933,10 @@ const titleSimilarity = async (title: string, excludeId?: number) => {
         <el-table-column property="score" :label="$t('article.similarity.score')" :formatter="(row) => $n(row.score, 'percent', { minimumFractionDigits: 0 })" width="100px" />
       </el-table>
     </el-dialog>
+    <review-form-properties v-model="formPropertiesVisible" v-model:form-properties="formProperties" @finished="submitPass" />
+    <review-delegate v-model="delegateVisible" @finished="submitDelegate" />
+    <review-transfer v-model="transferVisible" @finished="submitTransfer" />
+    <review-back v-model="backVisible" :task-id @finished="submitBack" />
   </div>
 </template>
 

@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'UserPasswordForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, toRefs, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -11,7 +7,10 @@ import { useSysConfigStore } from '@/stores/sysConfigStore';
 import { queryClientPublicKey } from '@/api/login';
 import { updateUserPassword } from '@/api/user';
 
-const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: -1 }, username: { type: String, default: '' } });
+defineOptions({
+  name: 'UserPasswordForm',
+});
+const props = defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: String, default: '-1' }, username: { type: String, default: '' } });
 const emit = defineEmits({ 'update:modelValue': null });
 const { beanId, username } = toRefs(props);
 const { t } = useI18n();
@@ -86,7 +85,7 @@ const handleSubmit = () => {
         :rules="[
           { required: true, message: () => $t('v.required') },
           {
-            validator: (rule:any, value:any, callback:any) => {
+            validator: (rule: any, value: any, callback: any) => {
               if (value !== values.newPassword) {
                 callback($t('user.error.passwordNotMatch'));
                 return;

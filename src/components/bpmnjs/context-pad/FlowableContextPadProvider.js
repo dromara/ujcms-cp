@@ -1,16 +1,71 @@
 import { assign, forEach, isArray, every } from 'min-dash';
 import { is } from 'bpmn-js/lib/util/ModelUtil';
-import { isExpanded, isEventSubProcess } from 'bpmn-js/lib/util/DiUtil';
+import { isExpanded, isHorizontal, isEventSubProcess } from 'bpmn-js/lib/util/DiUtil';
 import { isAny } from 'bpmn-js/lib/features/modeling/util/ModelingUtil';
 import { getChildLanes } from 'bpmn-js/lib/features/modeling/util/LaneUtil';
 import { hasPrimaryModifier } from 'diagram-js/lib/util/Mouse';
 
 /**
  * A provider for BPMN 2.0 elements context pad
- * 将Task改为UserTask，并删除中间事件
+ * 将任务(Task)改为用户任务(UserTask)
  * https://github.com/bpmn-io/bpmn-js/blob/develop/lib/features/context-pad/ContextPadProvider.js
  */
-export default function FlowableContextPadProvider(config, injector, eventBus, contextPad, modeling, elementFactory, connect, create, popupMenu, canvas, rules, translate) {
+/**
+ * @typedef {import('didi').Injector} Injector
+ * @typedef {import('diagram-js/lib/core/EventBus').default} EventBus
+ * @typedef {import('diagram-js/lib/features/context-pad/ContextPad').default} ContextPad
+ * @typedef {import('../modeling/Modeling').default} Modeling
+ * @typedef {import('../modeling/ElementFactory').default} ElementFactory
+ * @typedef {import('diagram-js/lib/features/connect/Connect').default} Connect
+ * @typedef {import('diagram-js/lib/features/create/Create').default} Create
+ * @typedef {import('diagram-js/lib/features/popup-menu/PopupMenu').default} PopupMenu
+ * @typedef {import('diagram-js/lib/features/canvas/Canvas').default} Canvas
+ * @typedef {import('diagram-js/lib/features/rules/Rules').default} Rules
+ * @typedef {import('diagram-js/lib/i18n/translate/translate').default} Translate
+ *
+ * @typedef {import('../../model/Types').Element} Element
+ * @typedef {import('../../model/Types').ModdleElement} ModdleElement
+ *
+ * @typedef {import('diagram-js/lib/features/context-pad/ContextPadProvider').default<Element>} BaseContextPadProvider
+ * @typedef {import('diagram-js/lib/features/context-pad/ContextPadProvider').ContextPadEntries} ContextPadEntries
+ * @typedef {import('diagram-js/lib/features/context-pad/ContextPadProvider').ContextPadEntry} ContextPadEntry
+ *
+ * @typedef { { autoPlace?: boolean; } } ContextPadConfig
+ */
+
+/**
+ * BPMN-specific context pad provider.
+ *
+ * @implements {BaseContextPadProvider}
+ *
+ * @param {ContextPadConfig} config
+ * @param {Injector} injector
+ * @param {EventBus} eventBus
+ * @param {ContextPad} contextPad
+ * @param {Modeling} modeling
+ * @param {ElementFactory} elementFactory
+ * @param {Connect} connect
+ * @param {Create} create
+ * @param {PopupMenu} popupMenu
+ * @param {Canvas} canvas
+ * @param {Rules} rules
+ * @param {Translate} translate
+ */
+export default function FlowableContextPadProvider(
+  config,
+  injector,
+  eventBus,
+  contextPad,
+  modeling,
+  elementFactory,
+  connect,
+  create,
+  popupMenu,
+  canvas,
+  rules,
+  translate,
+  appendPreview,
+) {
   config = config || {};
 
   contextPad.registerProvider(this);
@@ -26,6 +81,8 @@ export default function FlowableContextPadProvider(config, injector, eventBus, c
   this._canvas = canvas;
   this._rules = rules;
   this._translate = translate;
+  this._eventBus = eventBus;
+  this._appendPreview = appendPreview;
 
   if (config.autoPlace !== false) {
     this._autoPlace = injector.get('autoPlace', false);
@@ -60,8 +117,14 @@ FlowableContextPadProvider.$inject = [
   'canvas',
   'rules',
   'translate',
+  'appendPreview',
 ];
 
+/**
+ * @param {Element[]} elements
+ *
+ * @return {ContextPadEntries}
+ */
 FlowableContextPadProvider.prototype.getMultiElementContextPadEntries = function (elements) {
   var modeling = this._modeling;
 
@@ -72,7 +135,7 @@ FlowableContextPadProvider.prototype.getMultiElementContextPadEntries = function
       delete: {
         group: 'edit',
         className: 'bpmn-icon-trash',
-        title: this._translate('Remove'),
+        title: this._translate('Delete'),
         action: {
           click: function (event, elements) {
             modeling.removeElements(elements.slice());
@@ -86,7 +149,8 @@ FlowableContextPadProvider.prototype.getMultiElementContextPadEntries = function
 };
 
 /**
- * @param {djs.model.Base[]} elements
+ * @param {Element[]} elements
+ *
  * @return {boolean}
  */
 FlowableContextPadProvider.prototype._isDeleteAllowed = function (elements) {
@@ -103,6 +167,11 @@ FlowableContextPadProvider.prototype._isDeleteAllowed = function (elements) {
   return baseAllowed;
 };
 
+/**
+ * @param {Element} element
+ *
+ * @return {ContextPadEntries}
+ */
 FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
   var contextPad = this._contextPad,
     modeling = this._modeling,
@@ -110,10 +179,10 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
     connect = this._connect,
     create = this._create,
     popupMenu = this._popupMenu,
-    canvas = this._canvas,
     rules = this._rules,
     autoPlace = this._autoPlace,
-    translate = this._translate;
+    translate = this._translate,
+    appendPreview = this._appendPreview;
 
   var actions = {};
 
@@ -134,53 +203,60 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
   function getReplaceMenuPosition(element) {
     var Y_OFFSET = 5;
 
-    var diagramContainer = canvas.getContainer(),
-      pad = contextPad.getPad(element).html;
+    var pad = contextPad.getPad(element).html;
 
-    var diagramRect = diagramContainer.getBoundingClientRect(),
-      padRect = pad.getBoundingClientRect();
-
-    var top = padRect.top - diagramRect.top;
-    var left = padRect.left - diagramRect.left;
+    var padRect = pad.getBoundingClientRect();
 
     var pos = {
-      x: left,
-      y: top + padRect.height + Y_OFFSET,
+      x: padRect.left,
+      y: padRect.bottom + Y_OFFSET,
     };
 
     return pos;
   }
 
   /**
-   * Create an append action
+   * Create an append action.
    *
    * @param {string} type
    * @param {string} className
-   * @param {string} [title]
+   * @param {string} title
    * @param {Object} [options]
    *
-   * @return {Object} descriptor
+   * @return {ContextPadEntry}
    */
   function appendAction(type, className, title, options) {
-    if (typeof title !== 'string') {
-      options = title;
-      title = translate('Append {type}', { type: type.replace(/^bpmn:/, '') });
-    }
-
     function appendStart(event, element) {
       var shape = elementFactory.createShape(assign({ type: type }, options));
+
       create.start(event, shape, {
         source: element,
       });
+
+      appendPreview.cleanUp();
     }
 
     var append = autoPlace
-      ? function (event, element) {
+      ? function (_, element) {
           var shape = elementFactory.createShape(assign({ type: type }, options));
 
           autoPlace.append(element, shape);
+
+          appendPreview.cleanUp();
         }
       : appendStart;
+
+    var previewAppend = autoPlace
+      ? function (_, element) {
+          // mouseover
+          appendPreview.create(element, type, options);
+
+          return () => {
+            // mouseout
+            appendPreview.cleanUp();
+          };
+        }
+      : null;
 
     return {
       group: 'model',
@@ -189,12 +265,13 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
       action: {
         dragstart: appendStart,
         click: append,
+        hover: previewAppend,
       },
     };
   }
 
   function splitLaneHandler(count) {
-    return function (event, element) {
+    return function (_, element) {
       // actual split
       modeling.splitLane(element, count);
 
@@ -211,7 +288,7 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
       'lane-insert-above': {
         group: 'lane-insert-above',
         className: 'bpmn-icon-lane-insert-above',
-        title: translate('Add Lane above'),
+        title: translate('Add lane above'),
         action: {
           click: function (event, element) {
             modeling.addLane(element, 'top');
@@ -221,12 +298,12 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
     });
 
     if (childLanes.length < 2) {
-      if (element.height >= 120) {
+      if (isHorizontal(element) ? element.height >= 120 : element.width >= 120) {
         assign(actions, {
           'lane-divide-two': {
             group: 'lane-divide',
             className: 'bpmn-icon-lane-divide-two',
-            title: translate('Divide into two Lanes'),
+            title: translate('Divide into two lanes'),
             action: {
               click: splitLaneHandler(2),
             },
@@ -234,12 +311,12 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
         });
       }
 
-      if (element.height >= 180) {
+      if (isHorizontal(element) ? element.height >= 180 : element.width >= 180) {
         assign(actions, {
           'lane-divide-three': {
             group: 'lane-divide',
             className: 'bpmn-icon-lane-divide-three',
-            title: translate('Divide into three Lanes'),
+            title: translate('Divide into three lanes'),
             action: {
               click: splitLaneHandler(3),
             },
@@ -252,7 +329,7 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
       'lane-insert-below': {
         group: 'lane-insert-below',
         className: 'bpmn-icon-lane-insert-below',
-        title: translate('Add Lane below'),
+        title: translate('Add lane below'),
         action: {
           click: function (event, element) {
             modeling.addLane(element, 'bottom');
@@ -265,34 +342,35 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
   if (is(businessObject, 'bpmn:FlowNode')) {
     if (is(businessObject, 'bpmn:EventBasedGateway')) {
       assign(actions, {
-        'append.receive-task': appendAction('bpmn:ReceiveTask', 'bpmn-icon-receive-task', translate('Append ReceiveTask')),
+        'append.receive-task': appendAction('bpmn:ReceiveTask', 'bpmn-icon-receive-task', translate('Append receive task')),
         'append.message-intermediate-event': appendAction(
           'bpmn:IntermediateCatchEvent',
           'bpmn-icon-intermediate-event-catch-message',
-          translate('Append MessageIntermediateCatchEvent'),
+          translate('Append message intermediate catch event'),
           { eventDefinitionType: 'bpmn:MessageEventDefinition' },
         ),
         'append.timer-intermediate-event': appendAction(
           'bpmn:IntermediateCatchEvent',
           'bpmn-icon-intermediate-event-catch-timer',
-          translate('Append TimerIntermediateCatchEvent'),
+          translate('Append timer intermediate catch event'),
           { eventDefinitionType: 'bpmn:TimerEventDefinition' },
         ),
         'append.condition-intermediate-event': appendAction(
           'bpmn:IntermediateCatchEvent',
           'bpmn-icon-intermediate-event-catch-condition',
-          translate('Append ConditionIntermediateCatchEvent'),
+          translate('Append conditional intermediate catch event'),
           { eventDefinitionType: 'bpmn:ConditionalEventDefinition' },
         ),
         'append.signal-intermediate-event': appendAction(
           'bpmn:IntermediateCatchEvent',
           'bpmn-icon-intermediate-event-catch-signal',
-          translate('Append SignalIntermediateCatchEvent'),
+          translate('Append signal intermediate catch event'),
           { eventDefinitionType: 'bpmn:SignalEventDefinition' },
         ),
       });
     } else if (isEventType(businessObject, 'bpmn:BoundaryEvent', 'bpmn:CompensateEventDefinition')) {
       assign(actions, {
+        // 'append.compensation-activity': appendAction('bpmn:Task', 'bpmn-icon-task', translate('Append compensation activity'), {
         'append.compensation-activity': appendAction('bpmn:UserTask', 'bpmn-icon-user-task', translate('Append compensation activity'), {
           isForCompensation: true,
         }),
@@ -304,10 +382,11 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
       !isEventSubProcess(businessObject)
     ) {
       assign(actions, {
-        'append.end-event': appendAction('bpmn:EndEvent', 'bpmn-icon-end-event-none', translate('Append EndEvent')),
-        'append.gateway': appendAction('bpmn:ExclusiveGateway', 'bpmn-icon-gateway-none', translate('Append Gateway')),
-        'append.append-user-task': appendAction('bpmn:UserTask', 'bpmn-icon-user-task', translate('Append UserTask')),
-        // 'append.intermediate-event': appendAction('bpmn:IntermediateThrowEvent', 'bpmn-icon-intermediate-event-none', translate('Append Intermediate/Boundary Event')),
+        'append.end-event': appendAction('bpmn:EndEvent', 'bpmn-icon-end-event-none', translate('Append end event')),
+        'append.gateway': appendAction('bpmn:ExclusiveGateway', 'bpmn-icon-gateway-none', translate('Append gateway')),
+        // 'append.append-task': appendAction('bpmn:Task', 'bpmn-icon-task', translate('Append task')),
+        'append.append-user-task': appendAction('bpmn:UserTask', 'bpmn-icon-user-task', translate('Append user task')),
+        'append.intermediate-event': appendAction('bpmn:IntermediateThrowEvent', 'bpmn-icon-intermediate-event-none', translate('Append intermediate/boundary event')),
       });
     }
   }
@@ -318,14 +397,18 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
       replace: {
         group: 'edit',
         className: 'bpmn-icon-screw-wrench',
-        title: translate('Change type'),
+        title: translate('Change element'),
         action: {
           click: function (event, element) {
             var position = assign(getReplaceMenuPosition(element), {
               cursor: { x: event.x, y: event.y },
             });
 
-            popupMenu.open(element, 'bpmn-replace', position);
+            popupMenu.open(element, 'bpmn-replace', position, {
+              title: translate('Change element'),
+              width: 300,
+              search: true,
+            });
           },
         },
       },
@@ -334,18 +417,18 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
 
   if (is(businessObject, 'bpmn:SequenceFlow')) {
     assign(actions, {
-      'append.text-annotation': appendAction('bpmn:TextAnnotation', 'bpmn-icon-text-annotation'),
+      'append.text-annotation': appendAction('bpmn:TextAnnotation', 'bpmn-icon-text-annotation', translate('Add text annotation')),
     });
   }
 
   if (isAny(businessObject, ['bpmn:FlowNode', 'bpmn:InteractionNode', 'bpmn:DataObjectReference', 'bpmn:DataStoreReference'])) {
     assign(actions, {
-      'append.text-annotation': appendAction('bpmn:TextAnnotation', 'bpmn-icon-text-annotation'),
+      'append.text-annotation': appendAction('bpmn:TextAnnotation', 'bpmn-icon-text-annotation', translate('Add text annotation')),
 
       connect: {
         group: 'connect',
         className: 'bpmn-icon-connection-multi',
-        title: translate('Connect using ' + (businessObject.isForCompensation ? '' : 'Sequence/MessageFlow or ') + 'Association'),
+        title: translate('Connect to other element'),
         action: {
           click: startConnect,
           dragstart: startConnect,
@@ -359,7 +442,7 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
       connect: {
         group: 'connect',
         className: 'bpmn-icon-connection-multi',
-        title: translate('Connect using Association'),
+        title: translate('Connect using association'),
         action: {
           click: startConnect,
           dragstart: startConnect,
@@ -373,7 +456,7 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
       connect: {
         group: 'connect',
         className: 'bpmn-icon-connection-multi',
-        title: translate('Connect using DataInputAssociation'),
+        title: translate('Connect using data input association'),
         action: {
           click: startConnect,
           dragstart: startConnect,
@@ -384,7 +467,7 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
 
   if (is(businessObject, 'bpmn:Group')) {
     assign(actions, {
-      'append.text-annotation': appendAction('bpmn:TextAnnotation', 'bpmn-icon-text-annotation'),
+      'append.text-annotation': appendAction('bpmn:TextAnnotation', 'bpmn-icon-text-annotation', translate('Add text annotation')),
     });
   }
 
@@ -401,7 +484,7 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
       delete: {
         group: 'edit',
         className: 'bpmn-icon-trash',
-        title: translate('Remove'),
+        title: translate('Delete'),
         action: {
           click: removeElement,
         },
@@ -414,13 +497,20 @@ FlowableContextPadProvider.prototype.getContextPadEntries = function (element) {
 
 // helpers /////////
 
-function isEventType(eventBo, type, definition) {
-  var isType = eventBo.$instanceOf(type);
+/**
+ * @param {ModdleElement} businessObject
+ * @param {string} type
+ * @param {string} eventDefinitionType
+ *
+ * @return {boolean}
+ */
+function isEventType(businessObject, type, eventDefinitionType) {
+  var isType = businessObject.$instanceOf(type);
   var isDefinition = false;
 
-  var definitions = eventBo.eventDefinitions || [];
+  var definitions = businessObject.eventDefinitions || [];
   forEach(definitions, function (def) {
-    if (def.$type === definition) {
+    if (def.$type === eventDefinitionType) {
       isDefinition = true;
     }
   });

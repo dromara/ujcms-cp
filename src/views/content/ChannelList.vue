@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'ChannelList' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref, watch, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -17,6 +13,9 @@ import { QueryForm, QueryItem } from '@/components/QueryForm';
 import ListMove from '@/components/ListMove.vue';
 import ChannelForm from './ChannelForm.vue';
 
+defineOptions({
+  name: 'ChannelList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -26,10 +25,10 @@ const selection = ref<Array<any>>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
 const parent = ref<any>();
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
-const channelPermissions = ref<number[]>([]);
+const channelPermissions = ref<string[]>([]);
 const processList = ref<any[]>([]);
 
 const channelTree = ref<any>();
@@ -110,12 +109,12 @@ const handleAdd = (bean: any) => {
   parent.value = bean ?? channel.value;
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   parent.value = null;
   formVisible.value = true;
 };
-const handleDelete = async (ids: number[]) => {
+const handleDelete = async (ids: string[]) => {
   await deleteChannel(ids);
   fetchData();
   ElMessage.success(t('success'));
@@ -221,7 +220,7 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
                 <el-tag :type="row.nav ? 'success' : 'info'" size="small">{{ $t(row.nav ? 'yes' : 'no') }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
+            <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
             <el-table-column :label="$t('table.action')">
               <template #default="{ row }">
                 <el-button type="primary" :disabled="perm('channel:create') || !deletable(row)" size="small" link @click="() => handleAdd(row)">{{ $t('addChild') }}</el-button>

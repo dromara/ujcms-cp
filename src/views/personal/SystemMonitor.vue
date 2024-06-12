@@ -1,13 +1,12 @@
-<script lang="ts">
-export default { name: 'SystemMonitor' };
-</script>
-
 <script setup lang="ts">
 import { toRefs, watch, ref, shallowRef } from 'vue';
 import echarts, { ECOption } from '@/utils/echarts';
 import { querySystemMonitor, querySystemLoad } from '@/api/personal';
 import LabelTip from '@/components/LabelTip.vue';
 
+defineOptions({
+  name: 'SystemMonitor',
+});
 const props = defineProps({ modelValue: { type: Boolean, required: true } });
 defineEmits({ 'update:modelValue': null });
 

@@ -1,6 +1,5 @@
 <script lang="ts">
 const editorEvents = ['load', 'change', 'caretChange', 'focus', 'blur', 'keydown', 'keyup', 'beforePreviewRender', 'beforeConvertWysiwygToMarkdown'];
-export default { name: 'TuiEditor' };
 </script>
 
 <script setup lang="ts">
@@ -24,6 +23,9 @@ import 'prismjs/components/prism-clojure.js';
 import '@toast-ui/editor-plugin-code-syntax-highlight/dist/toastui-editor-plugin-code-syntax-highlight.css';
 import '@toast-ui/editor-plugin-table-merged-cell/dist/toastui-editor-plugin-table-merged-cell.css';
 
+defineOptions({
+  name: 'TuiEditor',
+});
 const props = defineProps({
   modelValue: { type: String, default: '' },
   html: { type: String, default: '' },
@@ -161,7 +163,24 @@ defineExpose({ getRootElement, getHTML, getMarkdown, setHTML, setMarkdown });
 <style lang="scss" scoped>
 :deep(.ProseMirror),
 :deep(.toastui-editor-contents) {
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Hiragino Sans GB',
-    'Microsoft YaHei', 'WenQuanYi Micro Hei', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    'Noto Sans',
+    'PingFang SC',
+    'Hiragino Sans GB',
+    'Microsoft YaHei',
+    'WenQuanYi Micro Hei',
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji';
 }
 </style>

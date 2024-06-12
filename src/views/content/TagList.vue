@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'TagList' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -15,6 +11,9 @@ import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import TagForm from './TagForm.vue';
 
+defineOptions({
+  name: 'TagList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -26,14 +25,14 @@ const data = ref<any[]>([]);
 const selection = ref<any[]>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
-const beanId = ref<number>();
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const fetchData = async () => {
   loading.value = true;
   try {
     const { content, totalElements } = await queryTagPage({ ...toParams(params.value), Q_OrderBy: sort.value, page: currentPage.value, pageSize: pageSize.value });
     data.value = content;
-    total.value = totalElements;
+    total.value = Number(totalElements);
   } finally {
     loading.value = false;
   }
@@ -60,11 +59,11 @@ const handleAdd = () => {
   beanId.value = undefined;
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const handleDelete = async (ids: number[]) => {
+const handleDelete = async (ids: string[]) => {
   await deleteTag(ids);
   fetchData();
   ElMessage.success(t('success'));
@@ -91,7 +90,7 @@ const handleDelete = async (ids: number[]) => {
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">
         <column-list name="tag">
           <el-table-column type="selection" width="38"></el-table-column>
-          <el-table-column property="id" label="ID" width="80" sortable="custom" show-overflow-tooltip></el-table-column>
+          <el-table-column property="id" label="ID" width="170" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="name" :label="$t('tag.name')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="description" :label="$t('tag.description')" sortable="custom" show-overflow-tooltip></el-table-column>
           <el-table-column property="created" :label="$t('tag.created')" sortable="custom" show-overflow-tooltip>

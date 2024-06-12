@@ -1,12 +1,11 @@
-<script lang="ts">
-export default { name: 'AppLayout' };
-</script>
-
 <script setup lang="ts">
 import { useAppStateStore } from '@/stores/appStateStore';
 import { AppSidebar, AppHeader, AppTab, AppMain } from './components';
 import useResizeHandler from './composables/useResizeHandler';
 
+defineOptions({
+  name: 'AppLayout',
+});
 useResizeHandler();
 const appState = useAppStateStore();
 </script>

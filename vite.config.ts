@@ -1,11 +1,11 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, ConfigEnv } from 'vite';
 import { resolve } from 'path';
 import vue from '@vitejs/plugin-vue';
 import legacy from '@vitejs/plugin-legacy';
 import vueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
 import { viteMockServe } from 'vite-plugin-mock';
 
-export default defineConfig(({ mode, command }) => {
+export default defineConfig(({ mode }: ConfigEnv) => {
   // 加载 .env 文件
   const env = loadEnv(mode, process.cwd());
   return {
@@ -46,12 +46,7 @@ export default defineConfig(({ mode, command }) => {
       viteMockServe({
         ignore: /^_/,
         mockPath: 'mock',
-        localEnabled: command === 'serve',
-        prodEnabled: false,
-        injectCode: `
-          import { setupProdMockServer } from './mock/_mockProdServer';
-          setupProdMockServer();
-        `,
+        enable: env.VITE_USE_MOCK === 'true',
       }),
     ],
   };

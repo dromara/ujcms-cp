@@ -1,16 +1,15 @@
-<script lang="ts">
-export default { name: 'ModelForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, PropType } from 'vue';
 import { queryModel, createModel, updateModel, deleteModel } from '@/api/config';
 import DialogForm from '@/components/DialogForm.vue';
 
+defineOptions({
+  name: 'ModelForm',
+});
 defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { type: Number, default: null },
-  beanIds: { type: Array as PropType<number[]>, required: true },
+  beanId: { type: String, default: null },
+  beanIds: { type: Array as PropType<string[]>, required: true },
   modelType: { type: String, required: true },
 });
 defineEmits({ 'update:modelValue': null, finished: null });
@@ -43,7 +42,7 @@ const values = ref<any>({});
       </el-form-item>
       <el-form-item prop="scope" :label="$t('model.scope')" :rules="{ required: true, message: () => $t('v.required') }">
         <el-radio-group v-model="values.scope" :disabled="values.id < 10">
-          <el-radio v-for="n in [0, 2]" :key="n" :label="n">{{ $t(`model.scope.${n}`) }}</el-radio>
+          <el-radio v-for="n in [0, 2]" :key="n" :value="n">{{ $t(`model.scope.${n}`) }}</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item prop="type" :label="$t('model.type')">

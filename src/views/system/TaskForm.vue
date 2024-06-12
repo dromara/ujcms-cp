@@ -1,16 +1,15 @@
-<script lang="ts">
-export default { name: 'TaskForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, PropType } from 'vue';
 import { queryTask, createTask, updateTask, deleteTask } from '@/api/system';
 import DialogForm from '@/components/DialogForm.vue';
 
+defineOptions({
+  name: 'TaskForm',
+});
 defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { type: Number, default: null },
-  beanIds: { type: Array as PropType<number[]>, required: true },
+  beanId: { type: String, default: null },
+  beanIds: { type: Array as PropType<string[]>, required: true },
 });
 defineEmits({ 'update:modelValue': null, finished: null });
 const values = ref<any>({});

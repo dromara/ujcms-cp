@@ -1,14 +1,13 @@
-<script lang="ts">
-export default { name: 'BlockForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, PropType } from 'vue';
 import { queryBlock, createBlock, updateBlock, deleteBlock, blockAliasExist, blockScopeNotAllowed } from '@/api/config';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 
-defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: Number, default: null }, beanIds: { type: Array as PropType<number[]>, required: true } });
+defineOptions({
+  name: 'BlockForm',
+});
+defineProps({ modelValue: { type: Boolean, required: true }, beanId: { type: String, default: null }, beanIds: { type: Array as PropType<string[]>, required: true } });
 defineEmits({ 'update:modelValue': null, finished: null });
 const focus = ref<any>();
 const values = ref<any>({});
@@ -90,7 +89,7 @@ const values = ref<any>({});
               { required: true, message: () => $t('v.required') },
               {
                 asyncValidator: async (rule: any, value: any, callback: any) => {
-                  if (value !== bean.scope && await blockScopeNotAllowed(values.scope)) {
+                  if (value !== bean.scope && (await blockScopeNotAllowed(values.scope, values.id))) {
                     callback($t('block.error.scopeNotAllowd'));
                     return;
                   }
@@ -100,7 +99,7 @@ const values = ref<any>({});
             ]"
           >
             <el-radio-group v-model="values.scope">
-              <el-radio v-for="n in [0, 2]" :key="n" :label="n">{{ $t(`block.scope.${n}`) }}</el-radio>
+              <el-radio v-for="n in [0, 2]" :key="n" :value="n">{{ $t(`block.scope.${n}`) }}</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>

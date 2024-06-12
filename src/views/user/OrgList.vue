@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'OrgList' };
-</script>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { currentUser, perm } from '@/stores/useCurrentUser';
@@ -15,7 +11,11 @@ import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
 import ListMove from '@/components/ListMove.vue';
 import OrgForm from './OrgForm.vue';
+import OrgPermissionForm from './OrgPermissionForm.vue';
 
+defineOptions({
+  name: 'OrgList',
+});
 const { t } = useI18n();
 const params = ref<any>({});
 const sort = ref<any>();
@@ -24,10 +24,11 @@ const data = ref<Array<any>>([]);
 const selection = ref<Array<any>>([]);
 const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
-const beanId = ref<number>();
+const permissionFormVisible = ref<boolean>(false);
+const beanId = ref<string>();
 const beanIds = computed(() => data.value.map((row) => row.id));
 const filtered = ref<boolean>(false);
-const parentId = ref<number>(1);
+const parentId = ref<string>('1');
 const showGlobalData = ref<boolean>(false);
 const expandRowKeys = ref<string[]>(['1']);
 
@@ -62,21 +63,25 @@ const handleReset = () => {
   fetchData();
 };
 
-const handleAdd = (pid?: number) => {
+const handleAdd = (pid?: string) => {
   beanId.value = undefined;
   if (pid != null) {
     parentId.value = pid;
   }
   formVisible.value = true;
 };
-const handleEdit = (id: number) => {
+const handleEdit = (id: string) => {
   beanId.value = id;
   formVisible.value = true;
 };
-const handleDelete = async (ids: number[]) => {
+const handleDelete = async (ids: string[]) => {
   await deleteOrg(ids);
   fetchData();
   ElMessage.success(t('success'));
+};
+const handlePermissionEdit = (id: string) => {
+  beanId.value = id;
+  permissionFormVisible.value = true;
 };
 const deletable = (bean: any) => bean.id > 1;
 
@@ -130,11 +135,22 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
           <el-table-column property="address" :label="$t('org.address')" sortable="custom" display="none" min-width="100"></el-table-column>
           <el-table-column property="phone" :label="$t('org.phone')" sortable="custom" min-width="100"></el-table-column>
           <el-table-column property="contacts" :label="$t('org.contacts')" sortable="custom"></el-table-column>
-          <el-table-column property="id" label="ID" width="80" sortable="custom"></el-table-column>
-          <el-table-column :label="$t('table.action')" width="160">
+          <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
+          <el-table-column :label="$t('table.action')" width="230">
             <template #default="{ row }">
               <el-button type="primary" :disabled="perm('org:create')" size="small" link @click="() => handleAdd(row.id)">{{ $t('addChild') }}</el-button>
               <el-button type="primary" :disabled="perm('org:update')" size="small" link @click="() => handleEdit(row.id)">{{ $t('edit') }}</el-button>
+              <el-button
+                v-if="currentUser.epRank >= 3 || currentUser.epDisplay"
+                :title="currentUser.epRank < 3 ? $t('error.enterprise.short') : undefined"
+                :disabled="perm('org:updatePermission') || currentUser.epRank < 3"
+                type="primary"
+                size="small"
+                link
+                @click="() => handlePermissionEdit(row.id)"
+              >
+                {{ $t('permissionSettings') }}
+              </el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
                 <template #reference>
                   <el-button type="primary" :disabled="!deletable(row) || perm('org:delete')" size="small" link>{{ $t('delete') }}</el-button>
@@ -146,5 +162,6 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
       </el-table>
     </div>
     <org-form v-model="formVisible" :bean-id="beanId" :bean-ids="beanIds" :parent-id="parentId" :show-global-data="showGlobalData" @finished="fetchData" />
+    <org-permission-form v-model="permissionFormVisible" :bean-id="beanId" :show-global-data="showGlobalData" @finished="fetchData"></org-permission-form>
   </div>
 </template>

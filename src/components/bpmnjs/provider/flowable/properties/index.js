@@ -1,1 +1,0 @@
-export { CandidateGroupsProps } from './CandidateGroupsProps';

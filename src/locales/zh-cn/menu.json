@@ -16,6 +16,8 @@
   "menu.content.blockItem": "区块管理",
   "menu.content.dict": "字典管理",
   "menu.content.tag": "TAG管理",
+  "menu.content.form": "表单管理",
+  "menu.content.formReview": "表单审核",
   "menu.content.attachment": "附件管理",
   "menu.content.generator": "生成管理",
 
@@ -69,6 +71,7 @@
   "menu.config.block": "区块设置",
   "menu.config.model": "模型管理",
   "menu.config.dictType": "字典设置",
+  "menu.config.formType": "表单类型",
   "menu.config.performanceType": "绩效类型",
   "menu.config.messageBoardType": "留言类型",
 

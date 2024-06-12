@@ -1,16 +1,15 @@
-<script lang="ts">
-export default { name: 'DictForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, PropType } from 'vue';
 import { queryDict, createDict, updateDict, deleteDict } from '@/api/content';
 import DialogForm from '@/components/DialogForm.vue';
 
+defineOptions({
+  name: 'DictForm',
+});
 defineProps({
   modelValue: { type: Boolean, required: true },
-  beanId: { type: Number, default: null },
-  beanIds: { type: Array as PropType<number[]>, required: true },
+  beanId: { type: String, default: null },
+  beanIds: { type: Array as PropType<string[]>, required: true },
   type: { type: Object, default: null },
 });
 defineEmits({ 'update:modelValue': null, finished: null });
@@ -48,16 +47,17 @@ const deletable = (bean: any) => bean.id >= 500;
         <el-input ref="focus" v-model="values.name" maxlength="50"></el-input>
       </el-form-item>
       <el-form-item prop="value" :label="$t('dict.value')" :rules="{ required: true, message: () => $t('v.required') }">
-        <el-input v-model="values.value" :disabled="isEdit && !deletable(values)" maxlength="50"></el-input>
+        <el-input-number v-if="type?.dataType === 1" v-model="values.value" :disabled="isEdit && !deletable(values)" :min="-2147483648" :max="2147483647"></el-input-number>
+        <el-input v-else v-model="values.value" :disabled="isEdit && !deletable(values)" maxlength="50"></el-input>
       </el-form-item>
       <el-form-item prop="remark" :label="$t('dict.remark')">
         <el-input v-model="values.remark" type="textarea" :rows="2" maxlength="255"></el-input>
       </el-form-item>
-      <el-form-item prop="sys" :label="$t('dict.sys')">
-        <el-switch v-model="values.sys" disabled></el-switch>
-      </el-form-item>
       <el-form-item prop="enabled" :label="$t('dict.enabled')">
         <el-switch v-model="values.enabled" :disabled="isEdit && !deletable(values)"></el-switch>
+      </el-form-item>
+      <el-form-item prop="sys" :label="$t('dict.sys')">
+        <el-switch v-model="values.sys" disabled></el-switch>
       </el-form-item>
     </template>
   </dialog-form>

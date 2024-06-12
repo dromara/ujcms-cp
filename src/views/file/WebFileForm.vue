@@ -1,7 +1,3 @@
-<script lang="ts">
-export default { name: 'WebFileForm' };
-</script>
-
 <script setup lang="ts">
 import { ref, PropType } from 'vue';
 import { Codemirror } from 'vue-codemirror';
@@ -11,6 +7,9 @@ import { useI18n } from 'vue-i18n';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
 
+defineOptions({
+  name: 'WebFileForm',
+});
 defineProps({
   modelValue: { type: Boolean, required: true },
   beanId: { type: String, default: null },
@@ -65,7 +64,7 @@ const handleKeydown = (e: KeyboardEvent) => {
     :bean-id="beanId"
     :bean-ids="beanIds"
     :focus="focus"
-    :init-values="(): any => ({parentId})"
+    :init-values="(): any => ({ parentId })"
     :to-values="(bean) => ({ ...bean })"
     :perms="`webFile${type}`"
     :model-value="modelValue"
