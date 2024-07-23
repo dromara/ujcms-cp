@@ -469,7 +469,6 @@ const titleSimilarity = async (title: string, excludeId?: string) => {
               >
                 <el-form-item
                   prop="linkUrl"
-                  :label="mains['linkUrl'].name ?? $t('article.linkUrl')"
                   :rules="
                     mains['linkUrl'].required
                       ? [
@@ -479,6 +478,7 @@ const titleSimilarity = async (title: string, excludeId?: string) => {
                       : { pattern: /^(http|\/).*$/, message: () => $t('article.error.linkUrl') }
                   "
                 >
+                  <template #label><label-tip :label="mains['linkUrl'].name ?? $t('article.linkUrl')" message="article.linkUrl" help /></template>
                   <el-input v-model="values.linkUrl" maxlength="255" :disabled="values.src != null && values.type === 3">
                     <template #append>
                       <el-checkbox v-model="values.targetBlank">{{ $t('article.targetBlank') }}</el-checkbox>
@@ -874,6 +874,7 @@ const titleSimilarity = async (title: string, excludeId?: string) => {
                     <el-option v-for="item in articleTemplates" :key="item" :label="item + '.html'" :value="item"></el-option>
                   </el-select>
                 </el-form-item>
+                <!--
                 <el-form-item
                   v-if="asides['allowComment'].show"
                   prop="allowComment"
@@ -882,6 +883,7 @@ const titleSimilarity = async (title: string, excludeId?: string) => {
                   <template #label><label-tip :label="asides['allowComment'].name ?? $t('article.allowComment')" message="article.allowComment" help /></template>
                   <el-switch v-model="values.allowComment"></el-switch>
                 </el-form-item>
+                -->
                 <el-form-item v-if="asides['user'].show" :label="asides['user'].name ?? $t('article.user')">
                   <el-input :model-value="values.user?.username" disabled></el-input>
                 </el-form-item>

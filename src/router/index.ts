@@ -380,6 +380,12 @@ export const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/EnterprisePage.vue'),
         meta: { title: 'menu.system.errorWord', requiresPermission: 'errorWord:page' },
       },
+      {
+        path: 'import-data',
+        name: 'ImportData',
+        component: () => import('@/views/system/ImportData.vue'),
+        meta: { title: 'menu.system.importData', requiresPermission: 'importData:show' },
+      },
       // { path: 'task', name: 'TaskList', component: () => import('@/views/system/TaskList.vue'), meta: { title: 'menu.system.task', requiresPermission: 'task:page' } },
     ],
   },

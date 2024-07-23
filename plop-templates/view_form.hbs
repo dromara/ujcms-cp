@@ -8,7 +8,7 @@ defineOptions({
   name: 'LoginLogForm',
 });
 const visible = defineModel<boolean>({ default: false });
-defineProps<{ beanId: string; beanIds: string[] }>();
+defineProps<{ beanId?: string; beanIds: string[] }>();
 defineEmits({ finished: null });
 const focus = ref<any>();
 const values = ref<any>({});

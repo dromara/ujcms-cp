@@ -88,6 +88,7 @@
   "menu.system.task": "任务管理",
   "menu.system.sensitiveWord": "敏感词管理",
   "menu.system.errorWord": "易错词管理",
+  "menu.system.importData": "数据迁移",
 
   "": ""
 }

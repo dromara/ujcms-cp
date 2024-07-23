@@ -37,6 +37,7 @@ export interface CurrentUser {
   dataScope: number;
   loginDate?: Date;
   loginIp?: string;
+  dataMigrationEnabled: boolean;
   epExcludes: string[];
   epDisplay: boolean;
   epRank: number;
@@ -50,6 +51,7 @@ const defaultUser: CurrentUser = {
   allArticlePermission: true,
   allStatusPermission: false,
   dataScope: 4,
+  dataMigrationEnabled: false,
   epExcludes: [],
   epDisplay: false,
   epRank: 0,
@@ -207,6 +209,7 @@ export const fetchCurrentUser = async (): Promise<any> => {
       dataScope: user.dataScope,
       loginDate: user.loginDate,
       loginIp: user.loginIp,
+      dataMigrationEnabled: user.dataMigrationEnabled,
       epExcludes: user.epExcludes,
       epDisplay: user.epDisplay,
       epRank: user.epRank,
@@ -230,5 +233,6 @@ export const hasCurrentUser = (): boolean => state.username !== undefined;
 export const isInclude = (permission?: string): boolean => !permission || !includes(state.epExcludes, permission);
 export const hasPermission = (permission?: string): boolean => !permission || includes(state.permissions, permission);
 export const perm = (permission?: string): boolean => !hasPermission(permission);
-export const isShowPerm = (permission?: string): boolean => (state.epDisplay && !permission?.startsWith('machine:')) || isInclude(permission);
+export const isShowPerm = (permission?: string): boolean =>
+  (state.epDisplay && !permission?.startsWith('machine:')) || (state.dataMigrationEnabled && permission?.startsWith('importData:')) || isInclude(permission);
 export const isShowMenu = (route: RouteRecordRaw): boolean => !route.meta?.hidden && hasPermission(route.meta?.requiresPermission) && isShowPerm(route.meta?.requiresPermission);

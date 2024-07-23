@@ -286,6 +286,7 @@ const initCustoms = (customs: any) => {
                 </el-form-item>
               </el-col>
             </template>
+            <!--
             <el-col v-if="mains['allowComment'].show" :span="mains['allowComment'].double ? 12 : 24">
               <el-form-item
                 prop="allowComment"
@@ -304,6 +305,7 @@ const initCustoms = (customs: any) => {
                 <el-switch v-model="values.allowContribute"></el-switch>
               </el-form-item>
             </el-col>
+            -->
             <el-col v-if="mains['nav'].show" :span="mains['nav'].double ? 12 : 24">
               <el-form-item prop="nav" :rules="mains['nav'].required ? { required: true, message: () => $t('v.required') } : undefined">
                 <template #label><label-tip :label="mains['nav'].name ?? $t('channel.nav')" message="channel.nav" help /></template>

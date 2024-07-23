@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, PropType } from 'vue';
 import { queryMessageBoard, createMessageBoard, updateMessageBoard, deleteMessageBoard } from '@/api/interaction';
-import { queryDictListByAlias } from '@/api/content';
+import { queryMessageBoardTypeList } from '@/api/config';
 import Tinymce from '@/components/Tinymce';
 import DialogForm from '@/components/DialogForm.vue';
 import LabelTip from '@/components/LabelTip.vue';
@@ -16,7 +16,7 @@ const values = ref<any>({});
 const messageBoardTypeList = ref<any[]>([]);
 
 const fetchCategoryList = async () => {
-  messageBoardTypeList.value = await queryDictListByAlias('sys_message_board_type');
+  messageBoardTypeList.value = await queryMessageBoardTypeList();
 };
 
 onMounted(async () => {

@@ -63,3 +63,8 @@ export const createErrorWord = async (data: Record<string, any>): Promise<any> =
 export const updateErrorWord = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/error-word?_method=put', data)).data;
 export const deleteErrorWord = async (data: string[]): Promise<any> => (await axios.post('/backend/core/error-word?_method=delete', data)).data;
 export const validateErrorWord = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/error-word/validate-error-word', data)).data;
+
+export const importDataTestConnection = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/ext/import-data/test-connection', data)).data;
+export const importDataChannel = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/ext/import-data/import-channel', data)).data;
+export const importDataArticle = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/ext/import-data/import-article', data)).data;
+export const importDataDeleteCorrespond = async (): Promise<any> => (await axios.post('/backend/ext/import-data/delete-correspond?_method=delete')).data;

@@ -322,6 +322,11 @@
   "log.task": "任务管理",
   "log.task.delete": "删除任务",
 
+  "log.importData": "数据迁移",
+  "log.importData.importChannel": "迁移栏目数据",
+  "log.importData.importArticle": "迁移文章数据",
+  "log.importData.deleteCorrespond": "删除新旧对应数据",
+
   "log.personal": "个人管理",
   "log.personal.updatePassword": "修改密码",
 

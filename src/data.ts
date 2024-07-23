@@ -61,13 +61,13 @@ export function getPermsTreeData(): any[] {
         {
           label: t('menu.content.article'),
           key: 'article.key',
-          perms: ['article:page', 'article:list', 'channel:list', 'dict:list', 'model:list', 'block:list', 'tag:list', 'processInstance:task'],
+          perms: ['article:page', 'article:list', 'channel:list', 'org:list', 'dict:list', 'model:list', 'block:list', 'tag:list', 'processInstance:task'],
           children: [
             { label: t('list'), key: 'article:page' },
             { label: t('add'), key: 'article:create', perms: ['article:create', 'article.submit', 'jodConvert:doc', 'jodConvert:library'] },
             { label: t('view'), key: 'article:show', perms: ['article:show'] },
             { label: t('edit'), key: 'article:update', perms: ['article:update', 'article.submit', 'article:show', 'jodConvert:doc', 'jodConvert:library'] },
-            { label: t('article.op.recommendTo'), key: 'blockItem:create', perms: ['blockItem:create', 'blockItem:delete'] },
+            { label: t('article.op.recommendTo'), key: 'article:recommendTo', perms: ['article:recommendTo', 'blockItem:create', 'blockItem:delete'] },
             { label: t('article.op.internalPush'), key: 'article:internalPush', perms: ['article:internalPush'] },
             { label: t('article.op.externalPush'), key: 'article:externalPush', perms: ['article:externalPush'] },
             { label: t('article.op.updateOrder'), key: 'article:updateOrder', perms: ['article:updateOrder'] },
@@ -710,6 +710,11 @@ export function getPermsTreeData(): any[] {
             { label: t('delete'), key: 'errorWord:delete', perms: ['errorWord:delete'] },
           ],
         },
+        {
+          label: t('menu.system.importData'),
+          key: 'importData.key',
+          perms: ['importData:show'],
+        },
         // {
         //   label: t('menu.system.task'),
         //   key: 'task.key',
@@ -757,7 +762,7 @@ export function getModelData(): any {
         { code: 'offlineDate', must: false, show: true, required: false },
         { code: 'source', must: false, show: true, required: false },
         { code: 'articleTemplate', must: false, show: true, required: false },
-        { code: 'allowComment', must: false, show: true, required: true },
+        // { code: 'allowComment', must: false, show: true, required: true },
         { code: 'user', must: false, show: false, required: true },
         { code: 'created', must: false, show: false, required: true },
         { code: 'modifiedUser', must: false, show: false, required: false },
@@ -778,8 +783,8 @@ export function getModelData(): any {
         { code: 'channelTemplate', must: false, show: true, double: true, required: true },
         { code: 'articleTemplate', must: false, show: true, double: true, required: true },
         { code: 'nav', must: false, show: true, double: true, required: true },
-        { code: 'allowComment', must: false, show: true, double: true, required: true },
-        { code: 'allowContribute', must: false, show: true, double: true, required: true },
+        // { code: 'allowComment', must: false, show: true, double: true, required: true },
+        // { code: 'allowContribute', must: false, show: true, double: true, required: true },
         { code: 'allowSearch', must: false, show: true, double: true, required: true },
         { code: 'text', must: false, show: false, double: false, required: false, type: 'editor', editorType: 1, editorSwitch: true },
       ],
@@ -860,6 +865,7 @@ export const logModules = [
   'site',
   'process',
   'task',
+  'importData',
   'personal',
 ];
 
@@ -1076,6 +1082,10 @@ export const logNames = [
   'process.deleteProcessInstance',
 
   'task.delete',
+
+  'importData.importChannel',
+  'importData.importArticle',
+  'importData.deleteCorrespond',
 
   'personal.updatePassword',
 ];

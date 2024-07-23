@@ -38,7 +38,7 @@ const fetchData = async () => {
     const { content, totalElements } = await queryUserPage({
       Q_Contains_1_username: name.value,
       Q_Contains_1_realName: name.value,
-      Q_NotIn_id_Int: userData.value.map((item) => item.id).join(','),
+      Q_NotIn_id_Long: userData.value.map((item) => item.id).join(','),
       orgId: orgId.value,
       current: true,
       page: currentPage.value,
@@ -54,7 +54,7 @@ watch(
   userIds,
   async () => {
     if (userIds.value.length > 0) {
-      users.value = await queryUserList({ Q_In_id_Int: userIds.value.join(',') });
+      users.value = await queryUserList({ Q_In_id_Long: userIds.value.join(',') });
       users.value.sort((o1, o2) => {
         return userIds.value.indexOf(o1.id) - userIds.value.indexOf(o2.id);
       });

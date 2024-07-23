@@ -384,7 +384,7 @@ const cancelSticky = async (id: string) => {
           <query-item :label="$t('article.publishDate')" name="Q_GE_publishDate_DateTime,Q_LE_publishDate_DateTime" type="datetime"></query-item>
           <query-item
             :label="$t('article.block')"
-            name="Q_In_@BlockItem-blockId_Int"
+            name="Q_In_@BlockItem-blockId_Long"
             :options="blockList.filter((item) => item.recommendable).map((item) => ({ label: item.name, value: item.id }))"
           ></query-item>
           <query-item :label="$t('article.org')" name="Q_Like_org-name"></query-item>
