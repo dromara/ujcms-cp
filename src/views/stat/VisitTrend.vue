@@ -51,19 +51,19 @@ const initTrendChart = async (range: string) => {
         name: t('visit.pv'),
         type: 'line',
         symbol: list.length > 30 ? 'none' : 'circle',
-        data: list.map((item) => item.pvCount),
+        data: list.map((item) => Number(item.pvCount)),
       },
       {
         name: t('visit.uv'),
         type: 'line',
         symbol: list.length > 30 ? 'none' : 'circle',
-        data: list.map((item) => item.uvCount),
+        data: list.map((item) => Number(item.uvCount)),
       },
       {
         name: t('visit.ip'),
         type: 'line',
         symbol: list.length > 30 ? 'none' : 'circle',
-        data: list.map((item) => item.ipCount),
+        data: list.map((item) => Number(item.ipCount)),
       },
     ],
   };

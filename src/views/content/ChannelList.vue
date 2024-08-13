@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, nextTick } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Plus, Delete, Search } from '@element-plus/icons-vue';
+import type Node from 'element-plus/es/components/tree/src/model/node';
+import type { NodeDropType } from 'element-plus/es/components/tree/src/tree.type';
+import { Plus, Delete, Search, Edit, Grid, FirstAidKit, QuestionFilled } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
+import Sortable from 'sortablejs';
 import { perm, currentUser } from '@/stores/useCurrentUser';
-import { moveTreeList, toParams, resetParams } from '@/utils/common';
-import { toTree } from '@/utils/tree';
-import { deleteChannel, queryChannelList, queryChannelPermissions, updateChannelOrder } from '@/api/content';
+import { toParams, resetParams } from '@/utils/common';
+import { toTree, flatTree } from '@/utils/tree';
+import { deleteChannel, queryChannelList, queryChannelPermissions, moveChannel, tidyTreeChannel } from '@/api/content';
 import { queryProcessDefinitionList } from '@/api/system';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
 import { QueryForm, QueryItem } from '@/components/QueryForm';
-import ListMove from '@/components/ListMove.vue';
 import ChannelForm from './ChannelForm.vue';
 
 defineOptions({
@@ -26,11 +28,12 @@ const loading = ref<boolean>(false);
 const formVisible = ref<boolean>(false);
 const parent = ref<any>();
 const beanId = ref<string>();
-const beanIds = computed(() => data.value.map((row) => row.id));
-const filtered = ref<boolean>(false);
+const beanIds = computed(() => flatTree(data.value).map((row: any) => row.id));
 const channelPermissions = ref<string[]>([]);
 const processList = ref<any[]>([]);
+const isSorted = ref<boolean>(false);
 
+const isEdit = ref<boolean>(false);
 const channelTree = ref<any>();
 const channelTreeData = ref<any[]>([]);
 const channelTreeLoading = ref<boolean>(false);
@@ -45,7 +48,7 @@ watch(channelTreeFilter, (val) => {
 const fetchChannelTreeData = async () => {
   channelTreeLoading.value = true;
   try {
-    channelTreeData.value = toTree(await queryChannelList({ isOnlyParent: true }));
+    channelTreeData.value = toTree(await queryChannelList());
     nextTick(() => {
       if (channelTreeFilter.value != null) {
         channelTree.value.filter(channelTreeFilter.value);
@@ -59,9 +62,12 @@ const fetchChannelTreeData = async () => {
 const fetchListData = async () => {
   loading.value = true;
   try {
-    const queryed = Object.values(params.value).filter((v) => v !== undefined && v !== '').length > 0;
-    data.value = await queryChannelList({ ...toParams(params.value), parentId: channel.value?.id, isIncludeChildren: queryed, Q_OrderBy: sort.value });
-    filtered.value = queryed || sort.value !== undefined;
+    isSorted.value = sort.value !== undefined;
+    const isQueryed = Object.values(params.value).filter((v) => v !== undefined && v !== '').length > 0;
+    data.value = await queryChannelList({ ...toParams(params.value), parentId: channel.value?.id, isIncludeSelf: true, isIncludeChildren: isQueryed, Q_OrderBy: sort.value });
+    if (!isQueryed && !isSorted.value) {
+      data.value = toTree(data.value);
+    }
   } finally {
     loading.value = false;
   }
@@ -78,10 +84,44 @@ const fetchProcessList = async () => {
 const fetchChannelPermissions = async () => {
   channelPermissions.value = await queryChannelPermissions();
 };
+let sortable;
+const initDragTable = () => {
+  const tbody = document.querySelector('#dataTable .el-table__body-wrapper tbody');
+  sortable = Sortable.create(tbody, {
+    handle: '.drag-handle',
+    draggable: '.drag-draggable',
+    animation: 200,
+    chosenClass: 'sortable-chosen',
+    onEnd: async function (event: any) {
+      const { oldIndex, newIndex } = event;
+      if (oldIndex !== newIndex) {
+        let from = oldIndex;
+        let to = newIndex;
+        let list = data.value;
+        const children = list[0]?.children;
+        if (children?.length > 0) {
+          list = children;
+          from -= 1;
+          to -= 1;
+        }
+        await moveChannel(list[from].id, list[to].id, from > to ? 'before' : 'after');
+        fetchChannelTreeData();
+        list.splice(to, 0, list.splice(from, 1)[0]);
+        ElMessage.success(t('success'));
+      }
+    },
+  });
+};
 onMounted(() => {
   fetchData();
   fetchProcessList();
   fetchChannelPermissions();
+  initDragTable();
+});
+onBeforeUnmount(() => {
+  if (sortable !== undefined) {
+    sortable.destroy();
+  }
 });
 
 const handleSort = ({ column, prop, order }: { column: any; prop: string; order: string }) => {
@@ -119,13 +159,40 @@ const handleDelete = async (ids: string[]) => {
   fetchData();
   ElMessage.success(t('success'));
 };
-const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => {
-  const list = moveTreeList(selected, data.value, type);
-  await updateChannelOrder(list);
-  await fetchData();
-  selected.forEach(() => {
-    table.value.toggleRowSelection(data.value);
-  });
+const handleDragEnd = async (draggingNode: Node, dropNode: Node, dropType: NodeDropType) => {
+  if (dropType !== 'none') {
+    await moveChannel(draggingNode.data.id, dropNode.data.id, dropType);
+    fetchListData();
+  }
+};
+const handleTidyTree = async () => {
+  await tidyTreeChannel();
+  fetchData();
+  ElMessage.success(t('success'));
+};
+const treeNodeClick = async (node: any) => {
+  if (isEdit.value) {
+    if (channel.value != node.parent) {
+      channel.value = node.parent;
+      // 必须先获取列表数据，再打开编辑页面，否则编辑页面的上一条、下一条数据不正确
+      await fetchListData();
+    }
+    handleEdit(node.id);
+  } else {
+    channel.value = node;
+    handleSearch();
+  }
+};
+const treeFilterNode = (value: string, data: any) => {
+  if (!value) {
+    return true;
+  }
+  return data.name.includes(value);
+};
+const treeRootClick = () => {
+  channelTree.value.setCurrentKey(null);
+  channel.value = undefined;
+  handleSearch();
 };
 </script>
 
@@ -134,20 +201,13 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
     <el-aside width="220px" class="pr-3">
       <el-scrollbar class="p-2 bg-white rounded-sm">
         <el-input v-model="channelTreeFilter" :suffix-icon="Search" size="small" />
-        <div class="my-1 ml-2">
-          <el-button
-            :type="channel == null ? 'primary' : undefined"
-            link
-            @click="
-              () => {
-                channelTree.setCurrentKey(null);
-                channel = undefined;
-                handleSearch();
-              }
-            "
-          >
+        <div class="flex justify-between mx-2 mt-1">
+          <el-button :type="channel == null ? 'primary' : undefined" link @click="treeRootClick">
             {{ $t('channel.root') }}
           </el-button>
+          <el-tooltip :content="$t('editMode')" placement="top">
+            <el-switch v-model="isEdit" :active-action-icon="Edit" :inactive-action-icon="Edit" />
+          </el-tooltip>
         </div>
         <el-tree
           ref="channelTree"
@@ -157,18 +217,10 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
           :expand-on-click-node="false"
           node-key="id"
           highlight-current
-          :filter-node-method="
-            (value, data) => {
-              if (!value) return true;
-              return data.name.includes(value);
-            }
-          "
-          @node-click="
-            (node) => {
-              channel = node;
-              handleSearch();
-            }
-          "
+          draggable
+          :filter-node-method="treeFilterNode"
+          @node-click="treeNodeClick"
+          @node-drag-end="handleDragEnd"
         ></el-tree>
       </el-scrollbar>
     </el-aside>
@@ -186,22 +238,28 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
             <el-button :disabled="selection.length <= 0 || perm('channel:delete')" :icon="Delete">{{ $t('delete') }}</el-button>
           </template>
         </el-popconfirm>
-        <list-move :disabled="selection.length <= 0 || filtered || perm('channel:update')" class="ml-2" @move="(type) => move(selection, type)" />
+        <el-button :disabled="perm('channel:tidyTree')" :icon="FirstAidKit" @click="() => handleTidyTree()">{{ $t('tidyTree') }}</el-button>
+        <el-tooltip placement="top" :content="$t('tidyTree.tooltip')">
+          <el-icon class="ml-1 text-base align-text-bottom"><QuestionFilled /></el-icon>
+        </el-tooltip>
         <column-setting name="channel" class="ml-2" />
       </div>
       <div class="mt-3 app-block">
         <el-table
+          id="dataTable"
           ref="table"
           v-loading="loading"
           row-key="id"
+          default-expand-all
           :data="data"
+          :row-class-name="({ row }) => (row.children?.length > 0 ? undefined : 'drag-draggable')"
           @selection-change="(rows) => (selection = rows)"
           @row-dblclick="(row) => handleEdit(row.id)"
           @sort-change="handleSort"
         >
           <column-list name="channel">
             <el-table-column type="selection" :selectable="deletable" width="45"></el-table-column>
-            <el-table-column property="name" :label="$t('channel.name')" min-width="120" sortable="custom"></el-table-column>
+            <el-table-column property="name" :label="$t('channel.name')" min-width="80" sortable="custom"></el-table-column>
             <el-table-column property="alias" :label="$t('channel.alias')" min-width="80" sortable="custom"></el-table-column>
             <el-table-column
               property="channelModel.name"
@@ -215,12 +273,26 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
             <el-table-column property="processKey" :label="$t('channel.processKey')" min-width="60" sortable="custom" show-overflow-tooltip>
               <template #default="{ row }">{{ row.processKey != null ? processList.find((item) => item.key === row.processKey)?.name : undefined }}</template>
             </el-table-column>
-            <el-table-column property="nav" :label="$t('channel.nav')" min-width="40">
+            <el-table-column property="nav" :label="$t('channel.nav')" min-width="50">
               <template #default="{ row }">
                 <el-tag :type="row.nav ? 'success' : 'info'" size="small">{{ $t(row.nav ? 'yes' : 'no') }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
+            <el-table-column width="42">
+              <template #default="{ row }">
+                <el-icon
+                  class="text-lg align-middle"
+                  :class="
+                    isSorted || perm('channel:update') || row.children?.length > 0
+                      ? ['cursor-not-allowed', 'text-gray-disabled']
+                      : ['cursor-move', 'text-gray-secondary', 'drag-handle']
+                  "
+                >
+                  <Grid />
+                </el-icon>
+              </template>
+            </el-table-column>
             <el-table-column :label="$t('table.action')">
               <template #default="{ row }">
                 <el-button type="primary" :disabled="perm('channel:create') || !deletable(row)" size="small" link @click="() => handleAdd(row)">{{ $t('addChild') }}</el-button>
@@ -239,3 +311,8 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
     </el-main>
   </el-container>
 </template>
+<style>
+.sortable-chosen td {
+  @apply border-t-2 border-t-warning-light;
+}
+</style>

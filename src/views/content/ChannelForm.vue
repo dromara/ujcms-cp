@@ -165,7 +165,7 @@ const initCustoms = (customs: any) => {
       }
     "
   >
-    <template #default="{ bean }">
+    <template #default="{ bean, isEdit }">
       <el-row>
         <el-col :span="18">
           <el-row>
@@ -353,6 +353,8 @@ const initCustoms = (customs: any) => {
                   node-key="id"
                   :props="{ label: 'name', disabled: 'disabled' }"
                   :render-after-expand="false"
+                  :disabled="isEdit"
+                  placeholder=""
                   check-strictly
                   clearable
                   class="w-full"

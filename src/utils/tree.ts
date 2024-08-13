@@ -13,6 +13,7 @@ export const toTree = (data: any[]): any[] => {
   data.forEach((item: any) => {
     const parent = tempMap[item.parentId];
     if (parent) {
+      item.parent = parent;
       if (parent.children != null) {
         parent.children.push(item);
       } else {

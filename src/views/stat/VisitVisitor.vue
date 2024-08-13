@@ -38,6 +38,10 @@ const fetchVisitorStat = async (range: string) => {
   const visitorStat = await queryVisitorStat({ begin: getBeginByDateRange(range), end: getEndByDateRange(range) });
   newVisitor.value = visitorStat['newVisitor'];
   oldVisitor.value = visitorStat['oldVisitor'];
+  newVisitor.value.pvCount = Number(newVisitor.value.pvCount);
+  oldVisitor.value.pvCount = Number(oldVisitor.value.pvCount);
+  newVisitor.value.uvCount = Number(newVisitor.value.uvCount);
+  oldVisitor.value.uvCount = Number(oldVisitor.value.uvCount);
   const totalUvCount = newVisitor.value.uvCount + oldVisitor.value.uvCount;
   if (totalUvCount > 0) {
     newVisitor.value.proportion = (newVisitor.value.uvCount * 100) / totalUvCount;

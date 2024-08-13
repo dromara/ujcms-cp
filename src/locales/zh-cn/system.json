@@ -1,4 +1,5 @@
 {
+  "site.root": "根站点",
   "site.name": "名称",
   "site.copyFrom": "复制站点",
   "site.copyFrom.tooltip": "新增站点将以此站点为基础，复制该站点的模板、模型、栏目、文章等数据",

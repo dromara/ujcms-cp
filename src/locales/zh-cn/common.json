@@ -11,6 +11,8 @@
   "completelyDelete": "彻底删除",
   "execute": "执行",
   "updateStatus": "修改状态",
+  "tidyTree": "整理树形结构",
+  "tidyTree.tooltip": "由于手动修改数据库或导入数据等操作，导致树形结构内部逻辑混乱时，可使用“整理树形结构”修复",
   "batchAction": "批量操作",
   "search": "查询",
   "back": "返回",
@@ -31,6 +33,7 @@
   "name": "名称",
   "size": "大小",
   "all": "全部",
+  "editMode": "编辑模式。点击左侧树导航，进入编辑页面",
   "globalData": "全局数据",
 
   "upload": "上传",

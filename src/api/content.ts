@@ -8,7 +8,9 @@ export const queryChannelList = async (params?: Record<string, any>): Promise<an
 export const queryChannel = async (id: string): Promise<any> => (await axios.get(`/backend/core/channel/${id}`)).data;
 export const createChannel = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/channel', data)).data;
 export const updateChannel = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/channel?_method=put', data)).data;
-export const updateChannelOrder = async (data: string[]): Promise<any> => (await axios.post('/backend/core/channel/order?_method=put', data)).data;
+export const moveChannel = async (fromId: string, toId: string, type: 'inner' | 'before' | 'after'): Promise<any> =>
+  (await axios.post('/backend/core/channel/move?_method=put', { fromId, toId, type })).data;
+export const tidyTreeChannel = async (): Promise<any> => (await axios.post('/backend/core/channel/tidy-tree?_method=put')).data;
 export const deleteChannel = async (data: string[]): Promise<any> => (await axios.post('/backend/core/channel?_method=delete', data)).data;
 export const queryChannelPermissions = async (): Promise<any> => (await axios.get('/backend/core/channel/channel-permissions')).data;
 export const queryChannelTemplates = async (): Promise<any> => (await axios.get('/backend/core/channel/channel-templates')).data;
@@ -45,7 +47,8 @@ export const transferArticle = async (taskId: string, toUserId: string, comment:
   (await axios.post(`/backend/core/article-review/transfer?_method=put`, { taskId, toUserId, comment })).data;
 export const backArticle = async (taskId: string, activityId: string, comment: string): Promise<any> =>
   (await axios.post(`/backend/core/article-review/back?_method=put`, { taskId, activityId, comment })).data;
-export const rejectArticle = async (taskIds: string[], reason: string): Promise<any> => (await axios.post('/backend/core/article-review/reject?_method=put', { taskIds, reason })).data;
+export const rejectArticle = async (taskIds: string[], reason: string): Promise<any> =>
+  (await axios.post('/backend/core/article-review/reject?_method=put', { taskIds, reason })).data;
 
 export const queryBlockItemList = async (params?: Record<string, any>): Promise<any> => (await axios.get('/backend/core/block-item', { params })).data;
 export const queryBlockItem = async (id: string): Promise<any> => (await axios.get(`/backend/core/block-item/${id}`)).data;

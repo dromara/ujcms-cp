@@ -84,8 +84,9 @@
   "log.channel": "栏目管理",
   "log.channel.create": "新增栏目",
   "log.channel.update": "修改栏目",
-  "log.channel.updateOrder": "修改栏目顺序",
   "log.channel.delete": "删除栏目",
+  "log.channel.move": "移动栏目",
+  "log.channel.tidyTree": "整理栏目树形结构",
 
   "log.blockItem": "区块项管理",
   "log.blockItem.create": "新增区块项",
@@ -284,8 +285,9 @@
   "log.org": "组织管理",
   "log.org.create": "新增组织",
   "log.org.update": "修改组织",
-  "log.org.updateOrder": "修改组织顺序",
   "log.org.delete": "删除组织",
+  "log.org.move": "移动组织",
+  "log.org.tidyTree": "整理组织树形结构",
 
   "log.group": "用户组管理",
   "log.group.create": "新增用户组",
@@ -306,8 +308,9 @@
   "log.site": "站点管理",
   "log.site.create": "新增站点",
   "log.site.update": "修改站点",
-  "log.site.updateOrder": "修改站点顺序",
   "log.site.delete": "删除站点",
+  "log.site.move": "移动站点",
+  "log.site.tidyTree": "整理站点树形结构",
 
   "log.process": "流程管理",
   "log.process.createProcessModel": "新增流程模型",

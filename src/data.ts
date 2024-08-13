@@ -101,6 +101,7 @@ export function getPermsTreeData(): any[] {
             { label: t('add'), key: 'channel:create', perms: ['channel:create'] },
             { label: t('edit'), key: 'channel:update', perms: ['channel:update', 'channel:show'] },
             { label: t('delete'), key: 'channel:delete', perms: ['channel:delete'] },
+            { label: t('tidyTree'), key: 'channel:tidyTree', perms: ['channel:tidyTree'] },
           ],
         },
         {
@@ -592,6 +593,7 @@ export function getPermsTreeData(): any[] {
             { label: t('edit'), key: 'org:update', perms: ['org:update', 'org:show'] },
             { label: t('permissionSettings'), key: 'org:updatePermission', perms: ['org:updatePermission', 'org:show'] },
             { label: t('delete'), key: 'org:delete', perms: ['org:delete'] },
+            { label: t('tidyTree'), key: 'org:tidyTree', perms: ['org:tidyTree'] },
           ],
         },
         {
@@ -656,6 +658,7 @@ export function getPermsTreeData(): any[] {
             { label: t('add'), key: 'site:create', perms: ['site:create'] },
             { label: t('edit'), key: 'site:update', perms: ['site:update', 'site:show'] },
             { label: t('delete'), key: 'site:delete', perms: ['site:delete'] },
+            { label: t('tidyTree'), key: 'site:tidyTree', perms: ['site:tidyTree'] },
           ],
         },
         {
@@ -886,8 +889,9 @@ export const logNames = [
 
   'channel.create',
   'channel.update',
-  'channel.updateOrder',
   'channel.delete',
+  'channel.move',
+  'channel.tidyTree',
 
   'blockItem.create',
   'blockItem.update',
@@ -1051,9 +1055,10 @@ export const logNames = [
 
   'org.create',
   'org.update',
-  'org.updateOrder',
   'org.updatePermission',
   'org.delete',
+  'org.move',
+  'org.tidyTree',
 
   'group.create',
   'group.update',
@@ -1069,8 +1074,9 @@ export const logNames = [
 
   'site.create',
   'site.update',
-  'site.updateOrder',
   'site.delete',
+  'site.move',
+  'site.tidyTree',
 
   'process.createProcessModel',
   'process.updateProcessModel',

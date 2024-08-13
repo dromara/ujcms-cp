@@ -52,6 +52,8 @@ const initDragTable = () => {
   const tbody = document.querySelector('#dataTable .el-table__body-wrapper tbody');
   sortable = Sortable.create(tbody, {
     handle: '.drag-handle',
+    animation: 200,
+    chosenClass: 'sortable-chosen',
     onEnd: async function (event: any) {
       const { oldIndex, newIndex } = event;
       if (oldIndex !== newIndex) {
@@ -217,5 +219,8 @@ const handleDelete = async (ids: string[]) => {
     float: right;
     margin-right: 1px;
   }
+}
+.sortable-chosen td {
+  @apply border-t-2 border-t-warning-light;
 }
 </style>

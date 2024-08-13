@@ -5,7 +5,9 @@ export const queryOrg = async (id: string): Promise<any> => (await axios.get(`/b
 export const createOrg = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/org', data)).data;
 export const updateOrg = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/org?_method=put', data)).data;
 export const updateOrgPermission = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/org/permission?_method=put', data)).data;
-export const updateOrgOrder = async (data: string[]): Promise<any> => (await axios.post('/backend/core/org/order?_method=put', data)).data;
+export const moveOrg = async (fromId: string, toId: string, type: 'inner' | 'before' | 'after'): Promise<any> =>
+  (await axios.post('/backend/core/org/move?_method=put', { fromId, toId, type })).data;
+export const tidyTreeOrg = async (): Promise<any> => (await axios.post('/backend/core/org/tidy-tree?_method=put')).data;
 export const deleteOrg = async (data: string[]): Promise<any> => (await axios.post('/backend/core/org?_method=delete', data)).data;
 export const queryOrgPermissions = async (): Promise<any> => (await axios.get('/backend/core/org/permissions')).data;
 export const queryOrgArticlePermissions = async (orgId: string, siteId?: string): Promise<any> =>

@@ -1,4 +1,5 @@
 {
+  "org.root": "根组织",
   "org.parent": "上级组织",
   "org.name": "名称",
   "org.address": "地址",

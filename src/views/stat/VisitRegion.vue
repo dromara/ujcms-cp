@@ -35,7 +35,7 @@ const getEndByDateRange = (range: string): string => {
 const countryChartRef = shallowRef<HTMLElement>();
 const initCountryChart = async (range: string) => {
   const list = await queryCountryStat({ begin: getBeginByDateRange(range), end: getEndByDateRange(range) });
-  const total = list.reduce((acc, curr) => acc + curr.pvCount, 0);
+  const total = list.reduce((acc, curr) => acc + Number(curr.pvCount), 0);
   const option: ECOption = {
     title: { text: t('menu.stat.visitCountry'), textStyle: { color: '#909399', fontWeight: 'normal', fontSize: 16 } },
     tooltip: { trigger: 'item', valueFormatter: (value: any) => n((value * 100) / total, 'decimal') + '%' },
@@ -46,7 +46,7 @@ const initCountryChart = async (range: string) => {
         type: 'pie',
         radius: '72%',
         center: ['40%', '56%'],
-        data: list.map((item) => ({ value: item.pvCount, name: item.name })),
+        data: list.map((item) => ({ value: Number(item.pvCount), name: item.name })),
       },
     ],
   };
@@ -67,7 +67,7 @@ const initCountryChart = async (range: string) => {
 const provinceChartRef = shallowRef<HTMLElement>();
 const initProvinceChart = async (range: string) => {
   const list = await queryProvinceStat({ begin: getBeginByDateRange(range), end: getEndByDateRange(range) });
-  const total = list.reduce((acc, curr) => acc + curr.pvCount, 0);
+  const total = list.reduce((acc, curr) => acc + Number(curr.pvCount), 0);
   const option: ECOption = {
     title: { text: t('menu.stat.visitProvince'), textStyle: { color: '#909399', fontWeight: 'normal', fontSize: 16 } },
     tooltip: { trigger: 'item', valueFormatter: (value: any) => n((value * 100) / total, 'decimal') + '%' },
@@ -78,7 +78,7 @@ const initProvinceChart = async (range: string) => {
         type: 'pie',
         radius: '72%',
         center: ['40%', '56%'],
-        data: list.map((item) => ({ value: item.pvCount, name: item.name })),
+        data: list.map((item) => ({ value: Number(item.pvCount), name: item.name })),
       },
     ],
   };

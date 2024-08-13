@@ -64,6 +64,7 @@ watch(visible, () => {
           :props="{ label: 'name', disabled: 'disabled' }"
           :default-expanded-keys="orgList.map((item) => item.id)"
           :render-after-expand="false"
+          :disabled="isEdit"
           check-strictly
           class="w-full"
         />

@@ -488,7 +488,7 @@ const titleSimilarity = async (title: string, excludeId?: string) => {
               </el-col>
               <el-col v-if="mains['tags'].show" :span="mains['tags'].double ? 12 : 24">
                 <el-form-item
-                  prop="tags"
+                  prop="tagNames"
                   :label="mains['tags'].name ?? $t('article.tags')"
                   :rules="mains['tags'].required ? { required: true, message: () => $t('v.required') } : undefined"
                 >
@@ -923,7 +923,7 @@ const titleSimilarity = async (title: string, excludeId?: string) => {
     <image-extractor v-model="imageExtractorVisible" :urls="imageExtractorUrls" :append-to-body="true" @finished="(urls) => (values.image = urls[0])" />
     <el-dialog v-model="titleSimilarityVisible" :title="$t('article.op.titleSimilarity')" width="820px">
       <el-table :data="titleSimilarityList">
-        <el-table-column property="id" label="ID" width="100px" />
+        <el-table-column property="id" label="ID" width="170px" />
         <el-table-column property="title" :label="$t('article.similarity.title')" show-overflow-tooltip />
         <el-table-column
           property="channel.name"

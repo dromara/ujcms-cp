@@ -29,7 +29,7 @@ const initTrendChart = async () => {
         type: 'line',
         symbol: 'circle',
         color: '#a0cfff',
-        data: list.filter((item) => dayjs(item.date) < dayjs().startOf('day')).map((item) => item.pvCount),
+        data: list.filter((item) => dayjs(item.date) < dayjs().startOf('day')).map((item) => Number(item.pvCount)),
       },
       {
         name: t('visitTrend.todayPv'),
@@ -37,7 +37,7 @@ const initTrendChart = async () => {
         symbol: 'circle',
         color: '#409eff',
         areaStyle: { color: '#ecf5ff' },
-        data: list.filter((item) => dayjs(item.date) >= dayjs().startOf('day')).map((item) => item.pvCount),
+        data: list.filter((item) => dayjs(item.date) >= dayjs().startOf('day')).map((item) => Number(item.pvCount)),
       },
     ],
   };
@@ -73,7 +73,7 @@ const initSourceTypeChart = async () => {
         label: { show: false },
         emphasis: { label: { show: false } },
         labelLine: { show: false },
-        data: list.map((item) => ({ value: item.pvCount, name: t(`visitSource.type.${item.name}`) })),
+        data: list.map((item) => ({ value: Number(item.pvCount), name: t(`visitSource.type.${item.name}`) })),
       },
     ],
   };
@@ -97,6 +97,10 @@ const fetchVisitorStat = async () => {
   const visitorStat = await queryVisitorStat({ begin: dayjs().subtract(30, 'day').format('YYYY-MM-DD'), end: dayjs().format('YYYY-MM-DD') });
   newVisitor.value = visitorStat['newVisitor'];
   oldVisitor.value = visitorStat['oldVisitor'];
+  newVisitor.value.pvCount = Number(newVisitor.value.pvCount);
+  oldVisitor.value.pvCount = Number(oldVisitor.value.pvCount);
+  newVisitor.value.uvCount = Number(newVisitor.value.uvCount);
+  oldVisitor.value.uvCount = Number(oldVisitor.value.uvCount);
   const totalUvCount = newVisitor.value.uvCount + oldVisitor.value.uvCount;
   if (totalUvCount > 0) {
     newVisitor.value.proportion = (newVisitor.value.uvCount * 100) / totalUvCount;
