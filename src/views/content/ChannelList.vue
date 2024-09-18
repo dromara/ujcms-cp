@@ -6,7 +6,7 @@ import type { NodeDropType } from 'element-plus/es/components/tree/src/tree.type
 import { Plus, Delete, Search, Edit, Grid, FirstAidKit, QuestionFilled } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
 import Sortable from 'sortablejs';
-import { perm, currentUser } from '@/stores/useCurrentUser';
+import { perm, currentUser, hasPermission } from '@/stores/useCurrentUser';
 import { toParams, resetParams } from '@/utils/common';
 import { toTree, flatTree } from '@/utils/tree';
 import { deleteChannel, queryChannelList, queryChannelPermissions, moveChannel, tidyTreeChannel } from '@/api/content';
@@ -217,7 +217,7 @@ const treeRootClick = () => {
           :expand-on-click-node="false"
           node-key="id"
           highlight-current
-          draggable
+          :draggable="hasPermission('channel:update')"
           :filter-node-method="treeFilterNode"
           @node-click="treeNodeClick"
           @node-drag-end="handleDragEnd"

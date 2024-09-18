@@ -184,6 +184,7 @@ export function getPermsTreeData(): any[] {
             { label: t('generator.op.fulltext.reindexSite'), key: 'generator:fulltext:reindexSite', perms: ['generator:fulltext:reindexSite'] },
             { label: t('generator.html'), key: 'generator:html', perms: ['generator:html'] },
             { label: t('site.settings.html'), key: 'siteSettings:html:update', perms: ['siteSettings:html:update', 'generator:html'] },
+            { label: t('config.settings.grey'), key: 'config:grey:update', perms: ['config:grey:update', 'config:grey:show', 'generator:allHtml'] },
           ],
         },
       ],
@@ -657,6 +658,8 @@ export function getPermsTreeData(): any[] {
             { label: t('list'), key: 'site:page' },
             { label: t('add'), key: 'site:create', perms: ['site:create'] },
             { label: t('edit'), key: 'site:update', perms: ['site:update', 'site:show'] },
+            { label: t('site.op.open'), key: 'site:open', perms: ['site:open'] },
+            { label: t('site.op.close'), key: 'site:close', perms: ['site:close'] },
             { label: t('delete'), key: 'site:delete', perms: ['site:delete'] },
             { label: t('tidyTree'), key: 'site:tidyTree', perms: ['site:tidyTree'] },
           ],
@@ -868,6 +871,8 @@ export const logModules = [
   'site',
   'process',
   'task',
+  'sensitiveWord',
+  'errorWord',
   'importData',
   'personal',
 ];
@@ -997,6 +1002,7 @@ export const logNames = [
 
   'config.updateBase',
   'config.updateUpload',
+  'config.updateGrey',
   'config.updateRegister',
   'config.updateSecurity',
   'config.updateSms',
@@ -1074,6 +1080,8 @@ export const logNames = [
 
   'site.create',
   'site.update',
+  'site.open',
+  'site.close',
   'site.delete',
   'site.move',
   'site.tidyTree',
@@ -1088,6 +1096,14 @@ export const logNames = [
   'process.deleteProcessInstance',
 
   'task.delete',
+
+  'sensitiveWord.create',
+  'sensitiveWord.update',
+  'sensitiveWord.delete',
+
+  'errorWord.create',
+  'errorWord.update',
+  'errorWord.delete',
 
   'importData.importChannel',
   'importData.importArticle',

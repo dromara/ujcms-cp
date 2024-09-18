@@ -240,7 +240,7 @@ const handleStatus = async (ids: string[], status: number) => {
                 </el-space>
               </template>
             </el-table-column>
-            <el-table-column property="group.name" :label="$t('user.group')" sort-by="group-name" show-overflow-tooltip></el-table-column>
+            <el-table-column property="group.name" :label="$t('user.group')" sort-by="group-name" display="none" show-overflow-tooltip></el-table-column>
             <el-table-column property="rank" :label="$t('user.rank')" sortable="custom" width="80" show-overflow-tooltip></el-table-column>
             <el-table-column property="status" :label="$t('user.status')" width="80" show-overflow-tooltip>
               <template #default="{ row }">
@@ -251,7 +251,7 @@ const handleStatus = async (ids: string[], status: number) => {
                 <el-tag v-else type="danger">{{ row.status }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.action')" width="220">
+            <el-table-column :label="$t('table.action')" width="300">
               <template #default="{ row }">
                 <el-button type="primary" :disabled="perm('user:update')" size="small" link @click="() => handleEdit(row.id)">{{ $t('edit') }}</el-button>
                 <el-button
@@ -271,6 +271,20 @@ const handleStatus = async (ids: string[], status: number) => {
                     <el-button type="primary" :disabled="!deletable(row) || perm('user:delete')" size="small" link>{{ $t('delete') }}</el-button>
                   </template>
                 </el-popconfirm>
+                <el-dropdown :disabled="!deletable(row)" class="ml-2 align-middle">
+                  <el-button :disabled="!deletable(row)" type="primary" size="small" link>
+                    {{ $t('user.op.status') }}
+                  </el-button>
+                  <template #dropdown>
+                    <div>
+                      <el-dropdown-menu>
+                        <el-dropdown-item v-for="n in [0, 1, 2, 3]" :key="n" :disabled="perm('user:updateStatus') || n === row.status" @click="() => handleStatus([row.id], n)">
+                          <span class="text-xs">{{ $t(`user.status.${n}`) }}</span>
+                        </el-dropdown-item>
+                      </el-dropdown-menu>
+                    </div>
+                  </template>
+                </el-dropdown>
               </template>
             </el-table-column>
           </column-list>

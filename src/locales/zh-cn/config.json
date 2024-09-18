@@ -12,6 +12,7 @@
   "config.multiDomain.tooltip": "使用多个域名且生成静态页，需要开启该项。开启后生成静态页时，静态页存储路径会加上域名，以区分不同域名的静态页面",
   "config.settings.base": "基础设置",
   "config.settings.upload": "上传设置",
+  "config.settings.grey": "一键置灰",
   "config.settings.register": "注册设置",
   "config.settings.security": "安全设置",
   "config.settings.sms": "短信设置",
@@ -50,6 +51,11 @@
   "config.upload.imageMaxHeight": "图片最大高度",
   "config.upload.imageMaxHeight.tooltip": "在编辑器上传的图片，如超过此高度，会自动压缩。为 0 则不限制。",
   "config.upload.error.extensionNotAllowd": "不允许的后缀名",
+
+  "config.grey.enabled":"是否启用",
+  "config.grey.greyDates":"置灰日期",
+  "config.grey.greyDates.tooltip":"填写 月-日，月数或日数为各位数的，前面需补零，多个日期用英文逗号分开。如：09-08,12-13",
+
 
   "config.register.enabled": "是否启用",
   "config.register.verifyMode": "验证方式",

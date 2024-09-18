@@ -3,9 +3,9 @@ import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import type { ElForm } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-import { querySiteHtmlSettings, updateSiteHtmlSettings } from '@/api/config';
-import { fulltextReindexAll, fulltextReindexSite, htmlAll, htmlHome, htmlChannel, htmlArticle } from '@/api/content';
-import { perm, isInclude } from '@/stores/useCurrentUser';
+import { querySiteHtmlSettings, updateSiteHtmlSettings, queryConfigGrey, updateConfigGrey } from '@/api/config';
+import { fulltextReindexAll, fulltextReindexSite, htmlAll, htmlAllHome, htmlHome, htmlChannel, htmlArticle } from '@/api/content';
+import { perm, hasPermission, isInclude } from '@/stores/useCurrentUser';
 import LabelTip from '@/components/LabelTip.vue';
 import TaskList from '@/views/system/TaskList.vue';
 
@@ -14,23 +14,41 @@ defineOptions({
   name: 'GeneratorForm',
 });
 const { t } = useI18n();
-const form = ref<FormInstance>();
-const values = ref<any>({});
-const loading = ref<boolean>(false);
 const buttonLoading = ref<boolean>(false);
 const taskListRef = ref<any>();
 
-const fetchSiteSetting = async () => {
-  values.value = await querySiteHtmlSettings();
+const htmlForm = ref<FormInstance>();
+const htmlValues = ref<any>({});
+const htmlLoading = ref<boolean>(false);
+
+const greyForm = ref<FormInstance>();
+const greyValues = ref<any>({});
+const greyLoading = ref<boolean>(false);
+
+const fetchHtmlSetting = async () => {
+  htmlLoading.value = true;
+  try {
+    htmlValues.value = await querySiteHtmlSettings();
+  } finally {
+    htmlLoading.value = false;
+  }
+};
+
+const fetchGreySetting = async () => {
+  if (!hasPermission('config:grey:show')) {
+    return;
+  }
+  greyLoading.value = true;
+  try {
+    greyValues.value = await queryConfigGrey();
+  } finally {
+    greyLoading.value = false;
+  }
 };
 
 onMounted(async () => {
-  loading.value = true;
-  try {
-    await fetchSiteSetting();
-  } finally {
-    loading.value = false;
-  }
+  fetchHtmlSetting();
+  fetchGreySetting();
 });
 
 const handleFulltextReindexAll = async () => {
@@ -92,18 +110,32 @@ const handleHtmlArticle = async () => {
     buttonLoading.value = false;
   }
 };
-const handleSubmit = () => {
-  if (!form.value) return;
-  form.value.validate(async (isValid?: boolean) => {
+const handleHtmlUpdate = () => {
+  if (!htmlForm.value) return;
+  htmlForm.value.validate(async (isValid?: boolean) => {
     if (!isValid) return;
-    loading.value = true;
+    htmlLoading.value = true;
     try {
-      await updateSiteHtmlSettings(values.value);
+      await updateSiteHtmlSettings(htmlValues.value);
       await htmlAll();
       await taskListRef.value.fetchData();
       ElMessage.success(t('success'));
     } finally {
-      loading.value = false;
+      htmlLoading.value = false;
+    }
+  });
+};
+const handleGreyUpdate = () => {
+  if (!greyForm.value) return;
+  greyForm.value.validate(async (isValid?: boolean) => {
+    if (!isValid) return;
+    greyLoading.value = true;
+    try {
+      await updateConfigGrey(greyValues.value);
+      await htmlAllHome();
+      ElMessage.success(t('success'));
+    } finally {
+      greyLoading.value = false;
     }
   });
 };
@@ -149,36 +181,36 @@ const handleSubmit = () => {
     </div>
     <div class="p-3 mt-3 app-block">
       <div class="pb-2 border-b text-gray-primary">{{ $t('site.settings.html') }}</div>
-      <el-form ref="form" v-loading="loading" class="mt-3" :model="values" :disabled="perm('siteSettings:html:update')" label-width="200px">
+      <el-form ref="htmlForm" v-loading="htmlLoading" class="mt-3" :model="htmlValues" :disabled="perm('siteSettings:html:update')" label-width="200px">
         <el-row>
           <el-col :span="12">
             <el-form-item prop="enabled" :rules="{ required: true, message: () => $t('v.required') }">
               <template #label><label-tip message="site.html.enabled" help /></template>
-              <el-switch v-model="values.enabled" />
+              <el-switch v-model="htmlValues.enabled" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item prop="auto" :rules="{ required: true, message: () => $t('v.required') }">
               <template #label><label-tip message="site.html.auto" help /></template>
-              <el-switch v-model="values.auto" />
+              <el-switch v-model="htmlValues.auto" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item prop="channel" :rules="{ required: true, message: () => $t('v.required') }">
               <template #label><label-tip message="site.html.channel" help /></template>
-              <el-input v-model="values.channel" maxlength="100"><template #append>.html</template></el-input>
+              <el-input v-model="htmlValues.channel" maxlength="100"><template #append>.html</template></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item prop="article" :rules="{ required: true, message: () => $t('v.required') }">
               <template #label><label-tip message="site.html.article" help /></template>
-              <el-input v-model="values.article" maxlength="100"><template #append>.html</template></el-input>
+              <el-input v-model="htmlValues.article" maxlength="100"><template #append>.html</template></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item prop="listPages" :rules="{ required: true, message: () => $t('v.required') }">
               <template #label><label-tip message="site.html.listPages" help /></template>
-              <el-select v-model="values.listPages" placeholder="Select">
+              <el-select v-model="htmlValues.listPages" placeholder="Select">
                 <el-option
                   v-for="item in [
                     { label: '1', value: 1 },
@@ -198,7 +230,31 @@ const handleSubmit = () => {
           </el-col>
         </el-row>
         <div>
-          <el-button :disabled="perm(`siteSettings:html:update`)" type="primary" native-type="submit" @click.prevent="handleSubmit">
+          <el-button :disabled="perm(`siteSettings:html:update`)" type="primary" native-type="submit" @click.prevent="handleHtmlUpdate">
+            {{ $t('submit') }}
+          </el-button>
+        </div>
+      </el-form>
+    </div>
+    <div v-if="hasPermission('config:grey:show')" class="p-3 mt-3 app-block">
+      <div class="pb-2 border-b text-gray-primary">{{ $t('config.settings.grey') }}</div>
+      <el-form ref="greyForm" v-loading="greyLoading" class="mt-3" :model="greyValues" :disabled="perm('config:grey:update')" label-width="200px">
+        <el-row>
+          <el-col :span="24">
+            <el-form-item prop="enabled" :rules="{ required: true, message: () => $t('v.required') }">
+              <template #label><label-tip message="config.grey.enabled" /></template>
+              <el-switch v-model="greyValues.enabled" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item prop="greyDates">
+              <template #label><label-tip message="config.grey.greyDates" help /></template>
+              <el-input v-model="greyValues.greyDates" maxlength="1000"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <div>
+          <el-button :disabled="perm(`config:grey:update`)" type="primary" native-type="submit" @click.prevent="handleGreyUpdate">
             {{ $t('submit') }}
           </el-button>
         </div>

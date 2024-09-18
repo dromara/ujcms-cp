@@ -159,6 +159,7 @@ const handleDelete = async (ids: string[]) => {
             </el-table-column>
             <el-table-column property="id" label="ID" width="170" sortable="custom"></el-table-column>
             <el-table-column property="title" :label="$t('blockItem.title')" sortable="custom" min-width="200" show-overflow-tooltip></el-table-column>
+            <el-table-column property="subtitle" :label="$t('blockItem.subtitle')" sortable="custom" display="none" min-width="200" show-overflow-tooltip></el-table-column>
             <el-table-column property="image" :label="$t('blockItem.image')">
               <template #default="{ row, $index }">
                 <el-image

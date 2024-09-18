@@ -6,6 +6,8 @@ export const querySiteList = async (params?: Record<string, any>): Promise<any> 
 export const querySite = async (id: string): Promise<any> => (await axios.get(`/backend/core/site/${id}`)).data;
 export const createSite = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/site', data)).data;
 export const updateSite = async (data: Record<string, any>): Promise<any> => (await axios.post('/backend/core/site?_method=put', data)).data;
+export const openSite = async (data: string[]): Promise<any> => (await axios.post('/backend/core/site/open?_method=put', data)).data;
+export const closeSite = async (data: string[]): Promise<any> => (await axios.post('/backend/core/site/close?_method=put', data)).data;
 export const moveSite = async (fromId: string, toId: string, type: 'inner' | 'before' | 'after'): Promise<any> =>
   (await axios.post('/backend/core/site/move?_method=put', { fromId, toId, type })).data;
 export const tidyTreeSite = async (): Promise<any> => (await axios.post('/backend/core/site/tidy-tree?_method=put')).data;

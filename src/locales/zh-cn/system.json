@@ -1,6 +1,9 @@
 {
+  "site.op.open": "开启",
+  "site.op.close": "关闭",
   "site.root": "根站点",
   "site.name": "名称",
+  "site.description": "描述",
   "site.copyFrom": "复制站点",
   "site.copyFrom.tooltip": "新增站点将以此站点为基础，复制该站点的模板、模型、栏目、文章等数据",
   "site.copyData": "复制数据",
@@ -38,7 +41,7 @@
   "site.pageSize.tooltip": "首页分页的每页条数，或者首页下拉时加载的文章条数",
   "site.status": "状态",
   "site.status.tooltip": "站点的状态",
-  "site.status.0": "正常",
+  "site.status.0": "开启",
   "site.status.1": "关闭",
   "site.error.domainPattern": "域名只能由小写字母、数字、中划线、点号组成",
   "site.error.excludesPattern": "不能为uploads、templates、WEB-INF、cp",
@@ -109,6 +112,7 @@
   "task.errorInfo": "错误信息",
 
   "sensitiveWord.name": "敏感词",
+  "sensitiveWord.replacement": "替换词",
   "sensitiveWord.enabled": "是否启用",
 
   "errorWord.name": "易错词",

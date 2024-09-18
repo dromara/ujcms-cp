@@ -126,6 +126,7 @@
 
   "log.html": "静态页",
   "log.html.updateAll": "更新全部静态页",
+  "log.html.updateAllHome": "更新所有首页静态页",
   "log.html.updateHome": "更新首页静态页",
   "log.html.updateChannel": "更新栏目静态页",
   "log.html.updateArticle": "更新文章静态页",
@@ -216,6 +217,7 @@
   "log.config": "全局设置",
   "log.config.updateBase": "修改全局基础设置",
   "log.config.updateUpload": "修改全局上传设置",
+  "log.config.updateGrey": "修改全局一键置灰",
   "log.config.updateRegister": "修改全局注册设置",
   "log.config.updateSecurity": "修改全局安全设置",
   "log.config.updateSms": "修改全局短信设置",
@@ -324,6 +326,16 @@
 
   "log.task": "任务管理",
   "log.task.delete": "删除任务",
+
+  "log.sensitiveWord":"敏感词管理",
+  "log.sensitiveWord.create": "新增敏感词",
+  "log.sensitiveWord.update": "修改敏感词",
+  "log.sensitiveWord.delete": "删除敏感词",
+
+  "log.errorWord":"易错词管理",
+  "log.errorWord.create": "新增易错词",
+  "log.errorWord.update": "修改易错词",
+  "log.errorWord.delete": "删除易错词",
 
   "log.importData": "数据迁移",
   "log.importData.importChannel": "迁移栏目数据",

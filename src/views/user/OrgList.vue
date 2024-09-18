@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, onBeforeUnmount, onMounted, ref, nextTick } from 'vue';
-import { currentUser, perm } from '@/stores/useCurrentUser';
+import { currentUser, perm, hasPermission } from '@/stores/useCurrentUser';
 import { ElMessage } from 'element-plus';
 import type Node from 'element-plus/es/components/tree/src/model/node';
 import type { NodeDropType } from 'element-plus/es/components/tree/src/tree.type';
@@ -227,7 +227,7 @@ const treeAllowDrop = (draggingNode: any, dropNode: any) => {
           :expand-on-click-node="false"
           node-key="id"
           highlight-current
-          draggable
+          :draggable="hasPermission('org:update')"
           :allow-drag="treeAllowDrag"
           :allow-drop="treeAllowDrop"
           :filter-node-method="treeFilterNode"

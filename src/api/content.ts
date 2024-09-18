@@ -68,6 +68,7 @@ export const deleteDict = async (data: string[]): Promise<any> => (await axios.p
 export const fulltextReindexAll = async (): Promise<any> => (await axios.post('/backend/core/generator/fulltext-reindex-all')).data;
 export const fulltextReindexSite = async (): Promise<any> => (await axios.post('/backend/core/generator/fulltext-reindex-site')).data;
 export const htmlAll = async (): Promise<any> => (await axios.post('/backend/core/generator/html-all')).data;
+export const htmlAllHome = async (): Promise<any> => (await axios.post('/backend/core/generator/html-all-home')).data;
 export const htmlHome = async (): Promise<any> => (await axios.post('/backend/core/generator/html-home')).data;
 export const htmlChannel = async (): Promise<any> => (await axios.post('/backend/core/generator/html-channel')).data;
 export const htmlArticle = async (): Promise<any> => (await axios.post('/backend/core/generator/html-article')).data;

@@ -92,8 +92,8 @@ const bindModelHandlers = (props: any, ctx: SetupContext, editor: any, modelValu
     }
   });
 
-  // 要加上 paste 事件，否则首次粘贴时内容会为空。也可使用'change keyup undo redo'
-  editor.on(normalizedEvents ?? 'change input paste undo redo', () => {
+  // 要加上 paste 事件，否则首次粘贴时内容会为空。使用 'change input paste undo redo' 在快速剪切、粘贴的情况下，有可能还是会出现 '必填字段' 的错误提示。
+  editor.on(normalizedEvents ?? 'change keyup undo redo', () => {
     const content = editor.getContent({ format: props.outputFormat });
     ctx.emit('update:modelValue', content);
     ctx.emit('input', content);
