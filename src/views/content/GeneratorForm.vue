@@ -5,7 +5,7 @@ import type { ElForm } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { querySiteHtmlSettings, updateSiteHtmlSettings, queryConfigGrey, updateConfigGrey } from '@/api/config';
 import { fulltextReindexAll, fulltextReindexSite, htmlAll, htmlAllHome, htmlHome, htmlChannel, htmlArticle } from '@/api/content';
-import { perm, hasPermission, isInclude } from '@/stores/useCurrentUser';
+import { perm, hasPermission, isInclude, currentUser } from '@/stores/useCurrentUser';
 import LabelTip from '@/components/LabelTip.vue';
 import TaskList from '@/views/system/TaskList.vue';
 
@@ -236,7 +236,7 @@ const handleGreyUpdate = () => {
         </div>
       </el-form>
     </div>
-    <div v-if="hasPermission('config:grey:show')" class="p-3 mt-3 app-block">
+    <div v-if="hasPermission('config:grey:show') && currentUser.epRank >= 2" class="p-3 mt-3 app-block">
       <div class="pb-2 border-b text-gray-primary">{{ $t('config.settings.grey') }}</div>
       <el-form ref="greyForm" v-loading="greyLoading" class="mt-3" :model="greyValues" :disabled="perm('config:grey:update')" label-width="200px">
         <el-row>
