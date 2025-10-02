@@ -4,3 +4,7 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# VSCode project files
+.vscode/*
+!.vscode/extensions.json
