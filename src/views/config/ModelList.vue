@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { perm } from '@/stores/useCurrentUser';
+import { currentUser, perm } from '@/stores/useCurrentUser';
 import { moveList, toParams, resetParams } from '@/utils/common';
 import { deleteModel, queryModelList, updateModelOrder } from '@/api/config';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -103,7 +103,7 @@ const deletable = (bean: any) => bean.id > 10;
     </div>
     <el-radio-group v-model="modelType" class="mt-3" @change="() => fetchData()">
       <!-- ['article', 'channel', 'user', 'site', 'global'] -->
-      <el-radio-button v-for="n in ['article', 'channel', 'form', 'site', 'global']" :key="n" :value="n">{{ $t(`model.type.${n}`) }}</el-radio-button>
+      <el-radio-button v-for="n in currentUser.epRank >= 3 ? ['article', 'channel', 'form', 'site', 'global'] : ['article', 'channel', 'site', 'global']" :key="n" :value="n">{{ $t(`model.type.${n}`) }}</el-radio-button>
     </el-radio-group>
     <div class="app-block">
       <el-table ref="table" v-loading="loading" :data="data" @selection-change="(rows) => (selection = rows)" @row-dblclick="(row) => handleEdit(row.id)" @sort-change="handleSort">

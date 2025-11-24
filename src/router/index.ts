@@ -229,19 +229,19 @@ export const routes: Array<RouteRecordRaw> = [
           {
             path: 'visited-page',
             name: 'VisitedPage',
-            component: () => import('@/views/EnterprisePage.vue'),
+            component: () => import('@/views/stat/VisitedPage.vue'),
             meta: { title: 'menu.stat.visitedPage', requiresPermission: 'visitedPage:page' },
           },
           {
             path: 'entry-page',
             name: 'EntryPage',
-            component: () => import('@/views/EnterprisePage.vue'),
+            component: () => import('@/views/stat/EntryPage.vue'),
             meta: { title: 'menu.stat.entryPage', requiresPermission: 'entryPage:page' },
           },
           {
             path: 'visit-source',
             name: 'VisitSource',
-            component: () => import('@/views/EnterprisePage.vue'),
+            component: () => import('@/views/stat/VisitSource.vue'),
             meta: { title: 'menu.stat.visitSource', requiresPermission: 'visitSource:page' },
           },
         ],
@@ -265,7 +265,7 @@ export const routes: Array<RouteRecordRaw> = [
           {
             path: 'visit-env',
             name: 'VisitEnv',
-            component: () => import('@/views/EnterprisePage.vue'),
+            component: () => import('@/views/stat/VisitEnv.vue'),
             meta: { title: 'menu.stat.visitEnv', requiresPermission: 'visitEnv:page' },
           },
         ],

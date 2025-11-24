@@ -312,6 +312,7 @@
   "model.field.fileAccept.tooltip": "允许的文件类型，必须在全局配置允许的范围内，留空则使用全局配置。格式与HTML的input accept属性一致，如：.doc,.docx,image/png,image/jpeg",
   "model.field.fileMaxSize": "文件大小",
   "model.field.fileMaxSize.tooltip": "允许的最大文件，必须在全局配置允许的范围内，留空则使用全局配置。单位 MB",
+  "model.field.error.invalidCode": "只能使用字母和数字",
 
   "model.fieldType.text": "单行文本",
   "model.fieldType.textarea": "多行文本",

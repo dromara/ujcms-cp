@@ -63,7 +63,22 @@ const dictTypeChange = (typeId: string) => {
       { label: '文件上传', type: 'fileUpload' },
 -->
 <template>
-  <el-form-item prop="code" :label="$t('model.field.code')" :rules="{ required: true, message: () => $t('v.required') }">
+  <el-form-item
+    prop="code"
+    :label="$t('model.field.code')"
+    :rules="[
+      { required: true, message: () => $t('v.required') },
+      {
+        validator: (rule: any, value: any, callback: any) => {
+          if (!/^[a-zA-Z0-9]+$/.test(value)) {
+            callback($t('model.field.error.invalidCode'));
+            return;
+          }
+          callback();
+        },
+      },
+    ]"
+  >
     <el-input v-model="field.code" maxlength="50"></el-input>
   </el-form-item>
   <el-form-item prop="name" :label="$t('model.field.name')" :rules="{ required: true, message: () => $t('v.required') }">

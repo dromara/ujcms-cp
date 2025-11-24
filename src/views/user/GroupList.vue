@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { Plus, Delete } from '@element-plus/icons-vue';
 import { useI18n } from 'vue-i18n';
-import { perm, currentUser } from '@/stores/useCurrentUser';
+import { perm } from '@/stores/useCurrentUser';
 import { moveList, toParams, resetParams } from '@/utils/common';
 import { deleteGroup, queryGroupList, updateGroupOrder } from '@/api/user';
 import { ColumnList, ColumnSetting } from '@/components/TableList';
@@ -115,15 +115,7 @@ const move = async (selected: any[], type: 'top' | 'up' | 'down' | 'bottom') => 
           <el-table-column :label="$t('table.action')">
             <template #default="{ row }">
               <el-button type="primary" :disabled="perm('group:update')" size="small" link @click="handleEdit(row.id)">{{ $t('edit') }}</el-button>
-              <el-button
-                v-if="currentUser.epRank > 0 || currentUser.epDisplay"
-                type="primary"
-                :disabled="perm('group:updatePermission') || currentUser.epRank <= 0"
-                :title="currentUser.epRank <= 0 ? $t('error.enterprise.short') : undefined"
-                size="small"
-                link
-                @click="() => handlePermissionEdit(row.id)"
-              >
+              <el-button type="primary" :disabled="perm('group:updatePermission')" size="small" link @click="() => handlePermissionEdit(row.id)">
                 {{ $t('permissionSettings') }}
               </el-button>
               <el-popconfirm :title="$t('confirmDelete')" @confirm="() => handleDelete([row.id])">
