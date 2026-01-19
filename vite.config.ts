@@ -26,7 +26,6 @@ export default defineConfig(({ mode }: ConfigEnv) => {
       },
     },
     server: {
-      host: '127.0.0.1',
       port: Number(env.VITE_PORT),
       proxy: {
         [env.VITE_BASE_API]: {
