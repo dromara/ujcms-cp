@@ -130,6 +130,7 @@ const initCustoms = (customs: any) => {
     :create-bean="createChannel"
     :update-bean="updateChannel"
     :delete-bean="deleteChannel"
+    :disable-delete="(bean) => !currentUser.allChannelPermission && bean.id != null && !channelPermissions.includes(bean.id)"
     :bean-id="beanId"
     :bean-ids="beanIds"
     :focus="focus"
